@@ -49,10 +49,7 @@ public class Game : GameWindow
 
     public double Time;
 
-    public Game() : base(new GameWindowSettings
-        {
-        UpdateFrequency = 60.0
-    },
+    public Game() : base(new GameWindowSettings(),
         new NativeWindowSettings { ClientSize = new Vector2i(1280, 720), Title = "Voxels", WindowState = WindowState.Maximized })
     {
         Instance = this;
