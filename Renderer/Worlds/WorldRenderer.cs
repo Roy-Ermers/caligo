@@ -168,9 +168,6 @@ public class WorldRenderer
 
             if (chunk.State.HasFlag(ChunkState.Generated) && !chunk.State.HasFlag(ChunkState.Meshing) && !chunk.State.HasFlag(ChunkState.Meshed))
             {
-                Console.WriteLine($"Enqueuing chunk at {chunkLoader.Position} for meshing.");
-                Console.WriteLine(chunk.State);
-                Console.WriteLine(World.ChunkLoaders.Length);
                 ChunkMesher.EnqueueChunk(chunk);
             }
         }

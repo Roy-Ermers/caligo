@@ -53,9 +53,6 @@ public class WorldBuilder
             chunk.State &= ~ChunkState.Generating;
             chunk.State |= ChunkState.Generated;
 
-            var newChunk = World.GetChunk(chunk.Position);
-
-            Console.WriteLine("Generated chunk");
         });
     }
 }

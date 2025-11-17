@@ -30,8 +30,8 @@ public class ChunkWindow : Window
             foreach (var chunkLoader in _world.ChunkLoaders)
             {
                 _world.RemoveChunk(chunkLoader.Position);
-                _game.renderer.Clear();
             }
+            _game.renderer.Clear();
         }
         if (ImGui.CollapsingHeader("Chunks"))
         {

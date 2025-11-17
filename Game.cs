@@ -111,10 +111,10 @@ public class Game : GameWindow
 
     private void LoadChunksAroundPlayer()
     {
-        const int RenderDistance = 10;
+        const int RenderDistance = 5;
         var playerPosition = Camera.Position;
         for (int x = -RenderDistance; x < RenderDistance; x++)
-            for (int y = -1; y < RenderDistance; y++)
+            for (int y = -RenderDistance; y < RenderDistance; y++)
                 for (int z = -RenderDistance; z < RenderDistance; z++)
                 {
                     var chunkPosition = ChunkPosition.FromWorldPosition(
