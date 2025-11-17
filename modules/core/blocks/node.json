@@ -1,0 +1,8 @@
+{
+	"model": {
+		"name": "overlay:column",
+		"textures": {
+			"0": "structure_block"
+		}
+	}
+}
