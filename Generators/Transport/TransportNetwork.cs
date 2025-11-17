@@ -28,6 +28,9 @@ public class TransportNetwork
         }
 
         sector = new Sector(position);
+        _writeLock.WaitOne();
+        Sectors[sector.Key] = sector;
+        _writeLock.ReleaseMutex();
 
         // Use prime number mixing for better random distribution
         var seed = (sector.X * 73856093) ^ (sector.Z * 19349663) ^ (Seed * 83492791);
@@ -37,23 +40,23 @@ public class TransportNetwork
         var newNode = GenerateNode(sector, random);
         sector.Nodes.Add(newNode);
 
-        _writeLock.WaitOne();
-        Sectors[sector.Key] = sector;
-        _writeLock.ReleaseMutex();
         return sector;
     }
 
     private static Tree GenerateNode(Sector sector, Random random)
     {
-        float offsetX = random.NextSingle();
-        float offsetZ = random.NextSingle();
-        int nodeX = (int)(sector.Start.X + offsetX * Sector.SectorSize);
-        int nodeZ = (int)(sector.Start.Z + offsetZ * Sector.SectorSize);
+        
+        sector.Lock.EnterWriteLock();
+        var offsetX = random.NextSingle();
+        var offsetZ = random.NextSingle();
+        var nodeX = (int)(sector.Start.X + offsetX * Sector.SectorSize);
+        var nodeZ = (int)(sector.Start.Z + offsetZ * Sector.SectorSize);
 
         var position = new WorldPosition(nodeX, 1, nodeZ);
 
         var node = new Tree(random, position);
         Game.Instance.world.Features.Insert(node);
+        sector.Lock.ExitWriteLock();
 
         return node;
     }

@@ -9,16 +9,11 @@ namespace WorldGen.Universe;
 
 public partial class World : IEnumerable<Chunk>
 {
-    public Bhv<Feature> Features = new();
+    public readonly Bhv<Feature> Features = new();
 
     public Chunk? GetChunk(ChunkPosition position)
     {
-        if (_chunks.TryGetValue(position.Id, out var chunk))
-        {
-            return chunk;
-        }
-
-        return null;
+        return _chunks.GetValueOrDefault(position.Id);
     }
 
     public bool TryGetChunk(ChunkPosition position, [MaybeNullWhen(false)] out Chunk chunk)

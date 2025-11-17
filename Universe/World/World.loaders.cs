@@ -6,7 +6,7 @@ public partial class World : IEnumerable<Chunk>
 {
     private readonly Dictionary<ChunkPosition, ChunkLoader> chunkLoaders = [];
 
-    public ChunkLoader[] ChunkLoaders => [.. chunkLoaders.Values];
+    public IEnumerable<ChunkLoader> ChunkLoaders => chunkLoaders.Values;
 
     public void EnqueueChunk(ChunkLoader loader, bool force = false)
     {

@@ -35,7 +35,7 @@ public class FlatWorldGenerator : IWorldGenerator
 
     public void Initialize()
     {
-        GroundBlock ??= ModuleRepository.Current.Get<Block>("dirt"); ;
-        SoilBlock ??= ModuleRepository.Current.Get<Block>("grass_block");
+        GroundBlock = ModuleRepository.Current.Get<Block>("dirt"); ;
+        SoilBlock = ModuleRepository.Current.Get<Block>("grass_block");
     }
 }

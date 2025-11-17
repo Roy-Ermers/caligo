@@ -2,7 +2,7 @@ using WorldGen.Resources.Block.Models;
 
 namespace WorldGen.Resources.Block;
 
-public struct BlockVariant
+public record struct BlockVariant
 {
     public string ModelName;
     public BlockModel Model;

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace WorldGen.FileSystem;
+namespace WorldGen.FileSystem.Json;
 
 public class JsonPolicy : JsonNamingPolicy
 {

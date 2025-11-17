@@ -82,10 +82,10 @@ public class IndirectBuffer
 
     public void Append(IndirectDrawCommand command)
     {
-        if (_drawCount >= _capacity)
+        if (_drawCount > _capacity)
             throw new InvalidOperationException("IndirectBuffer overflow");
 
-        IntPtr dest = _mappedPtr + _drawCount * Marshal.SizeOf<IndirectDrawCommand>();
+        var dest = _mappedPtr + _drawCount * Marshal.SizeOf<IndirectDrawCommand>();
         Marshal.StructureToPtr(command, dest, false);
         _drawCount++;
     }
@@ -100,16 +100,14 @@ public class IndirectBuffer
     public void Clear()
     {
         _drawCount = 0;
-        if (_mappedPtr != IntPtr.Zero)
-        {
-            GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);
-            _mappedPtr = GL.MapBufferRange(
-                BufferTarget.DrawIndirectBuffer,
-                IntPtr.Zero,
-                Size,
-                MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit | MapBufferAccessMask.MapCoherentBit
-            );
-        }
+        if (_mappedPtr == IntPtr.Zero) return;
+        GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);
+        _mappedPtr = GL.MapBufferRange(
+            BufferTarget.DrawIndirectBuffer,
+            IntPtr.Zero,
+            Size,
+            MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit | MapBufferAccessMask.MapCoherentBit
+        );
     }
 
     public void Dispose()

@@ -22,7 +22,7 @@ public class ChunkDebugModule : IDebugModule
         if (_game.world is null)
             return;
 
-        Components.Text("Current Chunks: " + _game.world.ChunkLoaders.Length);
+        Components.Text("Current Chunks: " + _game.world.ChunkLoaders.Count());
 
         if (Components.Button("Unload All Chunks"))
         {

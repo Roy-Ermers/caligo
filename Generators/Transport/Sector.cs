@@ -14,6 +14,8 @@ public struct Sector
     public int X { get; init; }
     public int Z { get; init; }
 
+    public readonly ReaderWriterLockSlim Lock = new();
+
     public readonly WorldPosition Start => new(X * SectorSize, int.MinValue, Z * SectorSize);
     public readonly WorldPosition End => new((X + 1) * SectorSize - 1, int.MaxValue, (Z + 1) * SectorSize - 1);
 

@@ -24,7 +24,7 @@ public class ChunkWindow : Window
         if (_world is null)
             return;
 
-        ImGui.TextDisabled("Current Chunks: " + _world.ChunkLoaders.Length);
+        ImGui.TextDisabled("Current Chunks: " + _world.ChunkLoaders.Count());
 
         if (ImGui.Button("Unload All Chunks"))
         {

@@ -8,6 +8,7 @@ using WorldGen.Resources.Atlas;
 using WorldGen.Resources.Block;
 using WorldGen.Universe;
 using WorldGen.Universe.PositionTypes;
+using WorldGen.Utils;
 
 namespace WorldGen.Renderer.Worlds;
 
@@ -72,9 +73,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 		Random random = new(chunk.Id);
 		if (chunk.BlockCount == 0)
 		{
-			return new ChunkMesh
-			{
-				Faces = ChunkMesh.Empty.Faces,
+			return ChunkMesh.Empty with {
 				Position = chunk.Position
 			};
 		}
@@ -86,9 +85,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 			var position = ChunkLocalPosition.FromIndex(i);
 			// tryGet skips air blocks, so we only process non-air blocks
 			if (!chunk.TryGet(position, out var blockId))
-			{
 				continue;
-			}
 
 			if (!blockStorage.TryGetValue(blockId, out var block))
 			{
@@ -104,7 +101,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 
 			for (var direction = (Direction)0; direction <= (Direction)5; direction++)
 			{
-				if (chunk.TryGet(position + direction.ToVector3(), out ushort neighborBlockId))
+				if (chunk.TryGet(position + direction.ToVector3(), out var neighborBlockId))
 				{
 					var neighborBlock = blockStorage[neighborBlockId];
 					var neighborModel = neighborBlock?.GetRandomVariant(random);
@@ -135,9 +132,9 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 
 		chunk.State |= ChunkState.Meshed;
 		chunk.State &= ~ChunkState.Meshing;
-
+		
 		return new ChunkMesh(
-			faces.ToFrozenDictionary(),
+			faces,
 			chunk.Position
 		);
 	}

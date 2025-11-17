@@ -1,3 +1,5 @@
+using WorldGen.Utils;
+
 namespace WorldGen.Resources.Block.Models;
 
 public struct TextureFaces

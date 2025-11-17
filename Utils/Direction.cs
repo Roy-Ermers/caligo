@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace WorldGen.Resources.Block;
+namespace WorldGen.Utils;
 
 public enum Direction
 {

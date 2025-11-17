@@ -50,12 +50,7 @@ public class ShaderBuffer<T> where T : struct
 		GL.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, name.Length, name);
 	}
 
-	public void SetData(Span<T> data)
-	{
-		SetData(data, orphan: true);
-	}
-
-	public void SetData(Span<T> data, bool orphan)
+	public void SetData(Span<T> data, bool orphan = false)
 	{
 		var oldSize = Size;
 		Size = data.Length * Marshal.SizeOf(default(T));

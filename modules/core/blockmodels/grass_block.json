@@ -25,62 +25,36 @@
                     ]
                 },
                 "north": {
-                    "texture": "#underground"
+                    "texture": "#grass",
+                  "tint": [
+                    87,
+                    132,
+                    75
+                  ]
                 },
                 "south": {
-                    "texture": "#underground"
+                    "texture": "#grass",
+                  "tint": [
+                    87,
+                    132,
+                    75
+                  ]
                 },
                 "west": {
-                    "texture": "#underground"
+                    "texture": "#grass",
+                  "tint": [
+                    87,
+                    132,
+                    75
+                  ]
                 },
                 "east": {
-                    "texture": "#underground"
-                }
-            }
-        },
-        {
-            "from": [
-                0,
-                0,
-                0
-            ],
-            "to": [
-                16,
-                16,
-                16
-            ],
-            "faces": {
-                "north": {
-                    "texture": "#side_overlay",
-                    "tint": [
-                        87,
-                        132,
-                        75
-                    ]
-                },
-                "south": {
-                    "texture": "#side_overlay",
-                    "tint": [
-                        87,
-                        132,
-                        75
-                    ]
-                },
-                "west": {
-                    "texture": "#side_overlay",
-                    "tint": [
-                        87,
-                        132,
-                        75
-                    ]
-                },
-                "east": {
-                    "texture": "#side_overlay",
-                    "tint": [
-                        87,
-                        132,
-                        75
-                    ]
+                    "texture": "#grass",
+                  "tint": [
+                    87,
+                    132,
+                    75
+                  ]
                 }
             }
         }

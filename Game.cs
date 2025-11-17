@@ -108,8 +108,8 @@ public class Game : GameWindow
             return;
         }
 
-        string message = e.Message;
-        string[] stackTrace = e.StackTrace?.Split(Environment.NewLine) ?? [];
+        var message = e.Message;
+        var stackTrace = e.StackTrace?.Split(Environment.NewLine) ?? [];
 
         using FileStream stream = new("CrashReport.txt", FileMode.Create);
 
@@ -140,17 +140,18 @@ public class Game : GameWindow
     private void LoadChunksAroundPlayer()
     {
         const int RenderDistance = 5;
+        
         var playerPosition = Camera.Position;
-        for (int x = -RenderDistance; x < RenderDistance; x++)
-            for (int y = -RenderDistance; y < RenderDistance; y++)
-                for (int z = -RenderDistance; z < RenderDistance; z++)
+        for (var x = -RenderDistance; x < RenderDistance; x++)
+            for (var y = -RenderDistance; y < RenderDistance; y++)
+                for (var z = -RenderDistance; z < RenderDistance; z++)
                 {
                     var chunkPosition = ChunkPosition.FromWorldPosition(
                         (x * Chunk.Size) + (int)playerPosition.X,
                         (y * Chunk.Size) + (int)playerPosition.Y,
                         (z * Chunk.Size) + (int)playerPosition.Z
                     );
-
+        
                     var chunkLoader = new ChunkLoader(chunkPosition, 1);
                     world.EnqueueChunk(chunkLoader);
                 }

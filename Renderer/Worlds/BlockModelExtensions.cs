@@ -5,6 +5,7 @@ using WorldGen.Resources.Atlas;
 using WorldGen.Resources.Block;
 using WorldGen.Resources.Block.Models;
 using WorldGen.Universe.PositionTypes;
+using WorldGen.Utils;
 
 namespace WorldGen.Renderer.Worlds;
 
@@ -33,9 +34,9 @@ public static class BlockModelExtensions
         var textureId = atlas[textureKey];
 
         var size = Vector3.Abs(cube.To - cube.From);
-        ushort width = (ushort)size.X;
-        ushort height = (ushort)size.Y;
-        ushort depth = (ushort)size.Z;
+        var width = (ushort)size.X;
+        var height = (ushort)size.Y;
+        var depth = (ushort)size.Z;
 
         var material = new Material()
         {
@@ -51,42 +52,45 @@ public static class BlockModelExtensions
 
         // Compute face center for each direction
         var from = cube.From;
-        ushort x = (ushort)(chunkPosition.X * 16);
-        ushort y = (ushort)(chunkPosition.Y * 16);
-        ushort z = (ushort)(chunkPosition.Z * 16);
+        var x = (ushort)(chunkPosition.X * 16);
+        var y = (ushort)(chunkPosition.Y * 16);
+        var z = (ushort)(chunkPosition.Z * 16);
 
-        switch (direction)
+        if (direction == Direction.Up)
         {
-            case Direction.Up:
-                x += (ushort)(from.X + width);
-                y += (ushort)(from.Y + height);
-                z += (ushort)from.Z;
-                break;
-            case Direction.Down:
-                x += (ushort)from.X;
-                y += (ushort)from.Y;
-                z += (ushort)from.Z;
-                break;
-            case Direction.North:
-                x += (ushort)(from.X + width);
-                y += (ushort)from.Y;
-                z += (ushort)from.Z;
-                break;
-            case Direction.South:
-                x += (ushort)from.X;
-                y += (ushort)from.Y;
-                z += (ushort)(from.Z + depth);
-                break;
-            case Direction.West:
-                x += (ushort)from.X;
-                y += (ushort)from.Y;
-                z += (ushort)from.Z;
-                break;
-            case Direction.East:
-                x += (ushort)(from.X + width);
-                y += (ushort)from.Y;
-                z += (ushort)(from.Z + depth);
-                break;
+            x += (ushort)(from.X + width);
+            y += (ushort)(from.Y + height);
+            z += (ushort)from.Z;
+        }
+        else if (direction == Direction.Down)
+        {
+            x += (ushort)from.X;
+            y += (ushort)from.Y;
+            z += (ushort)from.Z;
+        }
+        else if (direction == Direction.North)
+        {
+            x += (ushort)(from.X + width);
+            y += (ushort)from.Y;
+            z += (ushort)from.Z;
+        }
+        else if (direction == Direction.South)
+        {
+            x += (ushort)from.X;
+            y += (ushort)from.Y;
+            z += (ushort)(from.Z + depth);
+        }
+        else if (direction == Direction.West)
+        {
+            x += (ushort)from.X;
+            y += (ushort)from.Y;
+            z += (ushort)from.Z;
+        }
+        else if (direction == Direction.East)
+        {
+            x += (ushort)(from.X + width);
+            y += (ushort)from.Y;
+            z += (ushort)(from.Z + depth);
         }
 
         var faceRenderData = new BlockFaceRenderData

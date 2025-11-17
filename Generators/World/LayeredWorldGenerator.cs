@@ -26,11 +26,16 @@ public class LayeredWorldGenerator : IWorldGenerator
 
 	public void GenerateChunk(ref Chunk chunk)
 	{
-		var sector = Network.GetSector(chunk.Position.ToWorldPosition());
-
+		Network.GetSector(chunk.Position.ToWorldPosition());
+		var features = Game.Instance.world.Features.Query(chunk.BoundingBox);
+		
 		foreach (var position in new CubeIterator(chunk))
 		{
-			var features = Game.Instance.world.Features.IteratePoint(position);
+			if (position.Y <= 0)
+			{
+				chunk.Set(position.ChunkLocalPosition, TerrainBlock);
+			}
+			
 			foreach (var feature in features)
 			{
 				var blockId = feature.GetBlock(position);
@@ -42,10 +47,6 @@ public class LayeredWorldGenerator : IWorldGenerator
 				}
 			}
 
-			if (position.Y <= 0)
-			{
-				chunk.Set(position.ChunkLocalPosition, TerrainBlock);
-			}
 		}
 	}
 
