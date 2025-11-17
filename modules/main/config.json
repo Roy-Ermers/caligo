@@ -1,0 +1,49 @@
+{
+    "ui": {
+        "font": "maple",
+        "textColor": "#FFFFFF",
+        "disabledTextColor": "#3D3D3DFF",
+        "accentColor": "#6a6acd",
+        "accentHoverColor": "#44448d",
+        "accentActiveColor": "#31315e",
+        "border": {
+            "color": "#6E6E8080",
+            "shadow": "#0000",
+            "width": 1
+        },
+        "window": {
+            "rounding": 8,
+            "padding": {
+                "vertical": 16,
+                "horizontal": 16
+            },
+            "borderWidth": 1,
+            "background": "#242424FF",
+            "titlebar": {
+                "background": "#242424FF",
+                "activeBackground": "#242424FF",
+                "collapsedBackground": "#242424FF"
+            }
+        },
+        "frame": {
+            "rounding": 8,
+            "padding": {
+                "vertical": 8,
+                "horizontal": 4
+            },
+            "borderWidth": 0,
+            "background": "#333333FF",
+            "hoverBackground": "#3D3D3DFF",
+            "activeBackground": "#3D3D3DFF"
+        },
+        "header": {
+            "background": "#3D3D3D",
+            "hoverBackground": "#4d4d4d",
+            "activeBackground": "#5d5d5d"
+        },
+        "itemMargin": {
+            "vertical": 8,
+            "horizontal": 16
+        }
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "parent": "block/block",
+    "elements": [
+        {
+            "from": [
+                0,
+                0,
+                0
+            ],
+            "to": [
+                16,
+                16,
+                16
+            ],
+            "faces": {
+                "down": {
+                    "texture": "#down"
+                },
+                "up": {
+                    "texture": "#up",
+                    "tint": [
+                        87,
+                        151,
+                        37
+                    ]
+                },
+                "north": {
+                    "texture": "#north"
+                },
+                "south": {
+                    "texture": "#south"
+                },
+                "west": {
+                    "texture": "#west"
+                },
+                "east": {
+                    "texture": "#east"
+                }
+            }
+        }
+    ]
+}

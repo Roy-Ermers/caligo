@@ -1,0 +1,14 @@
+{
+    "model": {
+        "name": "overlay:tie-fighter",
+        "textures": {
+            "0": "structure_block",
+            "north": "debug_front",
+            "south": "debug_back",
+            "up": "debug_top",
+            "down": "debug_bottom",
+            "west": "debug_left",
+            "east": "debug_right"
+        }
+    }
+}

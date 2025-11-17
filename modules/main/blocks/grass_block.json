@@ -1,0 +1,13 @@
+{
+    "model": {
+        "name": "grass_block",
+        "textures": {
+            "up": "main:grass_block_top",
+            "down": "main:dirt",
+            "north": "main:grass_block_side",
+            "south": "main:grass_block_side",
+            "west": "main:grass_block_side",
+            "east": "main:grass_block_side"
+        }
+    }
+}

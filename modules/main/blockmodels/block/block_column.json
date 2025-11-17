@@ -1,0 +1,11 @@
+{
+    "parent": "main:block/block",
+    "textures": {
+        "up": "#up",
+        "down": "#down",
+        "north": "#side",
+        "south": "#side",
+        "west": "#side",
+        "east": "#side"
+    }
+}
