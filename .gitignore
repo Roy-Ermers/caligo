@@ -8,6 +8,9 @@ nupkg/
 # Visual Studio Code
 .vscode
 
+# Zed editor
+.zed
+
 # Rider
 .idea
 
