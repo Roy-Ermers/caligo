@@ -69,9 +69,9 @@ public class WorldRenderer
 
 		FaceBuffer.Commit();
 		
-		foreach (var chunkLoader in _world.ChunkLoaders)
+		foreach (var position in _world.LoadedChunks)
 		{
-			if (!_world.TryGetChunk(chunkLoader.Position, out var chunk))
+			if (!_world.TryGetChunk(position, out var chunk))
 				continue;
 
 			if (chunk.State.HasFlag(ChunkState.Generated) && !chunk.State.HasFlag(ChunkState.Meshing) && !chunk.State.HasFlag(ChunkState.Meshed))

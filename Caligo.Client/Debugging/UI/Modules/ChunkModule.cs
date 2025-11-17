@@ -21,13 +21,13 @@ public class ChunkDebugModule : IDebugModule
         if (_game.world is null)
             return;
 
-        Components.Text("Current Chunks: " + _game.world.ChunkLoaders.Count());
+        Components.Text("Current Chunks: " + _game.world.LoadedChunks.Count);
 
         if (Components.Button("Unload All Chunks"))
         {
-            foreach (var chunkLoader in _game.world.ChunkLoaders)
+            foreach (var chunkLoader in _game.world.LoadedChunks)
             {
-                _game.world.RemoveChunk(chunkLoader.Position);
+                _game.world.RemoveChunk(chunkLoader);
             }
             _game.renderer.Clear();
         }
@@ -37,10 +37,9 @@ public class ChunkDebugModule : IDebugModule
             using var scrollContainer = Components.ScrollContainer(Prowl.PaperUI.Scroll.ScrollXY).Enter();
 
             var id = 0;
-            foreach (var loader in _game.world.ChunkLoaders)
+            foreach (var position in _game.world.LoadedChunks)
             {
                 var state = ChunkState.None;
-                var (position, ticks) = loader;
 
                 if (_game.world.TryGetChunk(position, out var chunk))
                     state = chunk.State;

@@ -5,11 +5,11 @@ namespace Caligo.Core.Universe.World;
 
 public partial class World : IEnumerable<Chunk>
 {
-    private readonly ConcurrentDictionary<int, Chunk> _chunks = new();
+    private readonly Dictionary<int, Chunk> _chunks = new();
 
     public void RemoveChunk(ChunkPosition position)
     {
-        _chunks.TryRemove(position.Id, out _);
+        _chunks.Remove(position.Id);
         chunkLoaders.Remove(position);
     }
 }

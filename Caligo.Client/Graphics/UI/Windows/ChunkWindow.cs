@@ -24,13 +24,13 @@ public class ChunkWindow : Window
         if (_world is null)
             return;
 
-        ImGui.TextDisabled("Current Chunks: " + _world.ChunkLoaders.Count());
+        ImGui.TextDisabled("Current Chunks: " + _world.LoadedChunks.Count);
 
         if (ImGui.Button("Unload All Chunks"))
         {
-            foreach (var chunkLoader in _world.ChunkLoaders)
+            foreach (var position in _world.LoadedChunks)
             {
-                _world.RemoveChunk(chunkLoader.Position);
+                _world.RemoveChunk(position);
             }
             _game.renderer.Clear();
         }
@@ -41,23 +41,20 @@ public class ChunkWindow : Window
                 EnableVirtualization = true,
                 Headers = [
                   "Position",
-                  "Ticks Left",
                   "State",
                 ],
                 Border = true,
             };
 
-            foreach (var loader in _world.ChunkLoaders)
+            foreach (var position in _world.LoadedChunks)
             {
                 var state = ChunkState.None;
-                var (position, ticks) = loader;
 
                 if (_world.TryGetChunk(position, out var chunk))
                     state = chunk.State;
 
                 var tableRow = new TableRowComponent(
                 $"{position.X,3} {position.Y,3} {position.Z,3}",
-                (ticks + 1).ToString(),
                 state.ToString());
 
                 table.AddRow(

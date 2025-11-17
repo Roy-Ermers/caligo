@@ -4,47 +4,47 @@ namespace Caligo.Core.Universe.World;
 
 public partial class World : IEnumerable<Chunk>
 {
-    private readonly Dictionary<ChunkPosition, ChunkLoader> chunkLoaders = [];
-
-    public IEnumerable<ChunkLoader> ChunkLoaders => chunkLoaders.Values;
+    private readonly HashSet<ChunkPosition> loadedChunks = [];
+    private readonly Dictionary<ChunkPosition, int> chunkLoaders = [];
+    
+    public IReadOnlySet<ChunkPosition> LoadedChunks => loadedChunks;
 
     public void EnqueueChunk(ChunkLoader loader, bool force = false)
     {
         if (loader.Ticks <= 0)
             return;
 
-        // If the chunk already exists, we can just update the loader
-        if (chunkLoaders.TryGetValue(loader.Position, out var existingLoader) && !force)
+        // If the chunk does not exist, we create a new loader
+        if (!loadedChunks.Contains(loader.Position) || force)
         {
-            if (existingLoader.Ticks < loader.Ticks)
-            {
-                // If the existing loader has fewer ticks, we replace it
-                chunkLoaders[loader.Position] = loader;
-                return;
-            }
+            loadedChunks.Add(loader.Position);
+            chunkLoaders[loader.Position] = loader.Ticks;
+            return;
         }
 
-        // If the chunk does not exist, we create a new loader
-        chunkLoaders[loader.Position] = loader;
+        // If the chunk already exists, we can just update the loader
+
+        var existingLoader = chunkLoaders[loader.Position];
+
+        if (existingLoader >= loader.Ticks) return;
+        // If the existing loader has fewer ticks, we replace it
+        chunkLoaders[loader.Position] = loader.Ticks;
     }
 
     public void Update()
     {
-        // Update the chunk loaders
-        for (var loaderIndex = 0; loaderIndex < chunkLoaders.Count; loaderIndex++)
+        foreach (var position in LoadedChunks)
         {
-            var loader = chunkLoaders.ElementAt(loaderIndex).Value;
+            var ticks = chunkLoaders[position];
 
-            // If the loader has no ticks left, we can remove it
-            if (loader.Ticks <= 0)
+            if (ticks <= 0)
             {
-                loaderIndex--;
-
-                chunkLoaders.Remove(loader.Position);
+                chunkLoaders.Remove(position);
+                loadedChunks.Remove(position);
                 continue;
             }
-
-            chunkLoaders[loader.Position] = loader with { Ticks = loader.Ticks - 1 };
+            
+            chunkLoaders[position] = ticks - 1;
         }
     }
 }

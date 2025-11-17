@@ -37,16 +37,16 @@ public class WorldBuilder
 
 	public void Update()
 	{
-		foreach (var loader in World.ChunkLoaders)
+		foreach (var position in World.LoadedChunks)
 		{
-			if (World.HasChunk(loader.Position))
+			if (World.HasChunk(position))
 				continue;
 
 
-			var chunk = new Chunk(loader.Position);
+			var chunk = new Chunk(position);
 			World.CreateChunk(chunk);
 
-			_generationQueue.TryAdd(loader.Position);
+			_generationQueue.TryAdd(position);
 		}
 	}
 
