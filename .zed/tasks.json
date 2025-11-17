@@ -4,8 +4,8 @@
 [
 	{
 		"label": "Run project",
-		"command": "dotnet run WorldGen.csproj",
-		"cwd": "$ZED_WORKTREE_ROOT/world-gen",
+		"command": "dotnet run",
+		"cwd": "$ZED_WORKTREE_ROOT",
 		//"args": [],
 		// Env overrides for the command, will be appended to the terminal's environment from the settings.
 		"env": {},

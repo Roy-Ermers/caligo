@@ -5,7 +5,7 @@ namespace WorldGen.Utils;
 
 public static class Vec4ToColor
 {
-    public static Color ToColor(System.Numerics.Vector4 vec)
+    public static Color ToColor(Vector4 vec)
     {
         return Color.FromArgb(
                 (int)(vec.W * 255),

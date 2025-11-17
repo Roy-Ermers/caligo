@@ -33,14 +33,14 @@ public static class BlockModelExtensions
         var textureId = atlas[textureKey];
 
         var size = Vector3.Abs(cube.To - cube.From);
-        ushort Width = (ushort)size.X;
-        ushort Height = (ushort)size.Y;
-        ushort Depth = (ushort)size.Z;
+        ushort width = (ushort)size.X;
+        ushort height = (ushort)size.Y;
+        ushort depth = (ushort)size.Z;
 
         var material = new Material()
         {
-            Width = Width,
-            Height = Height,
+            Width = width,
+            Height = height,
             TextureId = textureId,
             UV0 = new Vector2(face.Value.UV.X, face.Value.UV.Y),
             UV1 = new Vector2(face.Value.UV.Z, face.Value.UV.W),
@@ -58,8 +58,8 @@ public static class BlockModelExtensions
         switch (direction)
         {
             case Direction.Up:
-                x += (ushort)(from.X + Width);
-                y += (ushort)(from.Y + Height);
+                x += (ushort)(from.X + width);
+                y += (ushort)(from.Y + height);
                 z += (ushort)from.Z;
                 break;
             case Direction.Down:
@@ -68,14 +68,14 @@ public static class BlockModelExtensions
                 z += (ushort)from.Z;
                 break;
             case Direction.North:
-                x += (ushort)(from.X + Width);
+                x += (ushort)(from.X + width);
                 y += (ushort)from.Y;
                 z += (ushort)from.Z;
                 break;
             case Direction.South:
                 x += (ushort)from.X;
                 y += (ushort)from.Y;
-                z += (ushort)(from.Z + Depth);
+                z += (ushort)(from.Z + depth);
                 break;
             case Direction.West:
                 x += (ushort)from.X;
@@ -83,9 +83,9 @@ public static class BlockModelExtensions
                 z += (ushort)from.Z;
                 break;
             case Direction.East:
-                x += (ushort)(from.X + Width);
+                x += (ushort)(from.X + width);
                 y += (ushort)from.Y;
-                z += (ushort)(from.Z + Depth);
+                z += (ushort)(from.Z + depth);
                 break;
         }
 

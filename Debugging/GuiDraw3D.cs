@@ -1,8 +1,6 @@
-using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
 using OpenTK.Graphics.OpenGL4;
-using Prowl.PaperUI;
 using WorldGen.Spatial;
 
 namespace WorldGen.Debugging;
@@ -12,12 +10,6 @@ readonly record struct LineSegment
     Vector3 Start,
     Vector3 End,
     Color Color
-);
-
-readonly record struct LineVertex
-(
-    Vector3 Position,
-    Vector3 Color
 );
 
 /// <summary>
@@ -36,54 +28,54 @@ readonly record struct LineVertex
 /// </summary>
 public static class Gizmo3D
 {
-    const float RAD_TO_DEG = 57.29577951308232f;
-    const float DEG_TO_RAD = 0.017453292519943295f;
-    static Paper gui = null!;
-    static Game game = null!;
+    private static Game _game = null!;
 
-    private static readonly Lock _lock = new();
-    private static readonly Stack<LineSegment> drawCalls = new();
+    private static readonly Lock Lock = new();
+    private static readonly Stack<LineSegment> DrawCalls = new();
 
     // OpenGL resources
     private static int _vao;
     private static int _vbo;
     private static int _shaderProgram;
-    private static bool _initialized = false;
+    private static bool _initialized;
 
     // Shader source code
-    private const string VertexShaderSource = @"
-#version 330 core
-layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec3 aColor;
+    private const string VertexShaderSource = """
 
-uniform mat4 uViewProjection;
+                                              #version 330 core
+                                              layout (location = 0) in vec3 aPosition;
+                                              layout (location = 1) in vec3 aColor;
 
-out vec3 vertexColor;
+                                              uniform mat4 uViewProjection;
 
-void main()
-{
-    gl_Position = uViewProjection * vec4(aPosition, 1.0);
-    vertexColor = aColor;
-}";
+                                              out vec3 vertexColor;
 
-    private const string FragmentShaderSource = @"
-#version 330 core
-in vec3 vertexColor;
-out vec4 FragColor;
+                                              void main()
+                                              {
+                                                  gl_Position = uViewProjection * vec4(aPosition, 1.0);
+                                                  vertexColor = aColor;
+                                              }
+                                              """;
 
-void main()
-{
-    FragColor = vec4(vertexColor, 1.0);
-}";
+    private const string FragmentShaderSource = """
 
-    public static void Initialize(Paper gui, Game game)
+                                                #version 330 core
+                                                in vec3 vertexColor;
+                                                out vec4 FragColor;
+
+                                                void main()
+                                                {
+                                                    FragColor = vec4(vertexColor, 1.0);
+                                                }
+                                                """;
+
+    public static void Initialize(Game game)
     {
-        Gizmo3D.gui = gui;
-        Gizmo3D.game = game;
-        InitializeOpenGL();
+        Gizmo3D._game = game;
+        InitializeOpenGl();
     }
 
-    private static void InitializeOpenGL()
+    private static void InitializeOpenGl()
     {
         if (_initialized) return;
 
@@ -161,8 +153,8 @@ void main()
 
     public static void DrawLine(Vector3 start, Vector3 end, Color color = default)
     {
-        using var scope = _lock.EnterScope();
-        drawCalls.Push(new LineSegment
+        using var scope = Lock.EnterScope();
+        DrawCalls.Push(new LineSegment
         {
             Start = start,
             End = end,
@@ -176,37 +168,37 @@ void main()
         var max = (Vector3)boundingBox.End;
         var finalColor = color == default ? Color.White : color;
 
-        using var scope = _lock.EnterScope();
+        using var scope = Lock.EnterScope();
 
         // Bottom face
-        drawCalls.Push(new(new Vector3(min.X, min.Y, min.Z), new Vector3(max.X, min.Y, min.Z), finalColor));
-        drawCalls.Push(new(new Vector3(max.X, min.Y, min.Z), new Vector3(max.X, min.Y, max.Z), finalColor));
-        drawCalls.Push(new(new Vector3(max.X, min.Y, max.Z), new Vector3(min.X, min.Y, max.Z), finalColor));
-        drawCalls.Push(new(new Vector3(min.X, min.Y, max.Z), new Vector3(min.X, min.Y, min.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(min.X, min.Y, min.Z), new Vector3(max.X, min.Y, min.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(max.X, min.Y, min.Z), new Vector3(max.X, min.Y, max.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(max.X, min.Y, max.Z), new Vector3(min.X, min.Y, max.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(min.X, min.Y, max.Z), new Vector3(min.X, min.Y, min.Z), finalColor));
 
         // Top face
-        drawCalls.Push(new(new Vector3(min.X, max.Y, min.Z), new Vector3(max.X, max.Y, min.Z), finalColor));
-        drawCalls.Push(new(new Vector3(max.X, max.Y, min.Z), new Vector3(max.X, max.Y, max.Z), finalColor));
-        drawCalls.Push(new(new Vector3(max.X, max.Y, max.Z), new Vector3(min.X, max.Y, max.Z), finalColor));
-        drawCalls.Push(new(new Vector3(min.X, max.Y, max.Z), new Vector3(min.X, max.Y, min.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(min.X, max.Y, min.Z), new Vector3(max.X, max.Y, min.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(max.X, max.Y, min.Z), new Vector3(max.X, max.Y, max.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(max.X, max.Y, max.Z), new Vector3(min.X, max.Y, max.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(min.X, max.Y, max.Z), new Vector3(min.X, max.Y, min.Z), finalColor));
 
         // Vertical edges
-        drawCalls.Push(new(new Vector3(min.X, min.Y, min.Z), new Vector3(min.X, max.Y, min.Z), finalColor));
-        drawCalls.Push(new(new Vector3(max.X, min.Y, min.Z), new Vector3(max.X, max.Y, min.Z), finalColor));
-        drawCalls.Push(new(new Vector3(max.X, min.Y, max.Z), new Vector3(max.X, max.Y, max.Z), finalColor));
-        drawCalls.Push(new(new Vector3(min.X, min.Y, max.Z), new Vector3(min.X, max.Y, max.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(min.X, min.Y, min.Z), new Vector3(min.X, max.Y, min.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(max.X, min.Y, min.Z), new Vector3(max.X, max.Y, min.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(max.X, min.Y, max.Z), new Vector3(max.X, max.Y, max.Z), finalColor));
+        DrawCalls.Push(new(new Vector3(min.X, min.Y, max.Z), new Vector3(min.X, max.Y, max.Z), finalColor));
     }
 
     public static void Render()
     {
-        if (!_initialized || drawCalls.Count == 0) return;
+        if (!_initialized || DrawCalls.Count == 0) return;
 
-        var camera = game.Camera;
-        using var scope = _lock.EnterScope();
+        var camera = _game.Camera;
+        using var scope = Lock.EnterScope();
 
         // Convert draw calls to vertex data
         var vertices = new List<float>();
-        while (drawCalls.TryPop(out var line))
+        while (DrawCalls.TryPop(out var line))
         {
             var color = line.Color;
             var colorVec = new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);

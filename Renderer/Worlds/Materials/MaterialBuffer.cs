@@ -5,10 +5,10 @@ public class MaterialBuffer
     public List<Material> Materials { get; } = [];
     private bool _isDirty = true;
     public bool IsDirty => _isDirty;
-    private int[] EncodedMaterials = [];
+    private int[] _encodedMaterials = [];
 
     public int Count => Materials.Count;
-    public int EncodedLength => EncodedMaterials.Length;
+    public int EncodedLength => _encodedMaterials.Length;
 
     public int Add(Material material)
     {
@@ -30,12 +30,12 @@ public class MaterialBuffer
     public int[] Encode()
     {
         if (!_isDirty)
-            return EncodedMaterials;
+            return _encodedMaterials;
 
-        EncodedMaterials = [.. Materials.SelectMany(m => m.Encode())];
+        _encodedMaterials = [.. Materials.SelectMany(m => m.Encode())];
 
         _isDirty = false;
-        return EncodedMaterials;
+        return _encodedMaterials;
     }
 
 

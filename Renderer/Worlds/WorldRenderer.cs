@@ -10,7 +10,6 @@ using WorldGen.Resources.Block;
 using WorldGen.Utils;
 
 using Vector4 = OpenTK.Mathematics.Vector4;
-using System.Collections.Concurrent;
 using WorldGen.Universe.PositionTypes;
 using WorldGen.Universe;
 
@@ -19,199 +18,193 @@ namespace WorldGen.Renderer.Worlds;
 
 public class WorldRenderer
 {
-    private readonly World World;
-    private readonly MaterialBuffer MaterialBuffer;
-    public readonly ChunkMesher ChunkMesher;
+	private readonly World _world;
+	private readonly MaterialBuffer _materialBuffer;
+	public readonly ChunkMesher ChunkMesher;
 
-    private readonly Atlas _blockTextureAtlas;
+	private readonly Atlas _blockTextureAtlas;
 
-    public readonly ShaderBuffer<int> _materialShaderBuffer;
-    public readonly ShaderBuffer<int> _faceShaderBuffer;
-    public readonly ShaderBuffer<Vector4> _chunkInfoShaderBuffer;
-    public readonly IndirectBuffer _indirectBuffer;
+	public readonly ShaderBuffer<int> MaterialShaderBuffer;
+	public readonly ShaderBuffer<int> FaceShaderBuffer;
+	public readonly ShaderBuffer<Vector4> ChunkInfoShaderBuffer;
+	public readonly IndirectBuffer IndirectBuffer;
 
-    private int _quadVertexArrayObject;
+	private int _quadVertexArrayObject;
 
-    private readonly Dictionary<ChunkPosition, ChunkMesh> _meshes = [];
-    public ConcurrentQueue<ChunkPosition> UnloadQueue = [];
+	private readonly Dictionary<ChunkPosition, ChunkMesh> _meshes = [];
 
     private readonly TrackedQueue<Vector4> _chunkPositions = new();
-    private readonly TrackedQueue<int> _faces = new();
+	private readonly TrackedQueue<int> _faces = new();
 
 
-    public WorldRenderer(
-        World world,
-        Atlas blockTextureAtlas,
-        ResourceTypeStorage<Block> blockStorage
-    )
-    {
-        World = world;
-        MaterialBuffer = new MaterialBuffer();
-        _blockTextureAtlas = blockTextureAtlas;
-        ChunkMesher = new ChunkMesher(blockStorage, blockTextureAtlas, MaterialBuffer);
+	public WorldRenderer(
+			World world,
+			Atlas blockTextureAtlas,
+			ResourceTypeStorage<Block> blockStorage
+	)
+	{
+		_world = world;
+		_materialBuffer = new MaterialBuffer();
+		_blockTextureAtlas = blockTextureAtlas;
+		ChunkMesher = new ChunkMesher(blockStorage, blockTextureAtlas, _materialBuffer);
 
-        _materialShaderBuffer = ShaderBuffer<int>.Create(
-            BufferTarget.ShaderStorageBuffer,
-            BufferUsageHint.DynamicDraw,
-            Math.Max(1, MaterialBuffer.EncodedLength)
-        );
-        _materialShaderBuffer.Name = "MaterialBuffer";
+		MaterialShaderBuffer = ShaderBuffer<int>.Create(
+				BufferTarget.ShaderStorageBuffer,
+				BufferUsageHint.DynamicDraw,
+				Math.Max(1, _materialBuffer.EncodedLength)
+		);
+		MaterialShaderBuffer.Name = "MaterialBuffer";
 
-        _chunkInfoShaderBuffer = ShaderBuffer<Vector4>.Create(
-            BufferTarget.ShaderStorageBuffer,
-            BufferUsageHint.DynamicDraw,
-            1
-        );
-        _chunkInfoShaderBuffer.Name = "ChunkInfoBuffer";
+		ChunkInfoShaderBuffer = ShaderBuffer<Vector4>.Create(
+				BufferTarget.ShaderStorageBuffer,
+				BufferUsageHint.DynamicDraw,
+				1
+		);
+		ChunkInfoShaderBuffer.Name = "ChunkInfoBuffer";
 
-        _faceShaderBuffer = ShaderBuffer<int>.Create(
-            BufferTarget.ShaderStorageBuffer,
-            BufferUsageHint.DynamicDraw,
-            100_000 // Initial size, will grow as needed
-        );
-        _faceShaderBuffer.Name = "blockFaceBuffer";
+		FaceShaderBuffer = ShaderBuffer<int>.Create(
+				BufferTarget.ShaderStorageBuffer,
+				BufferUsageHint.DynamicDraw,
+				100_000 // Initial size, will grow as needed
+		);
+		FaceShaderBuffer.Name = "blockFaceBuffer";
 
-        _indirectBuffer = new IndirectBuffer(100000);
+		IndirectBuffer = new IndirectBuffer(100000);
 
-        UpdateMaterialBuffer(true);
+		UpdateMaterialBuffer(true);
 
-        CreateQuadVertexArrayObject();
+		CreateQuadVertexArrayObject();
 
-        ChunkMesher.StartProcessing();
-    }
+		ChunkMesher.StartProcessing();
+	}
 
-    public void Clear()
-    {
-        _chunkInfoShaderBuffer.SetData([]);
-        _faceShaderBuffer.SetData([]);
-        _indirectBuffer.Clear();
-        MaterialBuffer.Clear();
-        _materialShaderBuffer.SetData([]);
-        _chunkPositions.Reset();
-        _faces.Reset();
-        _meshes.Clear();
-    }
+	public void Clear()
+	{
+		ChunkInfoShaderBuffer.SetData([]);
+		FaceShaderBuffer.SetData([]);
+		IndirectBuffer.Clear();
+		_materialBuffer.Clear();
+		MaterialShaderBuffer.SetData([]);
+		_chunkPositions.Reset();
+		_faces.Reset();
+		_meshes.Clear();
+	}
 
-    private void UpdateMaterialBuffer(bool force = false)
-    {
-        if (!force && !MaterialBuffer.IsDirty)
-            return;
+	private void UpdateMaterialBuffer(bool force = false)
+	{
+		if (!force && !_materialBuffer.IsDirty)
+			return;
 
-        _materialShaderBuffer.SetData(MaterialBuffer.Encode());
-        _materialShaderBuffer.Bind();
-    }
+		MaterialShaderBuffer.SetData(_materialBuffer.Encode());
+	}
 
-    private void UpdateFaceBuffer()
-    {
-        if (_meshes.Count == 0)
-            return;
+	private void UpdateFaceBuffer()
+	{
+		if (_meshes.Count == 0)
+			return;
 
-        _chunkPositions.Reset();
-        _indirectBuffer.Clear();
+		_chunkPositions.Reset();
+		IndirectBuffer.Clear();
 
-        var faceIndex = 0;
-        foreach (var loader in World.ChunkLoaders)
-        {
-            if (!_meshes.ContainsKey(loader.Position))
-                continue;
+		var faceIndex = 0;
+		foreach (var loader in _world.ChunkLoaders)
+		{
+			if (!_meshes.TryGetValue(loader.Position, out var mesh))
+				continue;
 
-            var mesh = _meshes[loader.Position];
+			var startingFaceIndex = faceIndex;
+			faceIndex += mesh.TotalFaceCount;
 
-            var startingFaceIndex = faceIndex;
-            foreach (var (direction, faces) in mesh.Faces)
-            {
-                faceIndex += faces.Count;
-                _faces.EnqueueRange(faces.SelectMany(f => f.Encode()));
-            }
+			_faces.EnqueueRange(mesh.GetEncodedFaces());
 
-            var (x, y, z) = mesh.Position.ToWorldPosition();
-            _chunkPositions.Enqueue(new Vector4(x, y, z, 0));
+			var (x, y, z) = mesh.Position.ToWorldPosition();
+			_chunkPositions.Enqueue(new Vector4(x, y, z, 0));
 
-            _indirectBuffer.Append(new()
-            {
-                Count = 4,
-                InstanceCount = (uint)(faceIndex - startingFaceIndex),
-                First = 0,
-                BaseInstance = (uint)startingFaceIndex
-            });
-        }
+			IndirectBuffer.Append(new IndirectDrawCommand
+			{
+				Count = 4,
+				InstanceCount = (uint)(faceIndex - startingFaceIndex),
+				First = 0,
+				BaseInstance = (uint)startingFaceIndex
+			});
+		}
 
-        if (_chunkPositions.TryUpdate(out var updatedChunkPositions))
-            _chunkInfoShaderBuffer.SetData([.. updatedChunkPositions]);
+		if (_chunkPositions.TryUpdate(out var updatedChunkPositions))
+			ChunkInfoShaderBuffer.SetData([.. updatedChunkPositions]);
 
-        if (_faces.TryUpdate(out var updatedFaces))
-        {
-            _faceShaderBuffer.SetData([.. updatedFaces]);
-            UpdateMaterialBuffer();
-        }
-    }
+		if (_faces.TryUpdate(out var updatedFaces))
+		{
+			FaceShaderBuffer.SetData([.. updatedFaces]);
+			UpdateMaterialBuffer();
+		}
+	}
 
-    public void Update()
-    {
-        var changed = false;
-        while (ChunkMesher.TryDequeue(out var mesh))
-        {
-            _meshes[mesh.Position] = mesh;
-            changed = true;
-        }
+	public void Update()
+	{
+		var changed = false;
+		while (ChunkMesher.TryDequeue(out var mesh))
+		{
+			_meshes[mesh.Position] = mesh;
+			changed = true;
+		}
 
-        if (changed)
-            UpdateFaceBuffer();
+		if (changed)
+			UpdateFaceBuffer();
 
-        foreach (var chunkLoader in World.ChunkLoaders)
-        {
-            if (_meshes.ContainsKey(chunkLoader.Position))
-                continue;
+		foreach (var chunkLoader in _world.ChunkLoaders)
+		{
+			if (_meshes.ContainsKey(chunkLoader.Position))
+				continue;
 
-            if (!World.TryGetChunk(chunkLoader.Position, out var chunk))
-                continue;
+			if (!_world.TryGetChunk(chunkLoader.Position, out var chunk))
+				continue;
 
-            if (chunk.State.HasFlag(ChunkState.Generated) && !chunk.State.HasFlag(ChunkState.Meshing) && !chunk.State.HasFlag(ChunkState.Meshed))
-            {
-                ChunkMesher.EnqueueChunk(chunk);
-            }
-        }
-    }
+			if (chunk.State.HasFlag(ChunkState.Generated) && !chunk.State.HasFlag(ChunkState.Meshing) && !chunk.State.HasFlag(ChunkState.Meshed))
+			{
+				ChunkMesher.EnqueueChunk(chunk);
+			}
+		}
+	}
 
-    void CreateQuadVertexArrayObject()
-    {
-        if (_quadVertexArrayObject != 0)
-            return;
+	private void CreateQuadVertexArrayObject()
+	{
+		if (_quadVertexArrayObject != 0)
+			return;
 
-        _quadVertexArrayObject = GL.GenVertexArray();
-        var label = "Quad VAO";
-        GL.BindVertexArray(_quadVertexArrayObject);
-        GL.ObjectLabel(ObjectLabelIdentifier.VertexArray, _quadVertexArrayObject, label.Length, label);
-        Span<int> quadVertices = [
-            0,  0,  0,
-            0,  0,  0,
-            0,  0,  0,
-            0,  0,  0,
-        ];
+		_quadVertexArrayObject = GL.GenVertexArray();
+		var label = "Quad VAO";
+		GL.BindVertexArray(_quadVertexArrayObject);
+		GL.ObjectLabel(ObjectLabelIdentifier.VertexArray, _quadVertexArrayObject, label.Length, label);
+		Span<int> quadVertices = [
+				0,  0,  0,
+				0,  0,  0,
+				0,  0,  0,
+				0,  0,  0
+				];
 
-        var buffer = ShaderBuffer<int>.Create(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw, quadVertices);
-        buffer.Name = "Quad VBO";
+		var buffer = ShaderBuffer<int>.Create(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw, quadVertices);
+		buffer.Name = "Quad VBO";
 
-        // quad that will be drawn using instanced triangle_strip rendering
-        GL.VertexAttribIPointer(0, 3, VertexAttribIntegerType.Int, 3 * sizeof(int), 0);
-        GL.EnableVertexAttribArray(0);
-    }
+		// quad that will be drawn using instanced triangle_strip rendering
+		GL.VertexAttribIPointer(0, 3, VertexAttribIntegerType.Int, 3 * sizeof(int), 0);
+		GL.EnableVertexAttribArray(0);
+	}
 
-    public void Draw(RenderShader shader)
-    {
-        shader.Use();
-        GL.BindVertexArray(_quadVertexArrayObject);
+	public void Draw(RenderShader shader)
+	{
+		shader.Use();
+		GL.BindVertexArray(_quadVertexArrayObject);
 
-        shader.SetTextureArray("atlas", _blockTextureAtlas.TextureArray);
-        shader.SetVector3("sun", Vector3.UnitY + Vector3.UnitZ);
-        shader.SetVector3("ambient", new Vector3(0.75f, 0.75f, 0.75f));
-        _faceShaderBuffer.BindToBase(0);
-        _materialShaderBuffer.BindToBase(1);
-        _chunkInfoShaderBuffer.BindToBase(2);
+		shader.SetTextureArray("atlas", _blockTextureAtlas.TextureArray);
+		shader.SetVector3("sun", Vector3.UnitY + Vector3.UnitZ);
+		shader.SetVector3("ambient", new Vector3(0.75f, 0.75f, 0.75f));
+		FaceShaderBuffer.BindToBase(0);
+		MaterialShaderBuffer.BindToBase(1);
+		ChunkInfoShaderBuffer.BindToBase(2);
 
-        if (_meshes.Count == 0)
-            return;
+		if (_meshes.Count == 0)
+			return;
 
-        _indirectBuffer.Draw(PrimitiveType.TriangleStrip);
-    }
+		IndirectBuffer.Draw(PrimitiveType.TriangleStrip);
+	}
 }

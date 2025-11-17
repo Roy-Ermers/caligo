@@ -11,6 +11,7 @@ public abstract class BaseResourceTypeStorage
 
     public BaseResourceTypeStorage()
     {
+        // ReSharper disable once VirtualMemberCallInConstructor
         Key = Type.Name;
     }
 
@@ -19,18 +20,14 @@ public abstract class BaseResourceTypeStorage
         Key = key;
     }
 
-    public abstract void Import(string Namespace, BaseResourceTypeStorage other);
+    public abstract void Import(string @namespace, BaseResourceTypeStorage other);
 }
 
-public class ResourceTypeStorage<T> : BaseResourceTypeStorage, IEnumerable<KeyValuePair<string, T>> where T : class
+public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), IEnumerable<KeyValuePair<string, T>> where T : class
 {
     public override Type Type => typeof(T);
-    private Dictionary<string, T> Storage = [];
-    public override int Count => Storage.Count;
-
-    public ResourceTypeStorage() : base() { }
-
-    public ResourceTypeStorage(string key) : base(key) { }
+    private Dictionary<string, T> _storage = [];
+    public override int Count => _storage.Count;
 
     public T this[string key]
     {
@@ -42,74 +39,86 @@ public class ResourceTypeStorage<T> : BaseResourceTypeStorage, IEnumerable<KeyVa
     {
         get
         {
-            if (index < 0 || index >= Storage.Count)
+            if (index < 0 || index >= _storage.Count)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
-            return Storage.ElementAt(index).Value;
+            return _storage.ElementAt(index).Value;
         }
         set
         {
-            if (index < 0 || index >= Storage.Count)
+            if (index < 0 || index >= _storage.Count)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
-            var key = Storage.ElementAt(index).Key;
-            Storage[key] = value;
+            var key = _storage.ElementAt(index).Key;
+            _storage[key] = value;
         }
     }
 
     public void Prepend(string key, T value)
     {
-        Storage = Storage.Prepend(new KeyValuePair<string, T>(key, value)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        _storage = _storage.Prepend(new KeyValuePair<string, T>(key, value)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public void Add(string key, T value)
     {
-        Storage.Add(key, value);
+        _storage.Add(key, value);
     }
 
     /// <summary>
     /// Imports the contents of another storage into this one, using the specified namespace as a prefix for the keys.
     /// If the other storage is of a different type, an InvalidOperationException will be thrown.
     /// </summary>
-    /// <param name="Namespace"></param>
+    /// <param name="namespace"></param>
     /// <param name="other"></param>
     /// <exception cref="InvalidOperationException"></exception>
-    public override void Import(string Namespace, BaseResourceTypeStorage other)
+    public override void Import(string @namespace, BaseResourceTypeStorage other)
     {
         ArgumentNullException.ThrowIfNull(other);
         if (other is not ResourceTypeStorage<T> otherStorage)
             throw new InvalidOperationException($"Cannot import {other.Type.Name} into {Type.Name}");
 
-        Import(Namespace, otherStorage);
+        Import(@namespace, otherStorage);
     }
 
     /// <summary>
     /// Imports the contents of another storage into this one, using the specified namespace as a prefix for the keys.
     /// </summary>
-    /// <param name="Namespace">The namespace to use as a prefix for the keys.</param>
+    /// <param name="namespace">The namespace to use as a prefix for the keys.</param>
     /// <param name="other">The other storage to import from.</param>
-    public void Import(string Namespace, ResourceTypeStorage<T> other)
+    public void Import(string @namespace, ResourceTypeStorage<T> other)
     {
         ArgumentNullException.ThrowIfNull(other);
 
-        foreach (var kvp in other.Storage)
+        foreach (var kvp in other._storage)
         {
-            var key = Identifier.Resolve(kvp.Key, Namespace);
-            Storage[key] = kvp.Value;
+            var key = Identifier.Resolve(kvp.Key, @namespace);
+            _storage[key] = kvp.Value;
         }
     }
 
     public T Get(string key)
     {
-        return Storage[key];
+        return _storage[key];
     }
 
     public bool TryGetValue(string key, [MaybeNullWhen(false)] out T value)
     {
-        return Storage.TryGetValue(key, out value);
+        return _storage.TryGetValue(key, out value);
+    }
+
+    public bool TryGetValue(int index, [MaybeNullWhen(false)] out T value)
+    {
+        if(index < 0 || index > _storage.Count)
+        {
+            value = null;
+            return false;
+        }
+
+        value = _storage.ElementAt(index).Value;
+        return true;
     }
 
     public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
     {
-        return Storage.GetEnumerator();
+        return _storage.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -122,10 +131,11 @@ public static class ModuleResourceStorageExtensions
 {
     public static IEnumerable<KeyValuePair<string, object>> CastToObjectEnumerable(this BaseResourceTypeStorage storage)
     {
+        // ReSharper disable once GenericEnumeratorNotDisposed
         var enumerator = ((IEnumerable)storage).GetEnumerator();
         while (enumerator.MoveNext())
         {
-            var kvp = enumerator.Current;
+            var kvp = enumerator.Current!;
             var keyProp = kvp.GetType().GetProperty("Key");
             var valueProp = kvp.GetType().GetProperty("Value");
             var key = (string?)keyProp?.GetValue(kvp);

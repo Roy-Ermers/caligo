@@ -15,10 +15,6 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 {
 	public const string AtlasIdentifier = $"{Identifier.MainModule}:block_atlas";
 
-	private readonly MaterialBuffer _materialBuffer = materialBuffer;
-	private readonly ResourceTypeStorage<Block> _blockStorage = blockStorage;
-	private readonly Atlas BlockTextureAtlas = blockTextureAtlas;
-
 	private readonly BlockingCollection<Chunk> _chunkQueue = [];
 	public readonly ConcurrentQueue<ChunkMesh> Meshes = [];
 
@@ -45,16 +41,20 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 
 	public void StartProcessing()
 	{
-		var thread = new Thread(Process);
-		thread.IsBackground = true;
-		thread.Name = "ChunkMesherThread";
-		thread.Start();
+		for(var processor = 0; processor < 4; processor++) {
+			var thread = new Thread(Process)
+			{
+				IsBackground = true,
+				Name = $"ChunkMesherThread {processor}"
+			};
+			thread.Start();
+		}
 	}
 
 	private void Process()
 	{
-		Parallel.ForEach(_chunkQueue.GetConsumingEnumerable(), new ParallelOptions() { MaxDegreeOfParallelism = 4 }, (chunk, cancellationToken) =>
-		{
+		while(!_chunkQueue.IsCompleted) {
+			var chunk = _chunkQueue.Take();
 			try
 			{
 				var mesh = GenerateMesh(chunk);
@@ -64,7 +64,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 			{
 				Console.WriteLine($"Failed to mesh chunk at {chunk.Position}, {error.Message}");
 			}
-		});
+		}
 	}
 
 	private ChunkMesh GenerateMesh(Chunk chunk)
@@ -90,8 +90,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 				continue;
 			}
 
-			var block = _blockStorage[blockId];
-			if (block is null)
+			if (!blockStorage.TryGetValue(blockId, out var block))
 			{
 				Console.WriteLine($"Block with ID {blockId} not found in storage.");
 				continue;
@@ -107,7 +106,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 			{
 				if (chunk.TryGet(position + direction.ToVector3(), out ushort neighborBlockId))
 				{
-					var neighborBlock = _blockStorage[neighborBlockId];
+					var neighborBlock = blockStorage[neighborBlockId];
 					var neighborModel = neighborBlock?.GetRandomVariant(random);
 
 					if (neighborModel is not null && (neighborModel.Value.Model!.Culling?.IsCullingEnabled(direction.Opposite()) ?? false))
@@ -119,7 +118,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 
 				foreach (var element in variant.Value.Model.Elements.Reverse())
 				{
-					var newFace = element.ToRenderData(direction, position, variant.Value.Textures ?? [], _materialBuffer, BlockTextureAtlas);
+					var newFace = element.ToRenderData(direction, position, variant.Value.Textures ?? [], materialBuffer, blockTextureAtlas);
 					if (newFace is null)
 						continue;
 
@@ -137,10 +136,9 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 		chunk.State |= ChunkState.Meshed;
 		chunk.State &= ~ChunkState.Meshing;
 
-		return new ChunkMesh
-		{
-			Faces = faces.ToFrozenDictionary(),
-			Position = chunk.Position
-		};
+		return new ChunkMesh(
+			faces.ToFrozenDictionary(),
+			chunk.Position
+		);
 	}
 }

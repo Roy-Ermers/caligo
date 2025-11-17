@@ -9,7 +9,7 @@ public class WorldBuilder
 	public World World { init; get; }
 	public IWorldGenerator Generator { init; get; }
 
-	private readonly BlockingCollection<ChunkPosition> GenerationQueue = [];
+	private readonly BlockingCollection<ChunkPosition> _generationQueue = [];
 
 	public WorldBuilder(World world, IWorldGenerator generator)
 	{
@@ -18,10 +18,21 @@ public class WorldBuilder
 
 		Generator.Initialize();
 
-		var thread = new Thread(WorkGenerationQueue);
-		thread.IsBackground = true;
-		thread.Name = "WorldGenerationThread";
-		thread.Start();
+
+
+		StartProcessing();
+	}
+
+	public void StartProcessing()
+	{
+		for(var processor = 0; processor < 4; processor++) {
+			var thread = new Thread(WorkGenerationQueue)
+			{
+				IsBackground = true,
+				Name = $"WorldGenerationThread {processor}"
+			};
+			thread.Start();
+		}
 	}
 
 	public void Update()
@@ -35,15 +46,16 @@ public class WorldBuilder
 			var chunk = new Chunk(loader.Position);
 			World.CreateChunk(chunk);
 
-			GenerationQueue.TryAdd(loader.Position);
+			_generationQueue.TryAdd(loader.Position);
 		}
 	}
 
 
 	public void WorkGenerationQueue()
 	{
-		Parallel.ForEach(GenerationQueue.GetConsumingEnumerable(), (position, cancellationToken) =>
+		while(!_generationQueue.IsCompleted)
 		{
+			var position = _generationQueue.Take();
 			if (!World.TryGetChunk(position, out var chunk))
 				return;
 
@@ -56,6 +68,6 @@ public class WorldBuilder
 
 			chunk.State &= ~ChunkState.Generating;
 			chunk.State |= ChunkState.Generated;
-		});
+		}
 	}
 }

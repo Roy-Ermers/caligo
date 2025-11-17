@@ -1,5 +1,8 @@
 using System.Drawing;
 using WorldGen.Debugging;
+using WorldGen.Generators.Transport;
+using WorldGen.Spatial;
+using WorldGen.Universe.PositionTypes;
 
 namespace WorldGen.Universe;
 

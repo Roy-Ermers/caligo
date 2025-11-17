@@ -8,30 +8,31 @@ public class ZOrderCurve
     /// <param name="x">ranges between 0-16</param>
     /// <param name="y">ranges between 0-16</param>
     /// <param name="z">ranges between 0-16</param>
+    /// <param name="size">The size to loop through</param>
     /// <returns></returns>
-    public static int GetIndex(int x, int y, int z, int Size = 16)
+    public static int GetIndex(int x, int y, int z, int size = 16)
     {
-        if (x < 0 || x > Size)
+        if (x < 0 || x > size)
             throw new ArgumentOutOfRangeException(nameof(x));
-        if (y < 0 || y > Size)
+        if (y < 0 || y > size)
             throw new ArgumentOutOfRangeException(nameof(y));
-        if (z < 0 || z > Size)
+        if (z < 0 || z > size)
             throw new ArgumentOutOfRangeException(nameof(z));
 
         // use morton order to interleave x,y and z components
-        int result = (int)Math.Pow(Size, 2) * z + Size * x + y;
+        var result = (int)Math.Pow(size, 2) * z + size * x + y;
         return result;
     }
 
-    public static (int x, int y, int z) GetPosition(int index, int Size = 16)
+    public static (int x, int y, int z) GetPosition(int index, int size = 16)
     {
-        if (index < 0 || index >= Math.Pow(Size, 3))
+        if (index < 0 || index >= Math.Pow(size, 3))
             throw new ArgumentOutOfRangeException(nameof(index));
 
         // use morton order to deinterleave x,y and z components
-        int z = index / (Size * Size);
-        int y = (index / Size) % Size;
-        int x = index % Size;
+        var z = index / (size * size);
+        var y = (index / size) % size;
+        var x = index % size;
 
         return (x, y, z);
     }

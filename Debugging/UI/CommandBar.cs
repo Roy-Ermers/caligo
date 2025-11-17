@@ -5,15 +5,15 @@ namespace WorldGen.Debugging.UI;
 
 public class CommandBar
 {
-    public bool Visible = false;
-    private string search = "";
+    private bool _visible;
+    private string _search = "";
 
     public void Toggle(bool? force = null)
     {
-        Visible = force ?? !Visible;
-        if (Visible)
+        _visible = force ?? !_visible;
+        if (_visible)
         {
-            search = "";
+            _search = "";
         }
     }
 
@@ -26,15 +26,15 @@ public class CommandBar
         .SetScroll(Prowl.PaperUI.Scroll.ScrollY)
         .BoxShadow(Prowl.PaperUI.BoxShadow.None)
         .Transition(Prowl.PaperUI.GuiProp.MaxHeight, 0.25)
-        .If(Visible)
+        .If(_visible)
         .MaxHeight(300)
         .End();
 
-        var textbox = Components.Textbox(ref search, FontFamily.Monospace, placeholder: "Search modules...");
+         Components.Textbox(ref _search, FontFamily.Monospace, placeholder: "Search modules...");
 
         foreach (var module in modules)
         {
-            if (!module.Name.Contains(search, StringComparison.CurrentCultureIgnoreCase) && !string.IsNullOrWhiteSpace(search))
+            if (!module.Name.Contains(_search, StringComparison.CurrentCultureIgnoreCase) && !string.IsNullOrWhiteSpace(_search))
                 continue;
 
             Components.ListItem(module.Name, module.Enabled, _ => module.Enabled = !module.Enabled, module.Icon);

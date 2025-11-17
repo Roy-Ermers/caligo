@@ -84,7 +84,7 @@ public class Game : GameWindow
 
         uiRenderer = new(this);
 
-        Gizmo3D.Initialize(uiRenderer.Paper, this);
+        Gizmo3D.Initialize(this);
 
         debugUiRenderer = [
             new CameraDebugModule(this),

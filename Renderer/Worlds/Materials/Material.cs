@@ -119,7 +119,7 @@ public record struct Material : IEquatable<Material>
         return [upper, lower];
     }
 
-    public override readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         var encoded = Encode();
         return HashCode.Combine(encoded[0], encoded[1]);

@@ -7,8 +7,8 @@ public class RingBuffer<T> : IEnumerable<T>
     public int Size { get; }
     private T?[] Buffer { get; }
 
-    private int _head = 0;
-    private int _tail = 0;
+    private int _head;
+    private int _tail;
 
     public event Action<T>? OnItemRemoved;
 
