@@ -12,11 +12,11 @@ public class FlatWorldGenerator : IWorldGenerator
     public Block SoilBlock { get; set; } = null!;
 
 
-    public Chunk GenerateChunk(ref Chunk chunk)
+    public void GenerateChunk(ref Chunk chunk)
     {
         if (chunk.Position.Y > GroundLevel)
         {
-            return chunk;
+            return;
         }
 
         foreach (WorldPosition position in new CubeIterator(chunk))
@@ -30,8 +30,6 @@ public class FlatWorldGenerator : IWorldGenerator
                 chunk.Set(position.ChunkLocalPosition, SoilBlock);
             }
         }
-
-        return chunk;
     }
 
     public void Initialize()

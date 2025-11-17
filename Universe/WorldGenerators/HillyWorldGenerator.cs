@@ -32,8 +32,8 @@ public class HillyWorldGenerator : IWorldGenerator
     // Terrain parameters
     public float MinGroundLevel = 0;
     public float MaxGroundLevel = 96;
-    public float Frequency = 0.005f;
-    public int Octaves = 6;
+    public float Frequency = 0.01f;
+    public int Octaves = 2;
 
     public HillyWorldGenerator(int seed)
     {
@@ -45,7 +45,7 @@ public class HillyWorldGenerator : IWorldGenerator
         detailNoise = new GradientNoise(seed + 2);
     }
 
-    public Chunk GenerateChunk(ref Chunk chunk)
+    public void GenerateChunk(ref Chunk chunk)
     {
         Dictionary<Vector2i, float> heightCache = [];
 
@@ -63,12 +63,7 @@ public class HillyWorldGenerator : IWorldGenerator
             // Determine block type at this position
             Block? blockToPlace = null;
 
-            if (position.Y < height - 3)
-            {
-                blockToPlace = DirtBlock;
-            }
-            // Dirt layer
-            else if (position.Y < height)
+            if (position.Y < height)
             {
                 blockToPlace = DirtBlock;
             }
@@ -84,32 +79,22 @@ public class HillyWorldGenerator : IWorldGenerator
                 chunk.Set(position.ChunkLocalPosition, blockToPlace);
             }
         }
-
-        return chunk;
     }
 
     public int GetTerrainHeight(int x, int z)
     {
-        float height = 0f;
-        float amplitude = 1f;
-        float frequency = Frequency;
+        var _x = x / 10f;
+        var _z = z / 10f;
 
-        for (int i = 0; i < Octaves; i++)
-        {
-            height += terrainNoise.Get2D(x * frequency, z * frequency) * amplitude;
-            amplitude *= 0.5f;
-            frequency *= 2f;
-        }
-
-        // Add detail noise
-        height += detailNoise.Get2D(x * Frequency * 2, z * Frequency * 2) * 2f;
-
-        // Normalize height to [MinGroundLevel, MaxGroundLevel]
-        height = (height + 1) / 2; // Normalize to [0,1]
-        height = MinGroundLevel + height * (MaxGroundLevel - MinGroundLevel);
+        var height = (8f * terrainNoise.Get2D(1 / 8f * _x, 1 / 8f * _z)
+                        + 4f * terrainNoise.Get2D(1 / 4f * _x, 1 / 4f * _z)
+                        + 2f * terrainNoise.Get2D(1 / 2f * _x, 1 / 2f * _z)
+                        + 1f * terrainNoise.Get2D(1 * _x, 1 * _z)
+                        + 0.5f * terrainNoise.Get2D(2 * _x, 2 * _z)
+                        + 1 / 4f * terrainNoise.Get2D(4 * _x, 4 * _z)) / (8f + 4f + 2f + 1f + 0.5f + 1 / 4f);
 
 
-
+        height = height * (MaxGroundLevel - MinGroundLevel) + MinGroundLevel;
         return (int)Math.Clamp(height, MinGroundLevel, MaxGroundLevel);
     }
 

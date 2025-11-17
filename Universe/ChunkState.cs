@@ -3,7 +3,10 @@ namespace WorldGen.Universe;
 [Flags]
 public enum ChunkState
 {
-    Created,
-    Generated,
-    Meshed
+    None = 1,
+    Created = 2,
+    Generating = 4,
+    Generated = 8,
+    Meshing = 16,
+    Meshed = 32
 }

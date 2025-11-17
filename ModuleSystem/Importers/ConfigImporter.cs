@@ -13,7 +13,7 @@ public class ConfigImporter : IImporter
         if (!File.Exists(configFile))
             return;
 
-        var configStorage = module.GetStorage<string>("config");
+        var configStorage = module.GetStorage<string>("Config");
 
         var node = JsonNode.Parse(File.ReadAllText(configFile), null, new()
         {

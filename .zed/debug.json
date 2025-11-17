@@ -9,7 +9,12 @@
 		"justMyCode": true,
 		"build": {
 			"command": "dotnet",
-			"args": ["watch", "$ZED_WORKTREE_ROOT/worldGen.csproj"]
+			"args": [
+				"build",
+				"$ZED_WORKTREE_ROOT/worldGen.csproj",
+				"-p:Configuration=Debug",
+				"-p:TargetFramework=net8.0"
+			]
 		}
 	}
 ]

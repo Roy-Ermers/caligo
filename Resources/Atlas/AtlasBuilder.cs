@@ -1,5 +1,5 @@
 using WorldGen.FileSystem.Images;
-using WorldGen.Renderer;
+using WorldGen.Graphics;
 
 namespace WorldGen.Resources.Atlas;
 
@@ -42,9 +42,9 @@ public class AtlasBuilder()
         var index = 0;
         foreach (var name in _sprites.Select(sprite => GetTextureName(sprite.Key)))
         {
-          entries[index] = name;
+            entries[index] = name;
 
-          index++;
+            index++;
         }
 
         var textureArray = new Texture2DArray([.. _sprites.Values]);

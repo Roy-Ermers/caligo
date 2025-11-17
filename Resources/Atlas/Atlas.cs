@@ -1,5 +1,5 @@
 using WorldGen.ModuleSystem;
-using WorldGen.Renderer;
+using WorldGen.Graphics;
 
 namespace WorldGen.Resources.Atlas;
 

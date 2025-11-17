@@ -23,14 +23,14 @@ public unsafe class RenderDoc
     public static RenderDoc? Load()
     {
 #if !DEBUG
-    	return;
+    	return null;
 #endif
         var libName = GetRenderDocLibName();
         if (NativeLibrary.TryLoad(libName, out var lib) ||
             NativeLibrary.TryLoad(libName, typeof(RenderDoc).Assembly, null, out lib))
         {
             var renderDoc = new RenderDoc(lib);
-            Console.WriteLine($"RenderDoc loaded: {renderDoc.API.GetAPIVersion}");
+            Console.WriteLine("RenderDoc loaded");
             renderDoc.API.SetCaptureFilePathTemplate("captures/WorldGenCapture");
             return renderDoc;
         }

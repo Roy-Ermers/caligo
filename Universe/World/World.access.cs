@@ -7,8 +7,6 @@ namespace WorldGen.Universe;
 
 public partial class World : IEnumerable<Chunk>
 {
-    private readonly Dictionary<int, Chunk> _chunks = new(64);
-
     public Chunk? GetChunk(ChunkPosition position)
     {
         if (_chunks.TryGetValue(position.Id, out var chunk))
@@ -24,24 +22,14 @@ public partial class World : IEnumerable<Chunk>
         return _chunks.TryGetValue(position.Id, out chunk);
     }
 
-    public Chunk TryGetOrCreateChunk(ChunkPosition position)
+    public Chunk CreateChunk(Chunk chunk) => CreateChunk(chunk, false);
+
+    public Chunk CreateChunk(Chunk chunk, bool overwrite)
     {
-        if (_chunks.TryGetValue(position.Id, out var chunk))
-            return chunk;
+        if (!overwrite && _chunks.ContainsKey(chunk.Id))
+            throw new InvalidOperationException($"Chunk at {chunk.Position} already exists.");
 
-        return CreateChunk(position);
-    }
-
-    public Chunk CreateChunk(ChunkPosition chunkPosition) => CreateChunk(chunkPosition, false);
-
-    public Chunk CreateChunk(ChunkPosition chunkPosition, bool overwrite)
-    {
-        if (!overwrite && _chunks.ContainsKey(chunkPosition.Id))
-            throw new InvalidOperationException($"Chunk at {chunkPosition} already exists.");
-
-        var chunk = new Chunk(chunkPosition);
         _chunks[chunk.Id] = chunk;
-        _chunkGenerationQueue.Add(chunk);
 
         return chunk;
     }
@@ -51,7 +39,10 @@ public partial class World : IEnumerable<Chunk>
     public void SetBlock(WorldPosition position, ushort blockId)
     {
         var chunkPosition = position.ChunkPosition;
-        var chunk = TryGetOrCreateChunk(chunkPosition);
+        if (!TryGetChunk(position.ChunkPosition, out var chunk))
+        {
+            throw new KeyNotFoundException($"Chunk at {chunkPosition} not found.");
+        }
 
         chunk.Set(position.ChunkLocalPosition, blockId);
     }

@@ -1,0 +1,10 @@
+{
+	"model": {
+		"name": "grass_block",
+		"textures": {
+			"grass": "grass_block_top",
+			"side_overlay": "grass_block_side_overlay",
+			"underground": "dirt"
+		}
+	}
+}

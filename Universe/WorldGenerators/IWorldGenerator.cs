@@ -9,7 +9,7 @@ public interface IWorldGenerator
     /// </summary>
     /// <param name="chunk">The chunk to generate in.</param>
     /// <returns>The generated chunk.</returns>
-    Chunk GenerateChunk(ref Chunk chunk);
+    void GenerateChunk(ref Chunk chunk);
 
     /// <summary>
     /// Initializes the world generator.

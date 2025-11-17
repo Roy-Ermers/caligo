@@ -1,24 +1,24 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
-using WorldGen.Renderer;
+using WorldGen.Graphics;
 using WorldGen.ModuleSystem;
 using WorldGen.ModuleSystem.Importers;
 using WorldGen.Resources.Atlas;
-using WorldGen.Renderer.UI;
-using WorldGen.Renderer.Shaders;
+using WorldGen.Graphics.UI;
+using WorldGen.Graphics.Shaders;
 using WorldGen.Debugging.RenderDoc;
 using WorldGen.ModuleSystem.Importers.Blocks;
 using ImGuiNET;
 using OpenTK.Mathematics;
 using WorldGen.Resources.Block;
-using WorldGen.WorldRenderer.Materials;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using WorldGen.Threading;
 using WorldGen.Universe;
 using WorldGen.Universe.WorldGenerators;
 using WorldGen.Universe.PositionTypes;
 using System.Text;
+using WorldGen.Renderer.Worlds;
 
 namespace WorldGen;
 
@@ -34,6 +34,8 @@ public class Game : GameWindow
 
     public MainThread? MainThread { get; } = new();
     public World world = null!;
+    public WorldBuilder builder = null!;
+    public WorldRenderer renderer = null!;
 
     public double Time = 0;
 
@@ -97,26 +99,28 @@ public class Game : GameWindow
         GL.PolygonMode(TriangleFace.Front, PolygonMode.Fill);
 
 
-        var materialBuffer = new MaterialBuffer();
         var atlas = ModuleRepository.Get<Atlas>("block_atlas");
         var blockStorage = ModuleRepository.GetAll<Block>();
-        var _chunkRenderer = new WorldRenderer.ChunkRenderer(materialBuffer, atlas, blockStorage);
-        world = new World(new HillyWorldGenerator(0), _chunkRenderer);
+
+        world = new World();
+        builder = new(world, new HillyWorldGenerator(1));
+        renderer = new WorldRenderer(world, atlas, blockStorage);
 
         _uiRenderer = new UiRenderer(this);
     }
 
     private void LoadChunksAroundPlayer()
     {
+        const int RenderDistance = 10;
         var playerPosition = Camera.Position;
-        for (int x = -5; x < 5; x++)
-            for (int y = -1; y < 5; y++)
-                for (int z = -5; z < 5; z++)
+        for (int x = -RenderDistance; x < RenderDistance; x++)
+            for (int y = -1; y < RenderDistance; y++)
+                for (int z = -RenderDistance; z < RenderDistance; z++)
                 {
                     var chunkPosition = ChunkPosition.FromWorldPosition(
-                        x * Chunk.Size + (int)playerPosition.X,
-                        y * Chunk.Size + (int)playerPosition.Y,
-                        z * Chunk.Size + (int)playerPosition.Z
+                        (x * Chunk.Size) + (int)playerPosition.X,
+                        (y * Chunk.Size) + (int)playerPosition.Y,
+                        (z * Chunk.Size) + (int)playerPosition.Z
                     );
 
                     var chunkLoader = new ChunkLoader(chunkPosition, 1);
@@ -128,6 +132,9 @@ public class Game : GameWindow
     {
         base.OnUpdateFrame(args);
         LoadChunksAroundPlayer();
+
+        builder.Update();
+        renderer.Update();
         world.Update();
 
         // Update the main thread actions
@@ -145,7 +152,8 @@ public class Game : GameWindow
         _shader.SetMatrix4("view", Camera.ViewMatrix);
         _shader.SetVector3("uCameraPosition", Camera.Position);
         _shader.SetFloat("uTime", (float)Time);
-        world.Render(_shader);
+
+        renderer.Draw(_shader);
 
         Camera.Update(args.Time);
 
@@ -223,9 +231,9 @@ public class Game : GameWindow
 
     protected override void OnResize(ResizeEventArgs e)
     {
+        GL.Viewport(0, 0, FramebufferSize.X, FramebufferSize.Y);
+        _uiRenderer.WindowResized(Size.X, Size.Y);
         base.OnResize(e);
-        GL.Viewport(0, 0, Size.X, Size.Y);
-        _uiRenderer?.WindowResized(Size.X, Size.Y);
     }
 
 

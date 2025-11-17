@@ -1,4 +1,4 @@
-using WorldGen.WorldRenderer;
+using WorldGen.Renderer.Worlds;
 using WorldGen.FileSystem.Images;
 using WorldGen.ModuleSystem.Storage;
 using WorldGen.Resources.Atlas;
