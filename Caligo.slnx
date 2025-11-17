@@ -1,0 +1,7 @@
+﻿<Solution>
+  <Project Path="Caligo.Client\Caligo.Client.csproj">
+    <Configuration Solution="Release|Any CPU" Project="Release|Any CPU|Deploy" />
+  </Project>
+  <Project Path="Caligo.Core\Caligo.Core.csproj" Type="C#" />
+  <Project Path="Caligo.ModuleSystem\Caligo.ModuleSystem.csproj" Type="C#" />
+</Solution>
