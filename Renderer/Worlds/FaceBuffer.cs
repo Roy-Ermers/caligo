@@ -1,3 +1,4 @@
+using System.Globalization;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using WorldGen.Graphics;
@@ -8,6 +9,7 @@ using WorldGen.Utils;
 
 namespace WorldGen.Renderer.Worlds;
 
+
 public class FaceBuffer: IDisposable
 {
 	private bool isDirty = false;
@@ -15,13 +17,17 @@ public class FaceBuffer: IDisposable
 	private readonly MaterialBuffer _materialBuffer;
 	
 	public readonly ShaderBuffer<int> FaceShaderBuffer;
-	public readonly IndirectBuffer IndirectBuffer;
+	public IndirectBuffer IndirectBuffer;
 	public readonly ShaderBuffer<int> MaterialShaderBuffer;
 	public readonly ShaderBuffer<Vector4> ChunkInfoShaderBuffer;
 
 	public RingBuffer<ChunkMesh> Meshes;
+
+	public Dictionary<ChunkMesh, float> MeshStartTimes = [];
+
+	private int maxChunks => (int)Math.Pow(renderDistance, 3);
 	
-	private int renderDistance = 10 * 10 * 10;
+	private int renderDistance = 10;
 	public int RenderDistance
 	{
 		get => renderDistance;
@@ -41,21 +47,21 @@ public class FaceBuffer: IDisposable
 		FaceShaderBuffer = ShaderBuffer<int>.Create(
 			BufferTarget.ShaderStorageBuffer,
 			BufferUsageHint.DynamicDraw,
-			(int)(RenderDistance * Math.Pow(Chunk.Size + 2, 6))
+			(int)(maxChunks * Math.Pow(Chunk.Size + 2, 6))
 		);
 		FaceShaderBuffer.Name = "blockFaceBuffer";
 		
 		ChunkInfoShaderBuffer = ShaderBuffer<Vector4>.Create(
 			BufferTarget.ShaderStorageBuffer,
 			BufferUsageHint.DynamicDraw,
-			RenderDistance
+			maxChunks
 		);
 		ChunkInfoShaderBuffer.Name = "ChunkInfoBuffer";
 		
-		IndirectBuffer = new IndirectBuffer(100000);
+		IndirectBuffer = new IndirectBuffer(maxChunks);
 		
 
-		Meshes = new RingBuffer<ChunkMesh>(RenderDistance);
+		Meshes = new RingBuffer<ChunkMesh>(maxChunks);
 	}
 
 	private void UpdateRenderDistance(int newDistance)
@@ -64,14 +70,11 @@ public class FaceBuffer: IDisposable
 		renderDistance = newDistance;
 		isDirty = true;
 
-		Meshes = new RingBuffer<ChunkMesh>(newDistance);
+		Meshes = new RingBuffer<ChunkMesh>(maxChunks);
 	}
 	
 	public void AddMesh(ChunkMesh mesh)
 	{
-		if (Meshes.Contains(mesh))
-			return;
-
 		Meshes.PushBack(mesh);
 		isDirty = true;
 	}
@@ -92,14 +95,20 @@ public class FaceBuffer: IDisposable
 			var index = allFaces.Count;
 			allFaces.AddRange(mesh.RenderData);
 			var position = mesh.Position.ToWorldPosition();
+
+			if (!MeshStartTimes.TryGetValue(mesh, out var startTime))
+			{
+				startTime = (float)Game.Instance.Time;
+				MeshStartTimes[mesh] = startTime;
+			}
 			
-			chunkInfo.Add(new Vector4(position.X, position.Y, position.Z, 0));
+			chunkInfo.Add(new Vector4(position.X, position.Y, position.Z, startTime));
 			IndirectBuffer.Append(new IndirectDrawCommand
 			{
 				Count = 4,
-				InstanceCount = (uint)mesh.RenderData.Count / 2,
+				InstanceCount = (uint)mesh.RenderData.Count / BlockFaceRenderData.Size,
 				First = 0,
-				BaseInstance = (uint)index / 2
+				BaseInstance = (uint)index / BlockFaceRenderData.Size
 			});
 		}
 		FaceShaderBuffer.SetData([..allFaces], true);

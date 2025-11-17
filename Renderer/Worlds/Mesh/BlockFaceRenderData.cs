@@ -6,6 +6,7 @@ namespace WorldGen.Renderer.Worlds.Mesh;
 
 public record struct BlockFaceRenderData
 {
+    public const int Size = 2;
     /// <summary>
     /// The normal direction of the face.
     /// </summary>

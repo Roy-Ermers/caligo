@@ -99,6 +99,7 @@ public class IndirectBuffer
 
     public void Clear()
     {
+        Console.WriteLine($"Clearing IndirectBuffer with {_drawCount} commands");
         _drawCount = 0;
         if (_mappedPtr == IntPtr.Zero) return;
         GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);

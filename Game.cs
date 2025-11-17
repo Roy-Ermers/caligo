@@ -131,7 +131,7 @@ public class Game : GameWindow
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
-        builder = new(world, new LayeredWorldGenerator(0));
+        builder = new(world, new HillyWorldGenerator(0));
         renderer = new WorldRenderer(world, atlas, blockStorage);
 
         // _uiRenderer = new UiRenderer(this);
@@ -139,7 +139,7 @@ public class Game : GameWindow
 
     private void LoadChunksAroundPlayer()
     {
-        const int RenderDistance = 5;
+        var RenderDistance = renderer.RenderDistance / 2;
         
         var playerPosition = Camera.Position;
         for (var x = -RenderDistance; x < RenderDistance; x++)

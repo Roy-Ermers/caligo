@@ -52,6 +52,16 @@ public class RingBuffer<T> : IEnumerable<T> {
             return ref buf[WrapIndex(head + idx)];
         }
     }
+    
+    public bool Contains(T item) {
+        var comparer = EqualityComparer<T>.Default;
+        for (var i = 0; i < Count; i++) {
+            if (comparer.Equals(this[i], item)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Add to back (newest). Overwrites oldest if full.

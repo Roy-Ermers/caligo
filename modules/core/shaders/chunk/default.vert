@@ -11,7 +11,7 @@ layout(binding = 1) buffer Materials {
     int materials[];
 };
 layout(binding = 2) buffer ChunkModelMatrices {
-    vec4 chunkPositions[];
+    vec4 chunkInfo[];
 };
 
 struct BlockFace {
@@ -31,6 +31,7 @@ struct Material {
 };
 
 flat out float time;
+flat out float interpolation;
 out vec3 texCoords;
 out vec3 fragPos;
 flat out Material material;
@@ -157,7 +158,10 @@ void main()
     vec3 vertexOffset = tangent * local.x * material.width +
             bitangent * local.y * material.height;
 
-    vec3 chunkOffset = chunkPositions[gl_DrawID].xyz;
+    vec3 chunkOffset = chunkInfo[gl_DrawID].xyz;
+    float chunkStart = chunkInfo[gl_DrawID].w;
+    interpolation = 1 - pow(1 - min(1, (uTime - chunkStart)), 3);
+    chunkOffset.y += interpolation * 4.0;
 
     vec3 vertexPosition = face.position + vertexOffset + chunkOffset;
 

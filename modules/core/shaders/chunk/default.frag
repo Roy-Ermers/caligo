@@ -18,6 +18,7 @@ struct Material {
 out vec4 FragColor;
 
 flat in float time;
+flat in float interpolation;
 in vec3 texCoords;
 in vec3 fragPos;
 flat in Material material;
@@ -35,7 +36,7 @@ struct Camera
 };
 
 uniform Camera camera;
-const float fogDistance = 2000.0;
+const float fogDistance = 10*16.0;
 const float fogDensity = 0.005;
 
 void main()
@@ -61,7 +62,7 @@ void main()
     float distance = length(fragPos - camera.position);
     float fogFactor = 1.0 - clamp(exp(-fogDensity * distance), 0.0, 1.0);
     vec3 fogColor = vec3(0.9, 0.9, 1);
-    result = mix(result, fogColor, fogFactor);
+    result = mix(result, fogColor, min(1, fogFactor + (1 - interpolation)));
 
     FragColor = vec4(result, 1.0);
 }

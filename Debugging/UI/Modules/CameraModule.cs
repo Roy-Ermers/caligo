@@ -15,6 +15,8 @@ public class CameraDebugModule : IDebugModule
 
     private readonly Camera Camera;
 
+    private float renderDistance = 5;
+
     public CameraDebugModule(Game game)
     {
         Camera = game.Camera;
@@ -38,5 +40,9 @@ public class CameraDebugModule : IDebugModule
         Components.Text("Sector: " + sector);
 
         Components.Text("Chunk: " + blockPosition.ChunkPosition);
+        
+        Components.NumberInput(ref renderDistance);
+
+        Game.Instance.renderer.RenderDistance = (int)renderDistance;
     }
 }

@@ -5,9 +5,10 @@ using WorldGen.Utils;
 
 namespace WorldGen.Renderer.Worlds.Mesh;
 
-public readonly record struct ChunkMesh
+public record struct ChunkMesh
 {
 	public static readonly ChunkMesh Empty = new ChunkMesh();
+
 	
 	private readonly int[] _renderData = [];
 	private readonly SortedList<Direction, int> _directionOffsets = [];
