@@ -58,7 +58,7 @@ public class ShaderBuffer<T> where T : struct
         if (Size > oldSize)
         {
             // Resize and upload new data
-            Console.WriteLine($"Resizing {Name} buffer to " + FileSystemUtils.FormatByteSize(data.Length));
+            Console.WriteLine($"Resizing {Name} buffer to " + ByteSizeFormatter.FormatByteSize(data.Length));
             GL.NamedBufferData(Handle, Size, [.. data], _usageHint);
         }
         else
@@ -87,7 +87,7 @@ public class ShaderBuffer<T> where T : struct
             return;
 
         Size = newSize * Stride;
-        Console.WriteLine($"Resizing {Name} buffer to " + FileSystemUtils.FormatByteSize(newSize));
+        Console.WriteLine($"Resizing {Name} buffer to " + ByteSizeFormatter.FormatByteSize(newSize));
         Bind();
         GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint);
     }

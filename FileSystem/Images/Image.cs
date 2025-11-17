@@ -4,6 +4,7 @@ public class Image
 {
     public readonly string Path;
     private ImageData? _data;
+
     public Image(string path)
     {
         Path = path;

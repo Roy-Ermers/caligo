@@ -2,6 +2,7 @@
 struct ChunkInfo {
     vec3 position;
 };
+
 layout(binding = 0) buffer FaceData {
     int faceData[];
 };
@@ -37,18 +38,25 @@ flat out BlockFace face;
 
 uniform float uTime;
 uniform int faceIndex;
-uniform mat4 view;
-uniform mat4 projection;
 uniform sampler2DArray atlas;
 
+struct Camera
+{
+    mat4 view;
+    mat4 projection;
+    vec3 position;
+};
+
+uniform Camera camera;
+
 const vec3[] Normals = vec3[6](
-    vec3(0.0, -1.0, 0.0), // DOWN
-    vec3(0.0, 1.0, 0.0),  // UP
-    vec3(0.0, 0.0, -1.0), // NORTH
-    vec3(0.0, 0.0, 1.0),  // SOUTH
-    vec3(-1.0, 0.0, 0.0), // WEST
-    vec3(1.0, 0.0, 0.0)   // EAST
-);
+        vec3(0.0, -1.0, 0.0), // DOWN
+        vec3(0.0, 1.0, 0.0), // UP
+        vec3(0.0, 0.0, -1.0), // NORTH
+        vec3(0.0, 0.0, 1.0), // SOUTH
+        vec3(-1.0, 0.0, 0.0), // WEST
+        vec3(1.0, 0.0, 0.0) // EAST
+    );
 
 BlockFace Decode() {
     BlockFace face;
@@ -64,11 +72,11 @@ BlockFace Decode() {
 
     int visual = faceData[index + 1];
     face.light = vec4(
-        ((visual >> 0) & 0x0F) / 15.0,
-        ((visual >> 4) & 0x0F) / 15.0,
-        ((visual >> 8) & 0x0F) / 15.0,
-        ((visual >> 12) & 0x0F) / 15.0
-    );
+            ((visual >> 0) & 0x0F) / 15.0,
+            ((visual >> 4) & 0x0F) / 15.0,
+            ((visual >> 8) & 0x0F) / 15.0,
+            ((visual >> 12) & 0x0F) / 15.0
+        );
     face.materialId = visual >> 16;
     return face;
 }
@@ -81,21 +89,21 @@ Material DecodeMaterial(BlockFace face) {
     material.width = (((upperMaterial >> 0) & 0x0F) + 1.0) / 16.0;
     material.height = (((upperMaterial >> 4) & 0x0F) + 1.0) / 16.0;
     material.uv0 = vec2(
-        ((upperMaterial >> 8) & 0x1F) / 16.0,
-        ((upperMaterial >> 13) & 0x1F) / 16.0
-    );
+            ((upperMaterial >> 8) & 0x1F) / 16.0,
+            ((upperMaterial >> 13) & 0x1F) / 16.0
+        );
     material.uv1 = vec2(
-        ((upperMaterial >> 18) & 0x1F) / 16.0,
-        ((upperMaterial >> 23) & 0x1F) / 16.0
-    );
+            ((upperMaterial >> 18) & 0x1F) / 16.0,
+            ((upperMaterial >> 23) & 0x1F) / 16.0
+        );
 
     int lowerMaterial = materials[materialId + 1];
     material.textureId = lowerMaterial & 0xFFFF;
     material.tint = vec3(
-        ((lowerMaterial >> 16) & 0x0F) / 15.0,
-        ((lowerMaterial >> 20) & 0x0F) / 15.0,
-        ((lowerMaterial >> 24) & 0x0F) / 15.0
-    );
+            ((lowerMaterial >> 16) & 0x0F) / 15.0,
+            ((lowerMaterial >> 20) & 0x0F) / 15.0,
+            ((lowerMaterial >> 24) & 0x0F) / 15.0
+        );
 
     return material;
 }
@@ -136,28 +144,28 @@ void main()
     material = DecodeMaterial(face);
 
     const vec2 quadCorners[4] = vec2[4](
-        vec2(0.0, 0.0), // bottom-left
-        vec2(1.0, 0.0), // bottom-right
-        vec2(0.0, 1.0), // top-left
-        vec2(1.0, 1.0)  // top-right
-    );
+            vec2(0.0, 0.0), // bottom-left
+            vec2(1.0, 0.0), // bottom-right
+            vec2(0.0, 1.0), // top-left
+            vec2(1.0, 1.0) // top-right
+        );
     vec2 local = quadCorners[gl_VertexID];
 
     vec3 tangent, bitangent;
     getFaceBasis(face.normal, tangent, bitangent);
 
     vec3 vertexOffset = tangent * local.x * material.width +
-                  bitangent * local.y * material.height;
+            bitangent * local.y * material.height;
 
     vec3 chunkOffset = chunkPositions[gl_DrawID].xyz;
 
     vec3 vertexPosition = face.position + vertexOffset + chunkOffset;
 
     texCoords = vec3(
-        mix(material.uv0, material.uv1, local * vec2(material.width, material.height)),
-        material.textureId
-    );
+            mix(material.uv0, material.uv1, local * vec2(material.width, material.height)),
+            material.textureId
+        );
 
     fragPos = vertexPosition.xyz;
-    gl_Position = projection * view * vec4(vertexPosition, 1.0);
+    gl_Position = camera.projection * camera.view * vec4(vertexPosition, 1.0);
 }

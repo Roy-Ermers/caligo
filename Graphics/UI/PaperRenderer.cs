@@ -430,6 +430,15 @@ public ref struct PaperUiFrame : IDisposable
 
     public readonly void Dispose()
     {
+
+        var focusedId = Paper.FocusedElementId;
+        if (Paper.IsKeyPressed(PaperKey.Space) && Paper.IsElementFocused(focusedId))
+        {
+            var element = Paper.FindElementByID(focusedId);
+
+            if (element.IsValid)
+                element.Data.OnPress?.Invoke(new(element, element.Data.LayoutRect, Paper.PointerPos, PaperMouseBtn.Left));
+        }
         PaperRenderer.Current.OnFrameEnd();
         Paper.EndFrame();
     }

@@ -6,21 +6,17 @@ namespace WorldGen.Graphics.UI.PaperComponents;
 
 public static partial class Components
 {
-    public static ElementBuilder Frame(string name, bool renderHeader = true)
+    public static ElementBuilder Frame(string name, bool renderHeader = true, char? icon = null)
     {
         var parent = Paper.Column(name)
         .BackgroundColor(Style.WindowBackground)
-        .Border(Style.BorderWidth)
         .BorderColor(Style.BorderColor)
         .BoxShadow(0, 2, 4, 0, Color.FromArgb(35, 0, 0, 0))
         .Rounded(16)
         .Height(UnitValue.Auto)
         .Width(UnitValue.StretchOne)
         .ColBetween(8)
-        .ChildBottom(8)
-        .ChildTop(8)
-        .ChildLeft(8)
-        .ChildRight(8)
+        .Border(8)
         .SetScroll(Prowl.PaperUI.Scroll.ScrollY);
         parent.Enter();
 
@@ -28,12 +24,15 @@ public static partial class Components
         if (renderHeader)
         {
             using var header = Paper.Row(name + "header")
-            .Rounded(Style.FrameRounding)
-            .Margin(0, 0, 8, 4)
-            .Height(UnitValue.Auto)
+            .Margin(4, 4, 0, 8)
+            .Height(24)
             .Enter();
+            if (icon is not null)
+            {
+                Components.Icon(icon.Value).PositionType(PositionType.SelfDirected).FontSize(20);
+            }
 
-            Components.Text(name).Alignment(Prowl.PaperUI.TextAlignment.Center);
+            Components.Text(name).Alignment(Prowl.PaperUI.TextAlignment.MiddleCenter).Height(UnitValue.StretchOne);
         }
 
         return parent;

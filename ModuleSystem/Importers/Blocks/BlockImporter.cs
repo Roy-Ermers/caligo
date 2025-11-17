@@ -9,7 +9,7 @@ namespace WorldGen.ModuleSystem.Importers.Blocks;
 public class BlockImporter : IImporter, IResourceProcessor
 {
 
-    private BlockVariant[] ConvertToBlockVariants(BlockVariantData[] variants)
+    private static BlockVariant[] ConvertToBlockVariants(BlockVariantData[] variants)
     {
         var blockVariants = new List<BlockVariant>();
         foreach (var variant in variants)
@@ -43,7 +43,6 @@ public class BlockImporter : IImporter, IResourceProcessor
                 var name = Path.GetFileNameWithoutExtension(file);
                 var blockName = Identifier.Create(module.Identifier, name);
 
-                Block block = new() { Name = blockName };
 
                 var jsonContent = File.ReadAllText(file);
                 var blockData = JsonSerializer.Deserialize<ModuleBlockData>(jsonContent, JsonOptions.SerializerOptions);
@@ -63,7 +62,11 @@ public class BlockImporter : IImporter, IResourceProcessor
                     continue;
                 }
 
-                block.Variants = ConvertToBlockVariants(blockData.Variants);
+                Block block = new()
+                {
+                    Name = blockName,
+                    Variants = ConvertToBlockVariants(blockData.Variants)
+                };
 
                 blockStorage.Add(blockName, block);
             }

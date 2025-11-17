@@ -7,9 +7,9 @@ namespace WorldGen.Graphics.UI.PaperComponents;
 
 record struct CurrentTooltip(
     ulong Id,
-        double X,
+    double X,
     double Y,
-    string Text
+    Action Content
 );
 
 public static partial class Components
@@ -17,47 +17,48 @@ public static partial class Components
     private static CurrentTooltip? currentTooltip = null;
     private static bool ShowTooltip = false;
 
-    public static void Tooltip(ElementBuilder element, string text)
+    public static void Tooltip(ElementBuilder element, Action content)
     {
-        element.OnHover(e => OnHover(e, text))
-        .OnFocusChange(e => OnFocus(e, text));
+        element.OnHover(e => OnHover(e, content))
+        .OnFocusChange(e => OnFocus(e, content));
     }
 
-    private static void OnHover(ElementEvent e, string text)
+    private static void OnHover(ElementEvent e, Action content)
     {
-        currentTooltip = new(0, e.PointerPosition.x, e.PointerPosition.y, text);
+        currentTooltip = new(0, e.Source.Data.LayoutRect.x, e.Source.Data.LayoutRect.Top, content);
 
         ShowTooltip = true;
         ShowTooltip = true;
     }
 
-    private static void OnFocus(FocusEvent e, string text)
+    private static void OnFocus(FocusEvent e, Action content)
     {
         if (!e.IsFocused)
             return;
-        currentTooltip = new(0, e.Source.Data.LayoutRect.x, e.Source.Data.LayoutRect.Top, text);
+        currentTooltip = new(0, e.Source.Data.LayoutRect.x, e.Source.Data.LayoutRect.Top, content);
 
         ShowTooltip = true;
     }
 
     public static void RenderTooltip()
     {
-
-
-        Paper.Box("tooltip")
+        using var tooltip = Paper.Box("tooltip")
         .Layer(Layer.Overlay)
         .PositionType(PositionType.SelfDirected)
         .Position(Math.Round(currentTooltip?.X ?? 0) + 16, Math.Round(currentTooltip?.Y ?? 0) - 8)
         .Width(UnitValue.Auto)
         .Height(UnitValue.Auto)
-        .Text(currentTooltip?.Text ?? string.Empty, Font)
         .Rounded(1)
         .BackgroundColor(Style.FrameBackground)
         .IsNotInteractable()
+        .IsNotFocusable()
         .BorderWidth(16)
         .BorderColor(Style.FrameBackground)
         .Visible(ShowTooltip)
-        ;
+        .Enter();
+
+        currentTooltip?.Content();
+
         ShowTooltip = false;
     }
 }

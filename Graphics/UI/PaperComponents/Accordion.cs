@@ -1,4 +1,3 @@
-using System.Drawing;
 using Prowl.PaperUI;
 using Prowl.PaperUI.LayoutEngine;
 
@@ -27,7 +26,7 @@ public static partial class Components
         })
         .Enter();
 
-        Components.Icon(isOpen ? PaperComponents.PaperIcon.ArrowDropDown : PaperComponents.PaperIcon.ArrowRight).Margin(8, UnitValue.StretchOne);
+        Components.Icon(isOpen ? PaperComponents.PaperIcon.ArrowDropDown : PaperComponents.PaperIcon.ArrowRight).Margin(8, 0, UnitValue.StretchOne, UnitValue.StretchOne);
 
         Components.Text(name)
         .Alignment(TextAlignment.MiddleLeft)

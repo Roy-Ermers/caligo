@@ -18,6 +18,7 @@ public static partial class Components
         PaperRenderer.Current.OnFrameEnd += () => OnEnd?.Invoke();
 
         OnEnd += () => RenderTooltip();
+        OnEnd += () => RenderSelectDropdown();
     }
 
     internal static void SetCursor(OpenTK.Windowing.Common.Input.MouseCursor cursor)

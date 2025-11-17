@@ -1,7 +1,13 @@
-System.Collections.Generic.KeyNotFoundException: The given key '244textbox' was not present in the dictionary.
-   at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
-   at WorldGen.Graphics.UI.PaperComponents.Components.Textbox(String& text, FontFamily fontFamily, Nullable`1 icon, String placeholder, Int32 intID)
-   at WorldGen.Game.RenderUI(FrameEventArgs args)
-   at WorldGen.Game.OnRenderFrame(FrameEventArgs args)
+System.Exception: Element already exists with this ID: Open File:12 = 2922334 Parent: 18446744073695891171
+Please use a different ID.
+   at Prowl.PaperUI.Paper.Box(String stringID, Int32 intID)
+   at Prowl.PaperUI.Paper.Row(String stringID, Int32 intID)
+   at WorldGen.Graphics.UI.PaperComponents.Components.BaseButton(String text) in /home/roy/source/world-gen/Graphics/UI/PaperComponents/Button.cs:line 12
+   at WorldGen.Graphics.UI.PaperComponents.Components.Button(String text) in /home/roy/source/world-gen/Graphics/UI/PaperComponents/Button.cs:line 43
+   at WorldGen.Debugging.UI.Modules.ResourcesDebugModule.DrawImageStorage(ResourceTypeStorage`1 imageStorage) in /home/roy/source/world-gen/Debugging/UI/Modules/ResourcesModule.cs:line 121
+   at WorldGen.Debugging.UI.Modules.ResourcesDebugModule.Render() in /home/roy/source/world-gen/Debugging/UI/Modules/ResourcesModule.cs:line 63
+   at WorldGen.Debugging.UI.DebugUiRenderer.Render() in /home/roy/source/world-gen/Debugging/UI/DebugUiRenderer.cs:line 62
+   at WorldGen.Game.RenderUI(FrameEventArgs args) in /home/roy/source/world-gen/Game.cs:line 191
+   at WorldGen.Game.OnRenderFrame(FrameEventArgs args) in /home/roy/source/world-gen/Game.cs:line 181
    at OpenTK.Windowing.Desktop.GameWindow.Run()
-   at Program.<Main>$(String[] args)
+   at Program.<Main>$(String[] args) in /home/roy/source/world-gen/Program.cs:line 1

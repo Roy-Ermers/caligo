@@ -91,7 +91,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
                 continue;
             }
 
-            var variant = block.GetRandomModel(random);
+            var variant = block.GetRandomVariant(random);
 
             // nothing to render.
             if (variant is null)
@@ -102,7 +102,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
                 if (chunk.TryGet(position + direction.ToVector3(), out ushort neighborBlockId))
                 {
                     var neighborBlock = _blockStorage[neighborBlockId];
-                    var neighborModel = neighborBlock?.GetRandomModel(random);
+                    var neighborModel = neighborBlock?.GetRandomVariant(random);
 
                     if (neighborModel is not null && (neighborModel.Value.Model!.Culling?.IsCullingEnabled(direction.Opposite()) ?? false))
                     {

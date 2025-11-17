@@ -13,6 +13,7 @@ public enum FontFamily
 public static partial class Components
 {
     public static int RootFontSize { get; set; } = 17;
+    public static double FontScale => RootFontSize / 16f;
 
     public static FontFile GetFont(this FontFamily family)
     {
@@ -29,7 +30,7 @@ public static partial class Components
     {
         var parent = Paper.Box(text)
         .Text(text, fontFamily.GetFont())
-        .FontSize(RootFontSize / fontSize * RootFontSize)
+        .FontSize(fontSize * FontScale)
         .Height(UnitValue.Auto)
         .Width(UnitValue.Auto);
         return parent;

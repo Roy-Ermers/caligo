@@ -10,54 +10,6 @@ namespace WorldGen.Renderer.Worlds;
 
 public static class BlockModelExtensions
 {
-    public static BlockVariant? GetRandomModel(this Block block, Random random)
-    {
-        if (block.Variants.Length == 0)
-            return null;
-
-        if (block.Variants.Length == 1)
-            return block.Variants[0];
-
-        // Check if all weights are null or zero
-        bool allWeightsNullOrZero = true;
-        foreach (var variant in block.Variants)
-        {
-            if (variant.Weight > 0)
-            {
-                allWeightsNullOrZero = false;
-                break;
-            }
-        }
-
-        if (allWeightsNullOrZero)
-        {
-            // Select a random variant uniformly
-            int index = random.Next(block.Variants.Length);
-            return block.Variants[index];
-        }
-        var totalWeight = 0;
-
-        foreach (var variant in block.Variants)
-        {
-            totalWeight += variant.Weight;
-        }
-
-        int roll = random.Next(1, totalWeight + 1);
-        int cumulativeWeight = 0;
-
-        foreach (var variant in block.Variants)
-        {
-            cumulativeWeight += variant.Weight;
-            if (roll <= cumulativeWeight)
-            {
-                return variant;
-            }
-        }
-
-        // Fallback, should never reach here
-        return block.Variants[^1];
-    }
-
     public static BlockFaceRenderData? ToRenderData(
         this BlockModelCube cube,
         Direction direction,

@@ -42,7 +42,7 @@ public class FpsWindow : Window
             GL.GetInteger((GetPName)0x9048, out var total);
             GL.GetInteger((GetPName)0x9049, out var current);
 
-            ImGui.Text("GPU Memory: " + FileSystemUtils.FormatByteSize(current) + '/' + FileSystemUtils.FormatByteSize(total));
+            ImGui.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' + ByteSizeFormatter.FormatByteSize(total));
         }
 
         if (ImGui.CollapsingHeader("OpenGL Info"))
@@ -55,8 +55,8 @@ public class FpsWindow : Window
 
         if (ImGui.CollapsingHeader("Garbage Collection"))
         {
-            ImGui.Text("Total Memory: " + FileSystemUtils.FormatByteSize(GC.GetTotalMemory(false)));
-            ImGui.Text("Max Memory: " + FileSystemUtils.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
+            ImGui.Text("Total Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetTotalMemory(false)));
+            ImGui.Text("Max Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
             ImGui.Text("0: " + GC.CollectionCount(0));
             ImGui.Text("1: " + GC.CollectionCount(1));
             ImGui.Text("2: " + GC.CollectionCount(2));
