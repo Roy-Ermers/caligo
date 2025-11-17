@@ -1,8 +1,0 @@
-System.InvalidOperationException: Stack empty.
-   at System.Collections.Generic.Stack`1.ThrowForEmptyStack()
-   at System.Collections.Generic.Stack`1.Pop()
-   at WorldGen.Debugging.Gizmo3D.Render() in /home/roy/source/world-gen/Debugging/GuiDraw3D.cs:line 76
-   at WorldGen.Game.RenderUI(FrameEventArgs args) in /home/roy/source/world-gen/Game.cs:line 197
-   at WorldGen.Game.OnRenderFrame(FrameEventArgs args) in /home/roy/source/world-gen/Game.cs:line 187
-   at OpenTK.Windowing.Desktop.GameWindow.Run()
-   at Program.<Main>$(String[] args) in /home/roy/source/world-gen/Program.cs:line 1

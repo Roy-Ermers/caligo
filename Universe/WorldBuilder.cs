@@ -6,54 +6,56 @@ namespace WorldGen.Universe;
 
 public class WorldBuilder
 {
-    public World World { init; get; }
-    public IWorldGenerator Generator { init; get; }
+	public World World { init; get; }
+	public IWorldGenerator Generator { init; get; }
 
-    private readonly BlockingCollection<ChunkPosition> GenerationQueue = [];
+	private readonly BlockingCollection<ChunkPosition> GenerationQueue = [];
 
-    public WorldBuilder(World world, IWorldGenerator generator)
-    {
-        World = world;
-        Generator = generator;
+	public WorldBuilder(World world, IWorldGenerator generator)
+	{
+		World = world;
+		Generator = generator;
 
-        Generator.Initialize();
+		Generator.Initialize();
 
-        Task.Run(() => WorkGenerationQueue());
-    }
+		var thread = new Thread(WorkGenerationQueue);
+		thread.IsBackground = true;
+		thread.Name = "WorldGenerationThread";
+		thread.Start();
+	}
 
-    public void Update()
-    {
-        foreach (var loader in World.ChunkLoaders)
-        {
-            if (World.HasChunk(loader.Position))
-                continue;
-
-
-            var chunk = new Chunk(loader.Position);
-            World.CreateChunk(chunk);
-
-            GenerationQueue.TryAdd(loader.Position);
-        }
-    }
+	public void Update()
+	{
+		foreach (var loader in World.ChunkLoaders)
+		{
+			if (World.HasChunk(loader.Position))
+				continue;
 
 
-    public void WorkGenerationQueue()
-    {
-        Parallel.ForEach(GenerationQueue.GetConsumingEnumerable(), (position, cancellationToken) =>
-        {
-            if (!World.TryGetChunk(position, out var chunk))
-                return;
+			var chunk = new Chunk(loader.Position);
+			World.CreateChunk(chunk);
 
-            if (chunk.State.HasFlag(ChunkState.Generating) || chunk.State.HasFlag(ChunkState.Generated))
-                return;
+			GenerationQueue.TryAdd(loader.Position);
+		}
+	}
 
-            chunk.State |= ChunkState.Generating;
 
-            Generator.GenerateChunk(ref chunk);
+	public void WorkGenerationQueue()
+	{
+		Parallel.ForEach(GenerationQueue.GetConsumingEnumerable(), (position, cancellationToken) =>
+		{
+			if (!World.TryGetChunk(position, out var chunk))
+				return;
 
-            chunk.State &= ~ChunkState.Generating;
-            chunk.State |= ChunkState.Generated;
+			if (chunk.State.HasFlag(ChunkState.Generating) || chunk.State.HasFlag(ChunkState.Generated))
+				return;
 
-        });
-    }
+			chunk.State |= ChunkState.Generating;
+
+			Generator.GenerateChunk(ref chunk);
+
+			chunk.State &= ~ChunkState.Generating;
+			chunk.State |= ChunkState.Generated;
+		});
+	}
 }
