@@ -1,0 +1,14 @@
+namespace Caligo.Client.Graphics.UI.PaperComponents.fields;
+
+public static partial class FieldComponents
+{
+    public static void Vector2(string name, ref OpenTK.Mathematics.Vector2 value)
+    {
+        using var field = Components.Field(name);
+
+        using var _ = Components.Row();
+
+        Components.NumberInput(ref value.X, FontFamily.Monospace, placeholder: "X", intID: 0);
+        Components.NumberInput(ref value.Y, FontFamily.Monospace, placeholder: "Y", intID: 1);
+    }
+}
