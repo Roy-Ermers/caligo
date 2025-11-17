@@ -5,8 +5,8 @@ using WorldGen.FileSystem;
 using WorldGen.FileSystem.Images;
 using WorldGen.FileSystem.Json;
 using WorldGen.ModuleSystem.Storage;
-using WorldGen.Graphics.UI.Components;
-using WorldGen.Graphics.UI.Components.Tables;
+using WorldGen.Graphics.UI.ImGuiComponents;
+using WorldGen.Graphics.UI.ImGuiComponents.Tables;
 using WorldGen.Resources.Block;
 
 namespace WorldGen.Graphics.UI.Windows;

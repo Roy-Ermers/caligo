@@ -1,7 +1,6 @@
-System.ArgumentException: Row data length 3 does not match column length 4
-   at WorldGen.Graphics.UI.Components.Tables.TableComponent.AddRow(TableRowComponent component)
-   at WorldGen.Graphics.UI.Windows.ChunkWindow.Draw(Double deltaTime)
-   at WorldGen.Graphics.UI.UiRenderer.Draw(Double deltaTime)
+System.Collections.Generic.KeyNotFoundException: The given key '244textbox' was not present in the dictionary.
+   at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at WorldGen.Graphics.UI.PaperComponents.Components.Textbox(String& text, FontFamily fontFamily, Nullable`1 icon, String placeholder, Int32 intID)
    at WorldGen.Game.RenderUI(FrameEventArgs args)
    at WorldGen.Game.OnRenderFrame(FrameEventArgs args)
    at OpenTK.Windowing.Desktop.GameWindow.Run()

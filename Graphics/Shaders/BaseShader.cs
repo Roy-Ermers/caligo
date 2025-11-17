@@ -178,7 +178,8 @@ public abstract class BaseShader
                     SetUniform1(uniformType, name, (int)value);
                     break;
                 case ActiveUniformType.FloatVec2:
-                    SetVector2(name, (OpenTK.Mathematics.Vector2)value);
+                    var (x, y) = value is ValueTuple<float, float> tuple ? tuple : ((float, float))value;
+                    SetVector2(name, x, y);
                     break;
                 case ActiveUniformType.FloatVec3:
                     SetVector3(name, (OpenTK.Mathematics.Vector3)value);
@@ -240,13 +241,12 @@ public abstract class BaseShader
 
     public void SetFloat(string name, float value) => SetUniform1(ActiveUniformType.Float, name, value);
 
-    public void SetVector2(string name, System.Numerics.Vector2 value)
-    {
-        var openTkVector = new OpenTK.Mathematics.Vector2(value.X, value.Y);
-        SetVector2(name, openTkVector);
-    }
 
-    public void SetVector2(string name, OpenTK.Mathematics.Vector2 value)
+    public void SetVector2(string name, System.Numerics.Vector2 value) => SetVector2(name, value.X, value.Y);
+
+    public void SetVector2(string name, OpenTK.Mathematics.Vector2 value) => SetVector2(name, value.X, value.Y);
+
+    public void SetVector2(string name, float x, float y)
     {
         if (!_uniforms.TryGetValue(name, out var uniform))
             return;
@@ -254,12 +254,12 @@ public abstract class BaseShader
         if (uniform.Type != ActiveUniformType.FloatVec2)
             throw new Exception($"Uniform({name}) is not of type {uniform.Type}");
 
-        _uniformValues[name] = value;
+        _uniformValues[name] = (x, y);
 
         if (IsReloading)
             return;
 
-        GL.Uniform2(uniform.Handle, value);
+        GL.Uniform2(uniform.Handle, x, y);
     }
 
     public void SetVector3(string name, System.Numerics.Vector3 value)
@@ -282,6 +282,24 @@ public abstract class BaseShader
             return;
 
         GL.Uniform3(uniform.Handle, value.X, value.Y, value.Z);
+    }
+
+    public void SetColor(string name, System.Drawing.Color color)
+    {
+        var vec4 = new OpenTK.Mathematics.Vector4(
+          color.R / 255f,
+          color.G / 255f,
+          color.B / 255f,
+          color.A / 255f
+        );
+
+        SetVector4(name, vec4);
+    }
+
+    public void SetVector4(string name, float x, float y, float z, float w)
+    {
+        var vec4 = new OpenTK.Mathematics.Vector4(x, y, z, w);
+        SetVector4(name, vec4);
     }
 
     public void SetVector4(string name, OpenTK.Mathematics.Vector4 value)

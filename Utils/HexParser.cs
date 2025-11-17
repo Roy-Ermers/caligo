@@ -31,39 +31,39 @@ public class HexParser
         if (hex.Length == 3)
         {
             // Handle shorthand hex notation (e.g., #FFF)
-            color.X = ((value >> 8) & 0xF) / 15f;
-            color.Y = ((value >> 4) & 0xF) / 15f;
+            color.X = ((value >> 8) & 0xF) * 15f;
+            color.Y = ((value >> 4) & 0xF) * 15f;
             color.Z = (value & 0xF) / 15f;
-            color.W = 1f;
+            color.W = 255f;
         }
         else if (hex.Length == 4)
         {
             // Handle shorthand hex notation with alpha (e.g., #FFFF)
-            color.X = ((value >> 12) & 0xF) / 15f;
-            color.Y = ((value >> 8) & 0xF) / 15f;
-            color.Z = ((value >> 4) & 0xF) / 15f;
+            color.X = ((value >> 12) & 0xF) * 15f;
+            color.Y = ((value >> 8) & 0xF) * 15f;
+            color.Z = ((value >> 4) & 0xF) * 15f;
             color.W = (value & 0xF) / 15f;
         }
         else if (hex.Length == 6)
         {
-            color.X = ((value >> 16) & 0xFF) / 255f;
-            color.Y = ((value >> 8) & 0xFF) / 255f;
-            color.Z = (value & 0xFF) / 255f;
-            color.W = 1f;
+            color.X = ((value >> 16) & 0xFF);
+            color.Y = ((value >> 8) & 0xFF);
+            color.Z = (value & 0xFF);
+            color.W = 255f;
         }
         else if (hex.Length == 7)
         {
-            color.X = ((value >> 16) & 0xFF) / 255f;
-            color.Y = ((value >> 8) & 0xFF) / 255f;
-            color.Z = (value & 0xFF) / 255f;
-            color.W = 1f;
+            color.X = ((value >> 16) & 0xFF);
+            color.Y = ((value >> 8) & 0xFF);
+            color.Z = (value & 0xFF);
+            color.W = 255f;
         }
         else if (hex.Length == 9)
         {
-            color.X = ((value >> 24) & 0xFF) / 255f;
-            color.Y = ((value >> 16) & 0xFF) / 255f;
-            color.Z = ((value >> 8) & 0xFF) / 255f;
-            color.W = (value & 0xFF) / 255f;
+            color.X = ((value >> 24) & 0xFF);
+            color.Y = ((value >> 16) & 0xFF);
+            color.Z = ((value >> 8) & 0xFF);
+            color.W = (value & 0xFF);
         }
 
         return true;

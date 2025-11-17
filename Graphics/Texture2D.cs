@@ -1,3 +1,4 @@
+using System.Drawing;
 using OpenTK.Graphics.OpenGL4;
 using WorldGen.FileSystem.Images;
 
@@ -9,11 +10,70 @@ public class Texture2D
     public int Width;
     public int Height;
 
+    private TextureMinFilter _minFilter = TextureMinFilter.NearestMipmapLinear;
+
+    public TextureMinFilter MinFilter
+    {
+        get => _minFilter;
+        set
+        {
+            _minFilter = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)value);
+        }
+    }
+
+    private TextureMagFilter _magFilter = TextureMagFilter.Nearest;
+
+    public TextureMagFilter MagFilter
+    {
+        get => _magFilter;
+        set
+        {
+            _magFilter = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)value);
+        }
+    }
+
+    private TextureWrapMode _wrapS = TextureWrapMode.Repeat;
+    public TextureWrapMode WrapS
+    {
+        get => _wrapS;
+        set
+        {
+            _wrapS = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)value);
+        }
+    }
+
+    private TextureWrapMode _wrapT = TextureWrapMode.Repeat;
+    public TextureWrapMode WrapT
+    {
+        get => _wrapT;
+        set
+        {
+            _wrapT = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)value);
+        }
+    }
+
     private Texture2D(int handle, int width, int height)
     {
         Handle = handle;
         Width = width;
         Height = height;
+
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
+            (int)_minFilter);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)_magFilter);
+
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)_wrapS);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)_wrapT);
+
+        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
     }
 
 
@@ -39,17 +99,8 @@ public class Texture2D
         var handle = GL.GenTexture();
         GL.BindTexture(TextureTarget.Texture2D, handle);
 
-        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba,
+        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba,
             PixelType.UnsignedByte, data.ToArray());
-
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
-            (int)TextureMinFilter.NearestMipmapLinear);
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-
-        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
         return new Texture2D(handle, width, height);
     }
@@ -60,6 +111,16 @@ public class Texture2D
         var data = new byte[Width * Height * 4];
         GL.GetTexImage(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
         return data;
+    }
+
+    public void SetRectangle(Rectangle rectangle, ReadOnlySpan<byte> data)
+    {
+        if (data.Length != rectangle.Width * rectangle.Height * 4)
+            throw new ArgumentException("Data length does not match the specified rectangle size.");
+
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
+        GL.TexSubImage2D(TextureTarget.Texture2D, 0, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height,
+                PixelFormat.Rgba, PixelType.UnsignedByte, data.ToArray());
     }
 
     public void SetData(byte[] data) => SetData(data.AsSpan());
@@ -100,6 +161,12 @@ public class Texture2D
         }
 
         return result;
+    }
+
+    public void Bind(int unit)
+    {
+        GL.ActiveTexture(TextureUnit.Texture0 + unit);
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
     }
 
     public void DumpPng(string path)

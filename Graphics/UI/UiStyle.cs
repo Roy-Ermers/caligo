@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Numerics;
 using WorldGen.ModuleSystem.Storage;
 using WorldGen.Utils;
@@ -15,31 +16,31 @@ public struct UiStyle
     public Vector2 WindowPadding { get; set; }
     public float WindowRounding { get; set; }
     public int BorderWidth { get; set; }
-    public Vector4 WindowBackground { get; set; }
+    public Color WindowBackground { get; set; }
     public int WindowBorderWidth { get; set; }
-    public Vector4 TextColor { get; set; }
-    public Vector4 SecondaryTextColor { get; set; }
+    public Color TextColor { get; set; }
+    public Color SecondaryTextColor { get; set; }
 
-    public Vector4 AccentColor { get; set; }
-    public Vector4 AccentHoverColor { get; set; }
-    public Vector4 AccentActiveColor { get; set; }
+    public Color AccentColor { get; set; }
+    public Color AccentHoverColor { get; set; }
+    public Color AccentActiveColor { get; set; }
 
     public Vector2 FramePadding { get; set; }
     public float FrameRounding { get; set; }
-    public Vector4 FrameBackground { get; set; }
+    public Color FrameBackground { get; set; }
     public int FrameBorderWidth { get; set; }
-    public Vector4 FrameHoverBackground { get; set; }
-    public Vector4 FrameActiveBackground { get; set; }
-    public Vector4 HeaderBackground { get; set; }
-    public Vector4 HeaderHoverBackground { get; set; }
-    public Vector4 HeaderActiveBackground { get; set; }
+    public Color FrameHoverBackground { get; set; }
+    public Color FrameActiveBackground { get; set; }
+    public Color HeaderBackground { get; set; }
+    public Color HeaderHoverBackground { get; set; }
+    public Color HeaderActiveBackground { get; set; }
 
-    public Vector4 TitleBackground { get; set; }
-    public Vector4 TitleActiveBackground { get; set; }
-    public Vector4 TitleCollapsedBackground { get; set; }
+    public Color TitleBackground { get; set; }
+    public Color TitleActiveBackground { get; set; }
+    public Color TitleCollapsedBackground { get; set; }
 
-    public Vector4 BorderColor { get; set; }
-    public Vector4 BorderShadow { get; set; }
+    public Color BorderColor { get; set; }
+    public Color BorderShadow { get; set; }
 
 
     public static UiStyle FromConfig(ResourceTypeStorage<string> config)
@@ -87,11 +88,11 @@ public struct UiStyle
         return style;
     }
 
-    private static Vector4 ParseColor(ResourceTypeStorage<string> config, string name)
+    private static Color ParseColor(ResourceTypeStorage<string> config, string name)
     {
         var hex = config[name];
         if (HexParser.TryParseHex(hex, out Vector4 color))
-            return color;
+            return Color.FromArgb((int)color.W, (int)color.X, (int)color.Y, (int)color.Z);
 
         throw new InvalidDataException($"{hex} is not a valid color in the config file {name}. Expected format: #RRGGBB or #RRGGBBAA");
     }
@@ -113,46 +114,46 @@ public struct UiStyle
         style.PopupBorderSize = BorderWidth;
         style.FrameBorderSize = FrameBorderWidth;
 
-        style.Colors[(int)ColorToken.Text] = TextColor;
-        style.Colors[(int)ColorToken.TextLink] = AccentColor;
-        style.Colors[(int)ColorToken.TextDisabled] = SecondaryTextColor;
-        style.Colors[(int)ColorToken.WindowBg] = WindowBackground;
-        style.Colors[(int)ColorToken.TitleBg] = WindowBackground;
-        style.Colors[(int)ColorToken.TitleBgActive] = TitleActiveBackground;
-        style.Colors[(int)ColorToken.TitleBgCollapsed] = TitleCollapsedBackground;
-        style.Colors[(int)ColorToken.TitleBg] = TitleBackground;
-        style.Colors[(int)ColorToken.ChildBg] = WindowBackground;
-        style.Colors[(int)ColorToken.PopupBg] = WindowBackground;
+        style.Colors[(int)ColorToken.Text] = TextColor.ToVector4();
+        style.Colors[(int)ColorToken.TextLink] = AccentColor.ToVector4();
+        style.Colors[(int)ColorToken.TextDisabled] = SecondaryTextColor.ToVector4();
+        style.Colors[(int)ColorToken.WindowBg] = WindowBackground.ToVector4();
+        style.Colors[(int)ColorToken.TitleBg] = WindowBackground.ToVector4();
+        style.Colors[(int)ColorToken.TitleBgActive] = TitleActiveBackground.ToVector4();
+        style.Colors[(int)ColorToken.TitleBgCollapsed] = TitleCollapsedBackground.ToVector4();
+        style.Colors[(int)ColorToken.TitleBg] = TitleBackground.ToVector4();
+        style.Colors[(int)ColorToken.ChildBg] = WindowBackground.ToVector4();
+        style.Colors[(int)ColorToken.PopupBg] = WindowBackground.ToVector4();
 
-        style.Colors[(int)ColorToken.Border] = BorderColor;
-        style.Colors[(int)ColorToken.BorderShadow] = BorderShadow;
+        style.Colors[(int)ColorToken.Border] = BorderColor.ToVector4();
+        style.Colors[(int)ColorToken.BorderShadow] = BorderShadow.ToVector4();
 
-        style.Colors[(int)ColorToken.FrameBg] = FrameBackground;
-        style.Colors[(int)ColorToken.FrameBgHovered] = FrameHoverBackground;
-        style.Colors[(int)ColorToken.FrameBgActive] = FrameActiveBackground;
+        style.Colors[(int)ColorToken.FrameBg] = FrameBackground.ToVector4();
+        style.Colors[(int)ColorToken.FrameBgHovered] = FrameHoverBackground.ToVector4();
+        style.Colors[(int)ColorToken.FrameBgActive] = FrameActiveBackground.ToVector4();
 
-        style.Colors[(int)ColorToken.Header] = HeaderBackground;
-        style.Colors[(int)ColorToken.HeaderHovered] = HeaderHoverBackground;
-        style.Colors[(int)ColorToken.HeaderActive] = HeaderActiveBackground;
+        style.Colors[(int)ColorToken.Header] = HeaderBackground.ToVector4();
+        style.Colors[(int)ColorToken.HeaderHovered] = HeaderHoverBackground.ToVector4();
+        style.Colors[(int)ColorToken.HeaderActive] = HeaderActiveBackground.ToVector4();
 
-        style.Colors[(int)ColorToken.Button] = AccentColor;
-        style.Colors[(int)ColorToken.ButtonHovered] = AccentHoverColor;
-        style.Colors[(int)ColorToken.ButtonActive] = AccentActiveColor;
-        style.Colors[(int)ColorToken.CheckMark] = AccentColor;
-        style.Colors[(int)ColorToken.SliderGrab] = AccentColor;
-        style.Colors[(int)ColorToken.SliderGrabActive] = AccentActiveColor;
-        style.Colors[(int)ColorToken.Separator] = AccentColor;
-        style.Colors[(int)ColorToken.SeparatorHovered] = AccentHoverColor;
-        style.Colors[(int)ColorToken.SeparatorActive] = AccentActiveColor;
-        style.Colors[(int)ColorToken.ResizeGrip] = AccentColor;
-        style.Colors[(int)ColorToken.ResizeGripHovered] = AccentHoverColor;
-        style.Colors[(int)ColorToken.ResizeGripActive] = AccentActiveColor;
-        style.Colors[(int)ColorToken.Tab] = FrameBackground;
-        style.Colors[(int)ColorToken.TabHovered] = AccentActiveColor;
-        style.Colors[(int)ColorToken.TabDimmed] = FrameBackground;
-        style.Colors[(int)ColorToken.TabSelected] = AccentColor;
+        style.Colors[(int)ColorToken.Button] = AccentColor.ToVector4();
+        style.Colors[(int)ColorToken.ButtonHovered] = AccentHoverColor.ToVector4();
+        style.Colors[(int)ColorToken.ButtonActive] = AccentActiveColor.ToVector4();
+        style.Colors[(int)ColorToken.CheckMark] = AccentColor.ToVector4();
+        style.Colors[(int)ColorToken.SliderGrab] = AccentColor.ToVector4();
+        style.Colors[(int)ColorToken.SliderGrabActive] = AccentActiveColor.ToVector4();
+        style.Colors[(int)ColorToken.Separator] = AccentColor.ToVector4();
+        style.Colors[(int)ColorToken.SeparatorHovered] = AccentHoverColor.ToVector4();
+        style.Colors[(int)ColorToken.SeparatorActive] = AccentActiveColor.ToVector4();
+        style.Colors[(int)ColorToken.ResizeGrip] = AccentColor.ToVector4();
+        style.Colors[(int)ColorToken.ResizeGripHovered] = AccentHoverColor.ToVector4();
+        style.Colors[(int)ColorToken.ResizeGripActive] = AccentActiveColor.ToVector4();
+        style.Colors[(int)ColorToken.Tab] = FrameBackground.ToVector4();
+        style.Colors[(int)ColorToken.TabHovered] = AccentActiveColor.ToVector4();
+        style.Colors[(int)ColorToken.TabDimmed] = FrameBackground.ToVector4();
+        style.Colors[(int)ColorToken.TabSelected] = AccentColor.ToVector4();
         style.Colors[(int)ColorToken.TabSelectedOverline] = Vector4.Zero;
-        style.Colors[(int)ColorToken.TabDimmedSelected] = AccentColor;
+        style.Colors[(int)ColorToken.TabDimmedSelected] = AccentColor.ToVector4();
         style.Colors[(int)ColorToken.TabDimmedSelectedOverline] = Vector4.Zero;
         style.Colors[(int)ColorToken.ModalWindowDimBg] = new Vector4(0, 0, 0, 0.5f);
         Current = this;

@@ -1,6 +1,8 @@
 {
 	"ui": {
-		"font": "maple",
+		"font": "default",
+		"monospaceFont": "monospace",
+		"iconFont": "material-symbols",
 		"fontSize": 16,
 		"textColor": "#FFFFFF",
 		"secondaryTextColor": "#FFFFFF88",
@@ -9,7 +11,7 @@
 		"accentActiveColor": "#31315e",
 		"border": {
 			"color": "#6E6E8080",
-			"shadow": "#0000",
+			"shadow": "#0000004f",
 			"width": 1
 		},
 		"window": {
@@ -19,7 +21,7 @@
 				"horizontal": 16
 			},
 			"borderWidth": 1,
-			"background": "#242424FF",
+			"background": "#242424ff",
 			"titlebar": {
 				"background": "#242424FF",
 				"activeBackground": "#242424FF",
@@ -33,7 +35,7 @@
 				"horizontal": 4
 			},
 			"borderWidth": 0,
-			"background": "#333333FF",
+			"background": "#333333ff",
 			"hoverBackground": "#3D3D3DFF",
 			"activeBackground": "#3D3D3DFF"
 		},

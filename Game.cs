@@ -9,16 +9,17 @@ using WorldGen.Graphics.UI;
 using WorldGen.Graphics.Shaders;
 using WorldGen.Debugging.RenderDoc;
 using WorldGen.ModuleSystem.Importers.Blocks;
-using ImGuiNET;
-using OpenTK.Mathematics;
 using WorldGen.Resources.Block;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using WorldGen.Threading;
 using WorldGen.Universe;
 using WorldGen.Universe.PositionTypes;
 using System.Text;
 using WorldGen.Renderer.Worlds;
 using WorldGen.Generators.World;
+using Prowl.PaperUI;
+using WorldGen.Graphics.UI.PaperComponents;
+using Prowl.PaperUI.LayoutEngine;
+using WorldGen.FileSystem;
 
 namespace WorldGen;
 
@@ -26,7 +27,8 @@ public class Game : GameWindow
 {
     public readonly Camera Camera;
     public readonly ModuleRepository ModuleRepository;
-    private UiRenderer _uiRenderer;
+    // private UiRenderer _uiRenderer;
+    private readonly PaperRenderer uiRenderer;
 
     private readonly RenderShader _shader;
 
@@ -36,6 +38,10 @@ public class Game : GameWindow
     public World world = null!;
     public WorldBuilder builder = null!;
     public WorldRenderer renderer = null!;
+
+    public List<string> SupportedExtensions { get; private set; } = [];
+
+    public Atlas atlas;
 
     public double Time = 0;
 
@@ -63,9 +69,12 @@ public class Game : GameWindow
         _shader = ModuleRepository.Get<RenderShader>("default");
         _shader.Initialize();
 
+        atlas = ModuleRepository.Get<Atlas>("block_atlas");
         Camera = new Camera(this);
 
         MainThread = new MainThread();
+
+        uiRenderer = new(this);
     }
 
     private void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs args)
@@ -99,6 +108,18 @@ public class Game : GameWindow
         GL.PolygonMode(TriangleFace.Front, PolygonMode.Fill);
 
 
+
+        Console.WriteLine("Supported Extensions:");
+        int count = GL.GetInteger(GetPName.NumExtensions);
+        for (int i = 0; i < count; i++)
+        {
+            string extension = GL.GetString(StringNameIndexed.Extensions, i);
+            SupportedExtensions.Add(extension);
+            Console.WriteLine("  " + extension);
+        }
+
+
+
         var atlas = ModuleRepository.Get<Atlas>("block_atlas");
         var blockStorage = ModuleRepository.GetAll<Block>();
 
@@ -106,7 +127,7 @@ public class Game : GameWindow
         builder = new(world, new LayeredWorldGenerator(Random.Shared.Next()));
         renderer = new WorldRenderer(world, atlas, blockStorage);
 
-        _uiRenderer = new UiRenderer(this);
+        // _uiRenderer = new UiRenderer(this);
     }
 
     private void LoadChunksAroundPlayer()
@@ -163,69 +184,135 @@ public class Game : GameWindow
 
     void RenderUI(FrameEventArgs args)
     {
-
-        using var frame = _uiRenderer.StartFrame(args.Time);
-
-        if (renderdoc is not null)
+        using (var uiFrame = uiRenderer.Start(args.Time))
         {
-            if (renderdoc.IsCapturing)
+            using var sidebar = uiFrame.Paper.Column("Sidebar").PositionType(PositionType.SelfDirected)
+                      .Left(UnitValue.StretchOne)
+                      .Top(0)
+                      .Bottom(0)
+                      .Height(uiFrame.Paper.ScreenRect.Size.y)
+                      .Width(400)
+                      .ColBetween(16)
+                      .ChildRight(16)
+                      .ChildTop(16)
+                      .ChildBottom(16)
+                      // .TranslateX(385)
+                      // .Transition(GuiProp.TranslateX, 0.500, Easing.QuartOut)
+                      // .Hovered.TranslateX(0).End()
+                      .Enter();
+
+            using (Components.Frame("Tabs", renderHeader: false))
             {
-                ImGui.TextColored(new System.Numerics.Vector4(1, 0, 0, 1), "Capturing renderdoc data...");
+                using (Components.Tabs("Tabs", true))
+                {
+                    if (Components.Tab(PaperIcon.AvgPace + " Stats"))
+                    {
+                        Components.Text($"FPS: {(int)(1 / args.Time)}");
+                        if (Components.Accordion("Garbage collection"))
+                        {
+                            Components.Text("Total Memory: " + FileSystemUtils.FormatByteSize(GC.GetTotalMemory(false)));
+                            Components.Text("Max Memory: " + FileSystemUtils.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
+                            Components.Text("0: " + GC.CollectionCount(0));
+                            Components.Text("1: " + GC.CollectionCount(1));
+                            Components.Text("2: " + GC.CollectionCount(2));
+                        }
+                    }
+                    if (Components.Tab(PaperIcon.CameraAlt + " Camera"))
+                    {
+
+                        var blockPosition = new WorldPosition((int)Camera.Position.X, (int)Camera.Position.Y, (int)Camera.Position.Z);
+
+                        Components.Text("Position: " + Camera.Position);
+
+                        var sector = blockPosition / 64;
+                        Components.Text("Sector: " + sector);
+
+                        Components.Text("Chunk: " + blockPosition.ChunkPosition);
+                    }
+
+                    if (Components.Tab(PaperIcon.Sdk + " OpenGL"))
+                    {
+                        var vendor = GL.GetString(StringName.Vendor);
+                        if (vendor.Contains("NVIDIA"))
+                        {
+                            GL.NV.GetInteger((All)0x9048, out long total);
+                            GL.NV.GetInteger((All)0x9049, out long current);
+
+                            Components.Text("GPU Memory: " + FileSystemUtils.FormatByteSize(current) + '/' + FileSystemUtils.FormatByteSize(total));
+                        }
+                        Components.Text("Version: " + GL.GetString(StringName.Version));
+                        Components.Text($"Vendor: {vendor}");
+                        Components.Text("Renderer: " + GL.GetString(StringName.Renderer));
+                        Components.Text("GLSL Version: " + GL.GetString(StringName.ShadingLanguageVersion));
+                        if (Components.Accordion("Extensions"))
+                        {
+                            var search = "";
+                            Components.Textbox(ref search, placeholder: "search", icon: PaperIcon.Search);
+                            using var scrollContainer = Components.ScrollContainer().Enter();
+                            foreach (var extension in SupportedExtensions)
+                            {
+                                if (!extension.Contains(search))
+                                    continue;
+                                Components.Text(extension, fontFamily: FontFamily.Monospace);
+                            }
+                        }
+                    }
+                }
+
+
+
+                // using var frame = _uiRenderer.StartFrame(args.Time);
+
+
+                // var oldPos = ImGui.GetCursorScreenPos();
+
+                // var center = Camera.WorldToScreen(Vector3.Zero);
+
+                // if (center is not null)
+                // {
+                //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(center.Value.X, center.Value.Y));
+                //     ImGui.TextColored(System.Numerics.Vector4.One, "o");
+                // }
+
+                // var unitX = Camera.WorldToScreen(Vector3.UnitX);
+                // if (unitX is not null)
+                // {
+                //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitX.Value.X, unitX.Value.Y));
+                //     ImGui.TextColored(System.Numerics.Vector4.UnitX + System.Numerics.Vector4.UnitW, "X");
+                // }
+                // var unitY = Camera.WorldToScreen(Vector3.UnitY);
+                // if (unitY is not null)
+                // {
+                //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitY.Value.X, unitY.Value.Y));
+                //     ImGui.TextColored(System.Numerics.Vector4.UnitY + System.Numerics.Vector4.UnitW, "Y");
+                // }
+
+                // var unitZ = Camera.WorldToScreen(Vector3.UnitZ);
+                // if (unitZ is not null)
+                // {
+                //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitZ.Value.X, unitZ.Value.Y));
+                //     ImGui.TextColored(System.Numerics.Vector4.UnitZ + System.Numerics.Vector4.UnitW, "Z");
+                // }
+
+                // var blockCenter = Camera.WorldToScreen(Vector3.One * 0.5f);
+                // if (blockCenter is not null)
+                // {
+                //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(blockCenter.Value.X, blockCenter.Value.Y));
+                //     ImGui.TextColored(System.Numerics.Vector4.One, "B");
+                // }
+
+                // ImGui.SetCursorScreenPos(oldPos);
+
+                // _uiRenderer.Draw(args.Time);
             }
-
-            if (KeyboardState.IsKeyPressed(Keys.F12))
-            {
-                renderdoc.ToggleCapture();
-            }
         }
-
-        var oldPos = ImGui.GetCursorScreenPos();
-
-        var center = Camera.WorldToScreen(Vector3.Zero);
-
-        if (center is not null)
-        {
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(center.Value.X, center.Value.Y));
-            ImGui.TextColored(System.Numerics.Vector4.One, "o");
-        }
-
-        var unitX = Camera.WorldToScreen(Vector3.UnitX);
-        if (unitX is not null)
-        {
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitX.Value.X, unitX.Value.Y));
-            ImGui.TextColored(System.Numerics.Vector4.UnitX + System.Numerics.Vector4.UnitW, "X");
-        }
-        var unitY = Camera.WorldToScreen(Vector3.UnitY);
-        if (unitY is not null)
-        {
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitY.Value.X, unitY.Value.Y));
-            ImGui.TextColored(System.Numerics.Vector4.UnitY + System.Numerics.Vector4.UnitW, "Y");
-        }
-
-        var unitZ = Camera.WorldToScreen(Vector3.UnitZ);
-        if (unitZ is not null)
-        {
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitZ.Value.X, unitZ.Value.Y));
-            ImGui.TextColored(System.Numerics.Vector4.UnitZ + System.Numerics.Vector4.UnitW, "Z");
-        }
-
-        var blockCenter = Camera.WorldToScreen(Vector3.One * 0.5f);
-        if (blockCenter is not null)
-        {
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(blockCenter.Value.X, blockCenter.Value.Y));
-            ImGui.TextColored(System.Numerics.Vector4.One, "B");
-        }
-
-        ImGui.SetCursorScreenPos(oldPos);
-
-        _uiRenderer.Draw(args.Time);
     }
 
 
     protected override void OnResize(ResizeEventArgs e)
     {
         GL.Viewport(0, 0, FramebufferSize.X, FramebufferSize.Y);
-        _uiRenderer.WindowResized(Size.X, Size.Y);
+        // _uiRenderer.WindowResized(Size.X, Size.Y);
         base.OnResize(e);
     }
 

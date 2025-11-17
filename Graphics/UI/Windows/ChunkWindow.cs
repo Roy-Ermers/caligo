@@ -1,6 +1,6 @@
 using ImGuiNET;
-using WorldGen.Graphics.UI.Components;
-using WorldGen.Graphics.UI.Components.Tables;
+using WorldGen.Graphics.UI.ImGuiComponents;
+using WorldGen.Graphics.UI.ImGuiComponents.Tables;
 using WorldGen.Universe;
 
 namespace WorldGen.Graphics.UI.Windows;
