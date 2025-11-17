@@ -70,7 +70,7 @@ public record struct BlockFaceRenderData
         Position |= x << 0;
         Position |= y << 9;
         Position |= z << 18;
-        Position |= ((int)Normal & 0xF) << 27; // Normal direction as an int (0-5)
+        Position |= ((int)Normal & 0x7) << 27; // Normal direction as an int (0-5)
 
         int visualData = 0;
         int lightX = (int)Light.X & 0x0F;

@@ -1,4 +1,5 @@
 using ImGuiNET;
+using WorldGen.Graphics.UI.Components;
 using WorldGen.Graphics.UI.Components.Tables;
 using WorldGen.Universe;
 
@@ -41,7 +42,7 @@ public class ChunkWindow : Window
                 Headers = [
                   "Position",
                   "Ticks Left",
-                  "State"
+                  "State",
                 ],
                 Border = true,
             };
@@ -54,10 +55,13 @@ public class ChunkWindow : Window
                 if (_world.TryGetChunk(position, out var chunk))
                     state = chunk.State;
 
+                var tableRow = new TableRowComponent(
+                $"{position.X,3} {position.Y,3} {position.Z,3}",
+                (ticks + 1).ToString(),
+                state.ToString());
+
                 table.AddRow(
-                    $"{position.X,3} {position.Y,3} {position.Z,3}",
-                    (ticks + 1).ToString(),
-                    state.ToString()
+                            tableRow
                 );
             }
         }

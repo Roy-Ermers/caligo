@@ -45,21 +45,21 @@ public class HillyWorldGenerator : IWorldGenerator
             var (X, Y) = detailNoise.Get2DVector(scaled.X, scaled.Z);
             scaled.X += X * 5f;
             scaled.Z += Y * 5f;
-            var density = terrainNoise.Get2D(1 / 8f * scaled.X, 1 / 8f * scaled.Z) * (MaxGroundLevel - MinGroundLevel) + MinGroundLevel;
+            var height = terrainNoise.Get2D(1 / 8f * scaled.X, 1 / 8f * scaled.Z) * (MaxGroundLevel - MinGroundLevel) + MinGroundLevel;
 
 
             // Determine block type at this position
             Block? blockToPlace = null;
 
-            if (Math.Floor(density) >= position.Y && detailNoise.Get3D(scaled.X, Y, scaled.Z) > .25)
+            if (Math.Floor(height) >= position.Y && detailNoise.Get3D(scaled.X, Y, scaled.Z) > .25)
             {
                 blockToPlace = ModuleRepository.Current.Get<Block>("stone");
             }
-            else if (Math.Floor(density) == position.Y)
+            else if (Math.Floor(height) == position.Y)
             {
                 blockToPlace = GrassBlock;
             }
-            else if (density > position.Y)
+            else if (height > position.Y)
             {
                 blockToPlace = DirtBlock;
             }

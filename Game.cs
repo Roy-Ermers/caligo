@@ -183,7 +183,6 @@ public class Game : GameWindow
 
         var center = Camera.WorldToScreen(Vector3.Zero);
 
-        var character = "#";
         if (center is not null)
         {
             ImGui.SetCursorScreenPos(new System.Numerics.Vector2(center.Value.X, center.Value.Y));
@@ -210,12 +209,6 @@ public class Game : GameWindow
             ImGui.TextColored(System.Numerics.Vector4.UnitZ + System.Numerics.Vector4.UnitW, "Z");
         }
 
-        var chunkY = Camera.WorldToScreen(Vector3.UnitY * Chunk.Size);
-        if (chunkY is not null)
-        {
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(chunkY.Value.X, chunkY.Value.Y));
-            ImGui.TextColored(System.Numerics.Vector4.UnitW, character);
-        }
         var blockCenter = Camera.WorldToScreen(Vector3.One * 0.5f);
         if (blockCenter is not null)
         {

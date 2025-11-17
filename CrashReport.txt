@@ -1,7 +1,8 @@
-System.ArgumentException: An item with the same key has already been added. Key: (C;4, 0, 3)
-   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)
-   at System.Collections.Generic.Dictionary`2.Add(TKey key, TValue value)
-   at WorldGen.Renderer.Worlds.WorldRenderer.Update() in /home/roy/source/world-gen/Renderer/Worlds/WorldRenderer.cs:line 154
-   at WorldGen.Game.OnUpdateFrame(FrameEventArgs args) in /home/roy/source/world-gen/Game.cs:line 136
+System.ArgumentException: Row data length 3 does not match column length 4
+   at WorldGen.Graphics.UI.Components.Tables.TableComponent.AddRow(TableRowComponent component)
+   at WorldGen.Graphics.UI.Windows.ChunkWindow.Draw(Double deltaTime)
+   at WorldGen.Graphics.UI.UiRenderer.Draw(Double deltaTime)
+   at WorldGen.Game.RenderUI(FrameEventArgs args)
+   at WorldGen.Game.OnRenderFrame(FrameEventArgs args)
    at OpenTK.Windowing.Desktop.GameWindow.Run()
-   at Program.<Main>$(String[] args) in /home/roy/source/world-gen/Program.cs:line 1
+   at Program.<Main>$(String[] args)

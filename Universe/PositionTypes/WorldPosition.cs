@@ -53,4 +53,9 @@ public readonly record struct WorldPosition(int X, int Y, int Z)
     {
         return new WorldPosition(left.X - right, left.Y - right, left.Z - right);
     }
+
+    public static WorldPosition operator /(WorldPosition left, int right)
+    {
+        return new WorldPosition(left.X / right, left.Y / right, left.Z / right);
+    }
 }

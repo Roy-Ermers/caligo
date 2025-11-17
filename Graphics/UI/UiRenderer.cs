@@ -14,7 +14,8 @@ public class UiRenderer
         new FpsWindow(),
         new ModuleWindow(),
         new ChunkWindow(),
-        new ResourcesWindow()
+        new ResourcesWindow(),
+        new CameraWindow()
     ];
 
     public UiRenderer(Game game)
@@ -54,7 +55,7 @@ public class UiRenderer
     {
         ImGui.Text($"FPS {(int)(1 / deltaTime)}");
 
-        ImGui.DockSpaceOverViewport(0, ImGui.GetMainViewport(),
+        var dockspace = ImGui.DockSpaceOverViewport(0, ImGui.GetMainViewport(),
             ImGuiDockNodeFlags.PassthruCentralNode | ImGuiDockNodeFlags.NoDockingOverCentralNode);
 
         foreach (var window in _windows)

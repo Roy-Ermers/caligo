@@ -110,6 +110,10 @@ public class ImGuiRenderer : IDisposable
                            ImGuiBackendFlags.PlatformHasViewports | ImGuiBackendFlags.HasMouseHoveredViewport;
         // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.DpiEnableScaleViewports | ImGuiConfigFlags.DpiEnableScaleFonts;
+        unsafe
+        {
+            io.NativePtr->IniFilename = null;
+        }
         ImGui.LoadIniSettingsFromMemory(LoadSettings());
 
         CreateDeviceResources();
@@ -319,11 +323,11 @@ public class ImGuiRenderer : IDisposable
             _windowHeight / _scaleFactor.Y);
         io.DisplayFramebufferScale = _scaleFactor;
 
-        io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
         if (io.WantSaveIniSettings)
         {
             SaveSettings();
         }
+        io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
     }
 
     readonly List<char> _pressedChars = [];

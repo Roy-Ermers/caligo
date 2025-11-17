@@ -69,6 +69,8 @@ public class TableComponent : IDisposable, IComponent
 
         rendered = true;
 
+        ImGui.PushID(Id);
+
         ImGuiTableFlags tableFlags = (ImGuiTableFlags)TableSizing;
 
         if (Border)
@@ -84,6 +86,7 @@ public class TableComponent : IDisposable, IComponent
             RenderSimple();
 
         ImGui.EndTable();
+        ImGui.PopID();
     }
 
     private void RenderHeaders()
