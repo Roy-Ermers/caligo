@@ -1,9 +1,15 @@
 [
 	{
-		"label": "Zed debug",
-		"adapter": "JavaScript",
+		"label": "Debug .NET Core App",
+		"adapter": "netcoredbg",
 		"request": "launch",
-		"program": "netcoredbg --interpreter=vscode -- dotnet bin/Debug/net8.0/worldGen.dll",
-		"cwd": "$ZED_WORKTREE_ROOT"
+		"program": "$ZED_WORKTREE_ROOT/bin/Debug/net8.0/worldGen.dll",
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"enableStepFiltering": true,
+		"justMyCode": true,
+		"build": {
+			"command": "dotnet",
+			"args": ["watch", "$ZED_WORKTREE_ROOT/worldGen.csproj"]
+		}
 	}
 ]

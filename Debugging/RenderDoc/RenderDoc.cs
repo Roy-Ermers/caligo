@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using WorldGen.Debugging.RenderDoc.Bindings;
 
@@ -14,23 +13,29 @@ public unsafe class RenderDoc
     /// </summary>
     public readonly RenderDocApi API;
 
+    public bool IsCapturing => API.IsFrameCapturing() == 1;
+
     /// <summary>
     /// Attempts to load RenderDoc.
     /// </summary>
     /// <param name="renderDoc">The RenderDoc instance.</param>
     /// <returns>Whether RenderDoc was successfully loaded.</returns>
-    public static bool Load(out RenderDoc? renderDoc)
+    public static RenderDoc? Load()
     {
+#if !DEBUG
+    	return;
+#endif
         var libName = GetRenderDocLibName();
         if (NativeLibrary.TryLoad(libName, out var lib) ||
             NativeLibrary.TryLoad(libName, typeof(RenderDoc).Assembly, null, out lib))
         {
-            renderDoc = new RenderDoc(lib);
-            return true;
+            var renderDoc = new RenderDoc(lib);
+            Console.WriteLine($"RenderDoc loaded: {renderDoc.API.GetAPIVersion}");
+            renderDoc.API.SetCaptureFilePathTemplate("captures/WorldGenCapture");
+            return renderDoc;
         }
 
-        renderDoc = null;
-        return false;
+        return null;
     }
 
     private unsafe RenderDoc(IntPtr nativeLib)
@@ -45,6 +50,14 @@ public unsafe class RenderDoc
         }
 
         API = Marshal.PtrToStructure<RenderDocApi>((IntPtr)apiPointers);
+    }
+
+    public void ToggleCapture()
+    {
+        if (IsCapturing)
+            API.EndFrameCapture(IntPtr.Zero, IntPtr.Zero);
+        else
+            API.StartFrameCapture(IntPtr.Zero, IntPtr.Zero);
     }
 
     private static string GetRenderDocLibName()

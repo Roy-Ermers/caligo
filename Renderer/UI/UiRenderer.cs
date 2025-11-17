@@ -12,7 +12,8 @@ public class UiRenderer
     private readonly List<Window> _windows =
     [
         new FpsWindow(),
-        new ModuleWindow()
+        new ModuleWindow(),
+        new ChunkWindow(),
     ];
 
     public UiRenderer(Game game)
@@ -21,11 +22,11 @@ public class UiRenderer
         var config = game.ModuleRepository.GetAll<string>("config");
         _style = UiStyle.FromConfig(config);
         var defaultFont = game.ModuleRepository.Get<Font>(_style.FontName);
-        ImGuiRenderer.AddFont(defaultFont, 16);
-
-        UpdateStyle();
+        ImGuiRenderer.AddFont(defaultFont, _style.FontSize);
 
         _imGui.Initialize();
+
+        UpdateStyle();
 
         foreach (var window in _windows)
             window.Initialize(game);
@@ -78,6 +79,11 @@ public class UiRenderer
             window.Enabled = moduleEnabled;
         }
     }
+
+    public void WindowResized(int width, int height)
+    {
+        _imGui.WindowResized(width, height);
+    }
 }
 
 public readonly struct UIFrame(ImGuiRenderer imGuiRenderer) : IDisposable
@@ -86,14 +92,13 @@ public readonly struct UIFrame(ImGuiRenderer imGuiRenderer) : IDisposable
 
     public readonly void Start(double deltaTime)
     {
-        ImGuiRenderer.Begin(deltaTime);
+        ImGuiRenderer.Begin((float)deltaTime);
         ImGui.SetNextWindowPos(new System.Numerics.Vector2(0, 0), ImGuiCond.Always);
         ImGui.SetNextWindowSize(new System.Numerics.Vector2(ImGui.GetIO().DisplaySize.X, ImGui.GetIO().DisplaySize.Y),
             ImGuiCond.Always);
         ImGui.Begin("fullscreen", ImGuiWindowFlags.NoDecoration |
     ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings |
     ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs);
-
     }
 
     public void End()

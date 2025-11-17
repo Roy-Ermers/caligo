@@ -3,18 +3,21 @@ using WorldGen.Renderer;
 
 namespace WorldGen.Resources.Atlas;
 
-public class AtlasBuilder(int textureSize = 16)
+public class AtlasBuilder()
 {
+    public int? TextureSize { get; private set; }
     private readonly Dictionary<string, ImageData> _sprites = [];
 
     public void AddEntry(string name, Image image)
     {
         var texture = image.Load();
 
-        if (texture.Width != textureSize || texture.Height != textureSize)
+        TextureSize ??= Math.Max(texture.Width, texture.Height);
+
+        if (texture.Width != TextureSize || texture.Height != TextureSize)
         {
             throw new Exception(
-                $"Texture {name} ({image.Path}) is not the format specified by the module configuration ({textureSize}x{textureSize})");
+                $"Texture {name} ({image.Path}) is not the format specified by the module configuration ({TextureSize}x{TextureSize})");
         }
 
         _sprites.Add(name, texture);
@@ -29,6 +32,11 @@ public class AtlasBuilder(int textureSize = 16)
 
     public Atlas Build()
     {
+        if (_sprites.Count == 0)
+            throw new InvalidOperationException("No sprites have been added to the atlas builder.");
+        if (TextureSize is null)
+            throw new InvalidOperationException("Texture size has not been set. Please add at least one sprite before building the atlas.");
+
         var entries = new string?[_sprites.Count];
 
         var index = 0;
@@ -44,7 +52,7 @@ public class AtlasBuilder(int textureSize = 16)
         var atlas = new Atlas()
         {
             TextureArray = textureArray,
-            TileSize = textureSize,
+            TileSize = TextureSize.Value,
             Aliases = entries
         };
 

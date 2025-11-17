@@ -19,7 +19,7 @@ out vec4 FragColor;
 
 flat in float time;
 in vec3 texCoords;
-in vec3 Normal;
+in vec3 fragPos;
 flat in Material material;
 flat in BlockFace face;
 
@@ -42,7 +42,9 @@ void main()
     // diffuse shading
     float diffuse = max(dot(normal, lightDir), 0.0);
 
-    vec3 result = texColor.rgb * material.tint;
+    vec3 ambient = ambient + diffuse;
+
+    vec3 result = ambient * (texColor.rgb * material.tint);
 
     FragColor = vec4(result, 1.0);
 }

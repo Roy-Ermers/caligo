@@ -1,14 +1,13 @@
-using System.Diagnostics;
 using System.Numerics;
 using System.Text.Json;
 using ImGuiNET;
-using OpenTK.Graphics.ES20;
-using OpenTK.Input.Hid;
 using WorldGen.FileSystem;
 using WorldGen.FileSystem.Images;
 using WorldGen.FileSystem.Json;
 using WorldGen.ModuleSystem;
 using WorldGen.ModuleSystem.Storage;
+using WorldGen.Renderer.UI.Components;
+using WorldGen.Renderer.UI.Components.Tables;
 using WorldGen.Resources.Block;
 
 namespace WorldGen.Renderer.UI.Windows;
@@ -16,6 +15,8 @@ namespace WorldGen.Renderer.UI.Windows;
 public class ModuleWindow : Window
 {
     public override bool Enabled { get; set; } = true;
+    public override string Name => "Modules";
+
     Game _game = null!;
     Texture2D? imagePreview;
 
@@ -76,9 +77,9 @@ public class ModuleWindow : Window
                     case ResourceTypeStorage<string> configStorage and { Key: "config" }:
                         DrawConfigStorage(configStorage);
                         break;
-                    // case ResourceTypeStorage<Block> blockStorage:
-                    //     DrawBlockStorage(blockStorage);
-                    //     break;
+                    case ResourceTypeStorage<Block> blockStorage:
+                        DrawBlockStorage(blockStorage);
+                        break;
                     default:
                         DrawUnknownStorage(storage.CastToObjectEnumerable());
                         break;
@@ -90,7 +91,7 @@ public class ModuleWindow : Window
         ImGui.EndTabBar();
     }
 
-    private void DrawUnknownStorage(IEnumerable<KeyValuePair<string, object>> storage)
+    private static void DrawUnknownStorage(IEnumerable<KeyValuePair<string, object>> storage)
     {
         ImGui.BeginChild("UnknownStorage", new Vector2(0, 0), ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.FrameStyle);
 
@@ -108,8 +109,18 @@ public class ModuleWindow : Window
 
             if (ImGui.BeginItemTooltip())
             {
-                ImGui.Text($"Identifier: {name}");
-                ImGui.Text($"Type: {value.GetType().Name}");
+                ImGui.BeginTable("info", 2);
+                ImGui.TableNextRow();
+                ImGui.TableNextColumn();
+                ImGui.TextDisabled("Identifier");
+                ImGui.TableNextColumn();
+                ImGui.Text(name);
+
+                ImGui.TableNextColumn();
+                ImGui.TextDisabled("Type");
+                ImGui.TableNextColumn();
+                ImGui.Text(value.GetType().Name);
+                ImGui.EndTable();
                 ImGui.EndTooltip();
             }
         }
@@ -117,7 +128,7 @@ public class ModuleWindow : Window
         ImGui.EndChild();
     }
 
-    private void DrawConfigStorage(ResourceTypeStorage<string> configStorage)
+    private static void DrawConfigStorage(ResourceTypeStorage<string> configStorage)
     {
         ImGui.BeginGroup();
 
@@ -145,7 +156,7 @@ public class ModuleWindow : Window
 
     private void DrawImageStorage(ResourceTypeStorage<Image> imageStorage)
     {
-        ImGui.BeginGroup();
+        ImGui.BeginChild("images", new Vector2(0, 0), ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.FrameStyle);
 
         foreach (var (name, image) in imageStorage)
         {
@@ -159,7 +170,7 @@ public class ModuleWindow : Window
                 ImGui.EndPopup();
             }
 
-            ImGui.Selectable(name, false, ImGuiSelectableFlags.AllowDoubleClick);
+            ImGui.Selectable(name, false);
 
             if (ImGui.BeginItemTooltip())
             {
@@ -168,90 +179,52 @@ public class ModuleWindow : Window
                     imagePreview = Texture2D.FromImage(loadedImage);
                 else
                     imagePreview.SetData(loadedImage.Data, loadedImage.Width, loadedImage.Height);
-                var availableWidth = ImGui.GetContentRegionAvail().X * 0.66f;
+                var availableWidth = 256;
+
                 ImGui.Image(imagePreview.Handle,
                     new Vector2(availableWidth, availableWidth * loadedImage.Height / (float)loadedImage.Width),
                     new(0, 1),
                     new(1, 0)
                 );
 
-                ImGui.BeginTable("TextureInfo", 2, ImGuiTableFlags.BordersInnerH);
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn();
-                ImGui.Text("ID");
-                ImGui.TableNextColumn();
-                ImGui.Text(name);
-
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn();
-                ImGui.Text("Size");
-                ImGui.TableNextColumn();
-                ImGui.Text($"{loadedImage.Width}x{loadedImage.Height}");
-
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn();
-                ImGui.Text("Path");
-                ImGui.TableNextColumn();
-                ImGui.Text(image.Path);
-                ImGui.EndTable();
+                using var TextureInfo = new InfoTableComponent("Text info");
+                TextureInfo.Add("ID", name);
+                TextureInfo.Add("Size", $"{loadedImage.Width}x{loadedImage.Height}");
+                TextureInfo.Add("Path", image.Path);
+                TextureInfo.Dispose();
                 ImGui.EndTooltip();
             }
         }
 
-        ImGui.EndGroup();
+        ImGui.EndChild();
     }
 
     private void DrawBlockStorage(ResourceTypeStorage<Block> blockStorage)
     {
-        ImGui.BeginTable("Blocks", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg);
-        ImGui.TableSetupColumn("Id");
-        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
-        ImGui.TableSetupColumn("Model", ImGuiTableColumnFlags.WidthStretch);
-
-        ImGui.TableHeadersRow();
+        using var widget = new FrameComponent("Blocks").Enter();
 
         foreach (var (name, block) in blockStorage)
         {
-            if (ImGui.BeginPopup(name))
-            {
-                if (ImGui.Selectable("Open Block definition"))
-                {
-                    var moduleName = Identifier.ResolveModule(name);
-                    var module = _game.ModuleRepository.GetModule(moduleName);
-                    FileSystemUtils.OpenFile($"{module.AbsoluteDirectory}/blocks/{name}.json");
-                }
 
-                ImGui.EndPopup();
-            }
-
-            ImGui.TableNextRow(ImGuiTableRowFlags.None, 32);
-            ImGui.TableNextColumn();
-            ImGui.Selectable(block.NumericId.ToString(), false, ImGuiSelectableFlags.SpanAllColumns);
-            ImGui.OpenPopupOnItemClick(name);
-
-
+            ImGui.Selectable(block.Name);
             if (ImGui.BeginItemTooltip())
             {
-                ImGui.Text($"Block ID: {block.NumericId}");
-                ImGui.Text($"Block Name: {name}");
-                ImGui.Text($"Model Name: {block.ModelName ?? "No model"}");
-                ImGui.Text($"Textures: {string.Join(", ", block.Textures)}");
-                ImGui.Separator();
+                var info = new InfoTableComponent("blockTextures");
+                info.Add("Block ID", block.NumericId);
+                info.Add("Block Name", name);
+                info.Add("Model Name", block.ModelName ?? "No model");
 
+                info.Dispose();
+                if (block.Textures.Count > 0)
+                {
+                    ImGui.SeparatorText("Textures");
+                    using var blockTexture = new InfoTableComponent("blockTextures");
+                    blockTexture.Set(block.Textures);
+                }
                 ImGui.EndTooltip();
             }
-
-            ImGui.TableNextColumn();
-            ImGui.Text(name);
-            ImGui.TableNextColumn();
-
-
-            if (block.ModelName is not null)
-                ImGui.Text(block.ModelName);
-            else
-                ImGui.Text("No model");
+            ImGui.SameLine();
+            ImGui.TextDisabled(block.NumericId.ToString());
         }
-
-        ImGui.EndTable();
     }
 }

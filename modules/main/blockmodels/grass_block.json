@@ -14,27 +14,73 @@
             ],
             "faces": {
                 "down": {
-                    "texture": "#down"
+                    "texture": "#underground"
                 },
                 "up": {
-                    "texture": "#up",
+                    "texture": "#grass",
                     "tint": [
                         87,
-                        151,
-                        37
+                        132,
+                        75
                     ]
                 },
                 "north": {
-                    "texture": "#north"
+                    "texture": "#underground"
                 },
                 "south": {
-                    "texture": "#south"
+                    "texture": "#underground"
                 },
                 "west": {
-                    "texture": "#west"
+                    "texture": "#underground"
                 },
                 "east": {
-                    "texture": "#east"
+                    "texture": "#underground"
+                }
+            }
+        },
+        {
+            "from": [
+                0,
+                0,
+                0
+            ],
+            "to": [
+                16,
+                16,
+                16
+            ],
+            "faces": {
+                "north": {
+                    "texture": "#side_overlay",
+                    "tint": [
+                        87,
+                        132,
+                        75
+                    ]
+                },
+                "south": {
+                    "texture": "#side_overlay",
+                    "tint": [
+                        87,
+                        132,
+                        75
+                    ]
+                },
+                "west": {
+                    "texture": "#side_overlay",
+                    "tint": [
+                        87,
+                        132,
+                        75
+                    ]
+                },
+                "east": {
+                    "texture": "#side_overlay",
+                    "tint": [
+                        87,
+                        132,
+                        75
+                    ]
                 }
             }
         }

@@ -6,9 +6,9 @@ namespace WorldGen.Renderer;
 
 public class Camera
 {
-    public Vector3 Position = Vector3.Zero;
+    public Vector3 Position = new Vector3(0, 0, 0);
     private float _speed = 1f;
-    public float Pitch;
+    public float Pitch = 0f;
     public float Yaw = -MathHelper.PiOver2;
 
     private Vector3 _forward = -Vector3.UnitZ;
@@ -34,7 +34,7 @@ public class Camera
     {
         ViewMatrix = Matrix4.LookAt(Position, Position + Forward, Vector3.UnitY);
 
-        ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, _game.Size.X / (float)_game.Size.Y, 0.01f, 1000f);
+        ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, _game.Size.X / (float)_game.Size.Y, .1f, 1000f);
     }
 
     public void Update(double deltaTime)
@@ -42,7 +42,7 @@ public class Camera
         var keyboard = _game.KeyboardState;
         var mouse = _game.MouseState;
 
-        _speed += mouse.ScrollDelta.Y;
+        _speed = MathHelper.Clamp(_speed + mouse.ScrollDelta.Y, 1, 20);
 
         var movementSpeed = _speed * (float)deltaTime;
 

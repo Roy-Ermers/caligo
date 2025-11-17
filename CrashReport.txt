@@ -1,0 +1,8 @@
+System.EntryPointNotFoundException: Unable to find an entry point named 'igGetIO' in shared library 'cimgui'.
+   at ImGuiNET.ImGuiNative.igGetIO()
+   at ImGuiNET.ImGui.GetIO()
+   at WorldGen.Renderer.UI.ImGuiRenderer.AddFont(Font font, Single size) in /home/roy/source/world-gen/Renderer/UI/ImGui.cs:line 56
+   at WorldGen.Renderer.UI.UiRenderer..ctor(Game game) in /home/roy/source/world-gen/Renderer/UI/UiRenderer.cs:line 25
+   at WorldGen.Game.OnLoad() in /home/roy/source/world-gen/Game.cs:line 114
+   at OpenTK.Windowing.Desktop.GameWindow.Run()
+   at Program.<Main>$(String[] args) in /home/roy/source/world-gen/Program.cs:line 1

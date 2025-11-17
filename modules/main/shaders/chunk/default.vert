@@ -1,5 +1,7 @@
 #version 460
-
+struct ChunkInfo {
+    vec3 position;
+};
 layout(binding = 0) buffer FaceData {
     int faceData[];
 };
@@ -7,8 +9,9 @@ layout(binding = 0) buffer FaceData {
 layout(binding = 1) buffer Materials {
     int materials[];
 };
-
-layout(location = 0) in ivec3 vertexOffset;
+layout(binding = 2) buffer ChunkModelMatrices {
+    vec4 chunkPositions[];
+};
 
 struct BlockFace {
     vec3 position;
@@ -28,14 +31,12 @@ struct Material {
 
 flat out float time;
 out vec3 texCoords;
-out vec3 FragPos;
+out vec3 fragPos;
 flat out Material material;
 flat out BlockFace face;
 
 uniform float uTime;
 uniform int faceIndex;
-uniform vec3 faceDirection;
-uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform sampler2DArray atlas;
@@ -51,7 +52,7 @@ const vec3[] Normals = vec3[6](
 
 BlockFace Decode() {
     BlockFace face;
-    int index = gl_InstanceID * 2 + faceIndex * 2;
+    int index = (gl_BaseInstance + gl_InstanceID) * 2;
     int position = faceData[index];
     face.position = vec3(0, 0, 0);
     face.position.x = ((position >> 0) & 0x1FF) / 16.0;
@@ -98,12 +99,33 @@ Material DecodeMaterial(BlockFace face) {
 
     return material;
 }
-vec3 getTangent(vec3 normal) {
-    vec3 up = abs(normal.y) < 0.99 ? vec3(0, 1, 0) : vec3(0, 0, 1);
-    return normalize(cross(up, normal));
-}
-vec3 getBitangent(vec3 normal, vec3 tangent) {
-    return normalize(cross(normal, tangent));
+
+// Lookup table for tangent and bitangent per face normal
+void getFaceBasis(vec3 normal, out vec3 tangent, out vec3 bitangent) {
+    if (normal.y <= -1.0) {
+        tangent = vec3(1, 0, 0);
+        bitangent = vec3(0, 0, 1);
+    }
+    else if (normal.y >= 1.0) {
+        tangent = vec3(-1, 0, 0);
+        bitangent = vec3(0, 0, 1);
+    }
+    else if (normal.z <= -1.0) {
+        tangent = vec3(-1, 0, 0);
+        bitangent = vec3(0, 1, 0);
+    }
+    else if (normal.z >= 1.0) {
+        tangent = vec3(1, 0, 0);
+        bitangent = vec3(0, 1, 0);
+    }
+    else if (normal.x <= -1.0) {
+        tangent = vec3(0, 0, 1);
+        bitangent = vec3(0, 1, 0);
+    }
+    else {
+        tangent = vec3(0, 0, -1);
+        bitangent = vec3(0, 1, 0);
+    }
 }
 
 void main()
@@ -121,18 +143,21 @@ void main()
     );
     vec2 local = quadCorners[gl_VertexID];
 
-    vec3 tangent = getTangent(face.normal);
-    vec3 bitangent = getBitangent(face.normal, tangent);
+    vec3 tangent, bitangent;
+    getFaceBasis(face.normal, tangent, bitangent);
 
-    vec3 offset = tangent * local.x * material.width +
+    vec3 vertexOffset = tangent * local.x * material.width +
                   bitangent * local.y * material.height;
 
-    vec3 vertexPosition = face.position + offset;
+    vec3 chunkOffset = chunkPositions[gl_DrawID].xyz;
 
+    vec3 vertexPosition = face.position + vertexOffset + chunkOffset;
 
-    vec2 texCoord = mix(material.uv0, material.uv1, local * vec2(material.width, material.height));
+    texCoords = vec3(
+        mix(material.uv0, material.uv1, local * vec2(material.width, material.height)),
+        material.textureId
+    );
 
-    texCoords = vec3(texCoord, material.textureId);
-    FragPos = vec3(model * vec4(vertexPosition.xyz, 1.0));
-    gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
+    fragPos = vertexPosition.xyz;
+    gl_Position = projection * view * vec4(vertexPosition, 1.0);
 }

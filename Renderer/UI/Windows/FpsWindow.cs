@@ -1,6 +1,7 @@
 using System.Numerics;
 using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
+using WorldGen.FileSystem;
 
 namespace WorldGen.Renderer.UI.Windows;
 
@@ -10,7 +11,7 @@ public class FpsWindow : Window
     public override ImGuiWindowFlags Flags => ImGuiWindowFlags.NoResize;
     public override bool Enabled { get; set; } = true;
 
-    int _polygonModeIndex = 3;
+    int _polygonModeIndex = 0;
     private readonly PolygonMode[] _polygonModes = [PolygonMode.Fill, PolygonMode.Line, PolygonMode.Point];
 
     private readonly Memory<float> _fps = new float[100];
@@ -41,7 +42,7 @@ public class FpsWindow : Window
             GL.GetInteger((GetPName)0x9048, out var total);
             GL.GetInteger((GetPName)0x9049, out var current);
 
-            ImGui.Text("GPU Memory: " + current / 1024 / 1024 + " MB / " + total / 1024 / 1024 + " MB");
+            ImGui.Text("GPU Memory: " + FileSystemUtils.FormatByteSize(current) + '/' + FileSystemUtils.FormatByteSize(total));
         }
 
         if (ImGui.CollapsingHeader("OpenGL Info"))
@@ -54,8 +55,8 @@ public class FpsWindow : Window
 
         if (ImGui.CollapsingHeader("Garbage Collection"))
         {
-            ImGui.Text("Total Memory: " + GC.GetTotalMemory(false) / 1024 / 1024 + " MB");
-            ImGui.Text("Max Memory: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024 + " MB");
+            ImGui.Text("Total Memory: " + FileSystemUtils.FormatByteSize(GC.GetTotalMemory(false)));
+            ImGui.Text("Max Memory: " + FileSystemUtils.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
             ImGui.Text("0: " + GC.CollectionCount(0));
             ImGui.Text("1: " + GC.CollectionCount(1));
             ImGui.Text("2: " + GC.CollectionCount(2));
@@ -65,7 +66,7 @@ public class FpsWindow : Window
 
         if (ImGui.Combo("Polygon mode", ref _polygonModeIndex, [.. _polygonModes.Select(m => m.ToString())], _polygonModes.Length))
         {
-            GL.PolygonMode(TriangleFace.FrontAndBack, _polygonModeIndex + PolygonMode.Point);
+            GL.PolygonMode(TriangleFace.FrontAndBack, (2 - _polygonModeIndex) + PolygonMode.Point);
         }
     }
 }

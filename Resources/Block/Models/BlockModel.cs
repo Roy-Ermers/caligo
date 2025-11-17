@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using OpenTK.Graphics.ES11;
 
 namespace WorldGen.Resources.Block.Models;
 

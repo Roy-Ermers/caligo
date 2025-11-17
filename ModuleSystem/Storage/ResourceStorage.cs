@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace WorldGen.ModuleSystem.Storage;
 

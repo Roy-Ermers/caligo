@@ -21,7 +21,6 @@ public struct BlockFace
 
         Texture = texture;
         UV = new Vector4(0, 0, 16, 16);
-        Tint = new Vector3(255, 255, 255);
     }
 
     public BlockFace Clone()

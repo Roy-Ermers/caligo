@@ -2,9 +2,9 @@
     "model": {
         "name": "block/block_column",
         "textures": {
-            "up": "main:dirt",
-            "down": "main:dirt",
-            "side": "main:dirt_side"
+            "up": "main:dirt_top",
+            "down": "main:dirt_top",
+            "side": "main:dirt"
         }
     }
 }

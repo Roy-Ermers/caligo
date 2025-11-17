@@ -1,8 +1,0 @@
-{
-    "model": {
-        "name": "block/block_all",
-        "textures": {
-            "all": "structure_block"
-        }
-    }
-}

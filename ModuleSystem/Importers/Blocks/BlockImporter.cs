@@ -1,7 +1,6 @@
 using System.Text.Json;
 using WorldGen.FileSystem.Json;
 using WorldGen.ModuleSystem.Storage;
-using WorldGen.Renderer.Shaders;
 using WorldGen.Resources.Block;
 using WorldGen.Resources.Block.Models;
 

@@ -1,5 +1,4 @@
 using OpenTK.Graphics.OpenGL4;
-using WorldGen.FileSystem;
 using WorldGen.FileSystem.Images;
 
 namespace WorldGen.Renderer;

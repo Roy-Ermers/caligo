@@ -1,5 +1,4 @@
-using WorldGen.ChunkRenderer;
-using WorldGen.ChunkRenderer.Mesh;
+using WorldGen.WorldRenderer;
 using WorldGen.FileSystem.Images;
 using WorldGen.ModuleSystem.Storage;
 using WorldGen.Resources.Atlas;

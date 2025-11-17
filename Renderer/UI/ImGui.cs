@@ -1,19 +1,18 @@
-using ImGuiNET;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Diagnostics;
+using WorldGen.FileSystem;
 using WorldGen.Renderer.Shaders;
 using ErrorCode = OpenTK.Graphics.OpenGL4.ErrorCode;
-using ShaderType = OpenTK.Graphics.OpenGL4.ShaderType;
-using WorldGen.FileSystem;
 
 namespace WorldGen.Renderer.UI;
 
 public class ImGuiRenderer : IDisposable
 {
+    const string UiSettingsFileName = "UI.ini";
     private readonly Game _window;
     private bool _frameBegun;
 
@@ -59,6 +58,8 @@ public class ImGuiRenderer : IDisposable
         var glyphRange = (ImFontGlyphRangesBuilderPtr)ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder();
         glyphRange.AddRanges(io.Fonts.GetGlyphRangesDefault());
         glyphRange.AddChar('•');
+        glyphRange.AddChar('✓');
+        glyphRange.AddChar('✗');
         glyphRange.BuildRanges(out var ranges);
 
         ImFontConfigPtr fontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
@@ -71,6 +72,21 @@ public class ImGuiRenderer : IDisposable
         fontConfig.GlyphMaxAdvanceX = float.MaxValue;
 
         io.Fonts.AddFontFromFileTTF(font.FilePath, size, fontConfig, ranges.Data);
+    }
+
+    public static string LoadSettings()
+    {
+        var path = Path.Combine(Directory.GetCurrentDirectory(), UiSettingsFileName);
+        if (!File.Exists(path))
+            return string.Empty;
+
+        return File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), UiSettingsFileName));
+    }
+
+    public unsafe static void SaveSettings()
+    {
+        var settings = ImGui.SaveIniSettingsToMemory();
+        File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), UiSettingsFileName), settings);
     }
 
     public void Initialize()
@@ -92,6 +108,8 @@ public class ImGuiRenderer : IDisposable
                            ImGuiBackendFlags.PlatformHasViewports | ImGuiBackendFlags.HasMouseHoveredViewport;
         // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.ViewportsEnable;
+
+        ImGui.LoadIniSettingsFromMemory(LoadSettings());
 
         CreateDeviceResources();
 
@@ -167,39 +185,42 @@ public class ImGuiRenderer : IDisposable
     private void RecreateFontDeviceTexture()
     {
         var io = ImGui.GetIO();
-        io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out var width, out var height, out var _);
 
-        var mips = (int)Math.Floor(Math.Log(Math.Max(width, height), 2));
+        unsafe
+        {
+            io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out var width, out var height, out var _);
 
-        var prevActiveTexture = GL.GetInteger(GetPName.ActiveTexture);
-        GL.ActiveTexture(TextureUnit.Texture0);
-        var prevTexture2D = GL.GetInteger(GetPName.TextureBinding2D);
+            var mips = (int)Math.Floor(Math.Log(Math.Max(width, height), 2));
 
-        _fontTexture = GL.GenTexture();
-        GL.BindTexture(TextureTarget.Texture2D, _fontTexture);
-        GL.TexStorage2D(TextureTarget2d.Texture2D, mips, SizedInternalFormat.Rgba8, width, height);
-        LabelObject(ObjectLabelIdentifier.Texture, _fontTexture, "ImGui Text Atlas");
+            var prevActiveTexture = GL.GetInteger(GetPName.ActiveTexture);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            var prevTexture2D = GL.GetInteger(GetPName.TextureBinding2D);
 
-        GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, width, height, PixelFormat.Bgra, PixelType.UnsignedByte,
-            pixels);
+            _fontTexture = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, _fontTexture);
+            GL.TexStorage2D(TextureTarget2d.Texture2D, mips, SizedInternalFormat.Rgba8, width, height);
+            LabelObject(ObjectLabelIdentifier.Texture, _fontTexture, "ImGui Text Atlas");
 
-        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, width, height, PixelFormat.Bgra, PixelType.UnsignedByte,
+                (IntPtr)pixels);
 
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, mips - 1);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
 
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, mips - 1);
 
-        // Restore state
-        GL.BindTexture(TextureTarget.Texture2D, prevTexture2D);
-        GL.ActiveTexture((TextureUnit)prevActiveTexture);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 
-        io.Fonts.SetTexID(_fontTexture);
+            // Restore state
+            GL.BindTexture(TextureTarget.Texture2D, prevTexture2D);
+            GL.ActiveTexture((TextureUnit)prevActiveTexture);
 
-        io.Fonts.ClearTexData();
+            io.Fonts.SetTexID(_fontTexture);
+            io.Fonts.ClearTexData();
+        }
     }
 
     public int BindTextureArray(Texture2DArray textureArray, int slice, int unit = 1)
@@ -297,6 +318,11 @@ public class ImGuiRenderer : IDisposable
             _windowHeight / _scaleFactor.Y);
         io.DisplayFramebufferScale = _scaleFactor;
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
+
+        if (io.WantSaveIniSettings)
+        {
+            SaveSettings();
+        }
     }
 
     readonly List<char> _pressedChars = [];

@@ -4,7 +4,10 @@
 		{
 			"label": "build",
 			"type": "shell",
-			"command": "dotnet build ${workspaceFolder}/worldGen.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary"
+			"command": "dotnet build ${workspaceFolder}/worldGen.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary",
+			"problemMatcher": [
+				"$msCompile"
+			]
 		}
 	]
 }

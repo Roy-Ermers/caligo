@@ -1,6 +1,4 @@
-using System.Collections.Frozen;
 using System.Numerics;
-using WorldGen.ModuleSystem;
 using WorldGen.ModuleSystem.Storage;
 using WorldGen.Utils;
 
@@ -10,7 +8,9 @@ namespace WorldGen.Renderer.UI;
 
 public struct UiStyle
 {
+    public static UiStyle Current { get; private set; }
     public string FontName { get; set; }
+    public int FontSize { get; set; }
     public Vector2 ItemMargin { get; set; }
     public Vector2 WindowPadding { get; set; }
     public float WindowRounding { get; set; }
@@ -18,6 +18,7 @@ public struct UiStyle
     public Vector4 WindowBackground { get; set; }
     public int WindowBorderWidth { get; set; }
     public Vector4 TextColor { get; set; }
+    public Vector4 SecondaryTextColor { get; set; }
 
     public Vector4 AccentColor { get; set; }
     public Vector4 AccentHoverColor { get; set; }
@@ -46,6 +47,7 @@ public struct UiStyle
         var style = new UiStyle
         {
             FontName = config["ui.font"],
+            FontSize = int.TryParse(config["ui.fontSize"], out var size) ? size : 16,
             WindowRounding = float.Parse(config["ui.window.rounding"]),
             WindowPadding = new Vector2(
                 float.Parse(config["ui.window.padding.vertical"]),
@@ -62,6 +64,7 @@ public struct UiStyle
             WindowBackground = ParseColor(config, "ui.window.background"),
             WindowBorderWidth = int.Parse(config["ui.window.borderWidth"]),
             TextColor = ParseColor(config, "ui.textColor"),
+            SecondaryTextColor = ParseColor(config, "ui.secondaryTextColor"),
             TitleBackground = ParseColor(config, "ui.window.titlebar.background"),
             TitleActiveBackground = ParseColor(config, "ui.window.titlebar.activeBackground"),
             TitleCollapsedBackground = ParseColor(config, "ui.window.titlebar.collapsedBackground"),
@@ -111,6 +114,7 @@ public struct UiStyle
         style.FrameBorderSize = FrameBorderWidth;
 
         style.Colors[(int)ColorToken.Text] = TextColor;
+        style.Colors[(int)ColorToken.TextDisabled] = SecondaryTextColor;
         style.Colors[(int)ColorToken.WindowBg] = WindowBackground;
         style.Colors[(int)ColorToken.TitleBg] = WindowBackground;
         style.Colors[(int)ColorToken.TitleBgActive] = TitleActiveBackground;
@@ -147,6 +151,8 @@ public struct UiStyle
         style.Colors[(int)ColorToken.TabDimmed] = FrameBackground;
         style.Colors[(int)ColorToken.TabSelected] = AccentColor;
         style.Colors[(int)ColorToken.TabSelectedOverline] = Vector4.Zero;
-
+        style.Colors[(int)ColorToken.TabDimmedSelected] = AccentColor;
+        style.Colors[(int)ColorToken.TabDimmedSelectedOverline] = Vector4.Zero;
+        Current = this;
     }
 }

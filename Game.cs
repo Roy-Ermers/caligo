@@ -1,7 +1,6 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
-using WorldGen.FileSystem.Images;
 using WorldGen.Renderer;
 using WorldGen.ModuleSystem;
 using WorldGen.ModuleSystem.Importers;
@@ -12,13 +11,14 @@ using WorldGen.Debugging.RenderDoc;
 using WorldGen.ModuleSystem.Importers.Blocks;
 using ImGuiNET;
 using OpenTK.Mathematics;
-using WorldGen.ChunkRenderer;
 using WorldGen.Resources.Block;
-using WorldGen.ChunkRenderer.Materials;
-using WorldGen.WorldGenerator;
-using WorldGen.WorldGenerator.Chunks;
+using WorldGen.WorldRenderer.Materials;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using WorldGen.Threading;
+using WorldGen.Universe;
+using WorldGen.Universe.WorldGenerators;
+using WorldGen.Universe.PositionTypes;
+using System.Text;
 
 namespace WorldGen;
 
@@ -26,31 +26,24 @@ public class Game : GameWindow
 {
     public readonly Camera Camera;
     public readonly ModuleRepository ModuleRepository;
-    private readonly UiRenderer _uiRenderer;
+    private UiRenderer _uiRenderer;
 
     private readonly RenderShader _shader;
 
     private readonly RenderDoc? renderdoc;
 
     public MainThread? MainThread { get; } = new();
-
-    private ChunkRenderer.ChunkRenderer _chunkRenderer = null!;
+    public World world = null!;
 
     public double Time = 0;
 
     public Game() : base(GameWindowSettings.Default,
         new() { ClientSize = new(1280, 720), Title = "Voxels", WindowState = WindowState.Maximized })
     {
-#if DEBUG
-        RenderDoc.Load(out var renderDoc);
-        if (renderDoc is not null)
-        {
-            Console.WriteLine($"RenderDoc loaded: {renderDoc.API.GetAPIVersion}");
-            renderdoc = renderDoc;
-            renderDoc.API.SetCaptureFilePathTemplate("captures/WorldGenCapture");
-        }
-#endif
-        Console.WriteLine(Directory.GetCurrentDirectory());
+        AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(UnhandledExceptionHandler);
+
+        renderdoc = RenderDoc.Load();
+
         var importer = new ModuleImporter()
             .AddImporter<TextureImporter>()
             .AddImporter<ShaderImporter>()
@@ -65,8 +58,6 @@ public class Game : GameWindow
 
         ModuleRepository.Build();
 
-        _uiRenderer = new UiRenderer(this);
-
         _shader = ModuleRepository.Get<RenderShader>("default");
         _shader.Initialize();
 
@@ -75,11 +66,33 @@ public class Game : GameWindow
         MainThread = new MainThread();
     }
 
+    private void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+    {
+        Console.WriteLine("an exception occured");
+
+
+        if (args.ExceptionObject is not Exception e)
+        {
+            Console.WriteLine("Exception object is null");
+            return;
+        }
+
+        string message = e.Message;
+        string[] stackTrace = e.StackTrace?.Split(Environment.NewLine) ?? [];
+
+        using FileStream stream = new("CrashReport.txt", FileMode.Create);
+
+        stream.Write(Encoding.UTF8.GetBytes($"{e.GetType()}: {e.Message}\n"));
+        stream.Write(stackTrace.Select(static line => Encoding.UTF8.GetBytes(line + '\n')).SelectMany(bytes => bytes).ToArray());
+
+    }
+
     protected override void OnLoad()
     {
         base.OnLoad();
         GL.DebugMessageCallback(DebugMessageDelegate, nint.Zero);
         GL.ClearColor(0.2f, 0.2f, 0.4f, 1.0f);
+        GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);
         GL.PolygonMode(TriangleFace.Front, PolygonMode.Fill);
 
@@ -87,45 +100,35 @@ public class Game : GameWindow
         var materialBuffer = new MaterialBuffer();
         var atlas = ModuleRepository.Get<Atlas>("block_atlas");
         var blockStorage = ModuleRepository.GetAll<Block>();
+        var _chunkRenderer = new WorldRenderer.ChunkRenderer(materialBuffer, atlas, blockStorage);
+        world = new World(new HillyWorldGenerator(0), _chunkRenderer);
 
-        _chunkRenderer = new ChunkRenderer.ChunkRenderer(materialBuffer, atlas, blockStorage);
+        _uiRenderer = new UiRenderer(this);
+    }
 
-        var chunk = new Chunk(ChunkPosition.Zero);
+    private void LoadChunksAroundPlayer()
+    {
+        var playerPosition = Camera.Position;
+        for (int x = -5; x < 5; x++)
+            for (int y = -1; y < 5; y++)
+                for (int z = -5; z < 5; z++)
+                {
+                    var chunkPosition = ChunkPosition.FromWorldPosition(
+                        x * Chunk.Size + (int)playerPosition.X,
+                        y * Chunk.Size + (int)playerPosition.Y,
+                        z * Chunk.Size + (int)playerPosition.Z
+                    );
 
-        for (short i = 0; i < Chunk.Size * Chunk.Size * Chunk.Size; i++)
-        {
-            var position = ChunkPosition.FromIndex(i);
-
-            if (position.Y == 2)
-                chunk.Set(position, ModuleRepository.Get<Block>("main:grass_block"));
-            else if (position.Y < 2)
-            {
-                chunk.Set(position, ModuleRepository.Get<Block>("main:dirt"));
-            }
-        }
-        // chunk.Set(ChunkPosition.Zero, ModuleRepository.Get<Block>("overlay:overlay_block"));
-        // chunk.Set(new ChunkPosition(0, 2, 0), ModuleRepository.Get<Block>("main:debug_block"));
-
-        _chunkRenderer.AddChunk(chunk);
+                    var chunkLoader = new ChunkLoader(chunkPosition, 1);
+                    world.EnqueueChunk(chunkLoader);
+                }
     }
 
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
-
-        if (renderdoc is not null && KeyboardState.IsKeyDown(Keys.F12))
-        {
-            if (renderdoc.API.IsFrameCapturing() == 1)
-            {
-                // If we are already capturing, end the capture
-                renderdoc.API.EndFrameCapture(IntPtr.Zero, IntPtr.Zero);
-            }
-            else
-            {
-                // Start a new frame capture
-                renderdoc.API.StartFrameCapture(IntPtr.Zero, IntPtr.Zero);
-            }
-        }
+        LoadChunksAroundPlayer();
+        world.Update();
 
         // Update the main thread actions
         MainThread?.Update();
@@ -142,7 +145,7 @@ public class Game : GameWindow
         _shader.SetMatrix4("view", Camera.ViewMatrix);
         _shader.SetVector3("uCameraPosition", Camera.Position);
         _shader.SetFloat("uTime", (float)Time);
-        _chunkRenderer.Draw(_shader);
+        world.Render(_shader);
 
         Camera.Update(args.Time);
 
@@ -154,6 +157,20 @@ public class Game : GameWindow
     {
 
         using var frame = _uiRenderer.StartFrame(args.Time);
+
+        if (renderdoc is not null)
+        {
+            if (renderdoc.IsCapturing)
+            {
+                ImGui.TextColored(new System.Numerics.Vector4(1, 0, 0, 1), "Capturing renderdoc data...");
+            }
+
+            if (KeyboardState.IsKeyPressed(Keys.F12))
+            {
+                renderdoc.ToggleCapture();
+            }
+        }
+
         var oldPos = ImGui.GetCursorScreenPos();
 
         var center = Camera.WorldToScreen(Vector3.Zero);
@@ -208,6 +225,7 @@ public class Game : GameWindow
     {
         base.OnResize(e);
         GL.Viewport(0, 0, Size.X, Size.Y);
+        _uiRenderer?.WindowResized(Size.X, Size.Y);
     }
 
 

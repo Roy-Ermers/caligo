@@ -3,6 +3,7 @@ namespace WorldGen.Renderer;
 using System;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL4;
+using WorldGen.FileSystem;
 
 public class ShaderBuffer<T> where T : struct
 {
@@ -56,11 +57,16 @@ public class ShaderBuffer<T> where T : struct
         Bind();
         if (Size > oldSize)
         {
-            Console.WriteLine($"Resizing {Name} buffer to " + Size);
+            // Resize and upload new data
+            Console.WriteLine($"Resizing {Name} buffer to " + FileSystemUtils.FormatByteSize(data.Length));
             GL.NamedBufferData(Handle, Size, data, _usageHint);
         }
         else
-            GL.NamedBufferSubData(Handle, IntPtr.Zero, Size, data);
+        {
+            // Orphan and upload new data
+            GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint); // Orphan
+            GL.NamedBufferSubData(Handle, IntPtr.Zero, Size, data);    // Upload
+        }
     }
 
     public unsafe ReadOnlySpan<T> GetData()
@@ -72,14 +78,29 @@ public class ShaderBuffer<T> where T : struct
         return span;
     }
 
+    public void Resize(int newSize)
+    {
+        if (newSize <= 0)
+            throw new ArgumentException("Size must be greater than zero.", nameof(newSize));
+
+        if (newSize * Stride <= Size)
+            return;
+
+        Size = newSize * Stride;
+        Console.WriteLine($"Resizing {Name} buffer to " + FileSystemUtils.FormatByteSize(newSize));
+        Bind();
+        GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint);
+    }
+
     public void Update(T[] data)
     {
-        Update(0, data);
+        SetData(data);
     }
 
     public void Update(int offset, params T[] data)
     {
         Bind();
+        Resize(data.Length + offset);
         GL.NamedBufferSubData(Handle, offset * Stride, data.Length * Stride, data);
     }
 
