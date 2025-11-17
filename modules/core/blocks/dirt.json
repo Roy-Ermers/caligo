@@ -1,10 +1,28 @@
 {
-	"model": {
-		"name": "block/block_column",
-		"textures": {
-			"up": "dirt_top",
-			"down": "dirt_top",
-			"side": "dirt"
+	"variants": [
+		{
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "dirt"
+				}
+			}
+		},
+		{
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "dirt1"
+				}
+			}
+		},
+		{
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "dirt2"
+				}
+			}
 		}
-	}
+	]
 }

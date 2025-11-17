@@ -15,10 +15,10 @@ using WorldGen.Resources.Block;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using WorldGen.Threading;
 using WorldGen.Universe;
-using WorldGen.Universe.WorldGenerators;
 using WorldGen.Universe.PositionTypes;
 using System.Text;
 using WorldGen.Renderer.Worlds;
+using WorldGen.Generators.World;
 
 namespace WorldGen;
 
@@ -103,7 +103,7 @@ public class Game : GameWindow
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
-        builder = new(world, new HillyWorldGenerator(1));
+        builder = new(world, new HillyWorldGenerator(Random.Shared.Next()));
         renderer = new WorldRenderer(world, atlas, blockStorage);
 
         _uiRenderer = new UiRenderer(this);

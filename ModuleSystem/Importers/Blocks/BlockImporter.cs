@@ -8,6 +8,24 @@ namespace WorldGen.ModuleSystem.Importers.Blocks;
 
 public class BlockImporter : IImporter, IResourceProcessor
 {
+
+    private BlockVariant[] ConvertToBlockVariants(BlockVariantData[] variants)
+    {
+        var blockVariants = new List<BlockVariant>();
+        foreach (var variant in variants)
+        {
+            var blockVariant = new BlockVariant
+            {
+                ModelName = variant.Model.BlockModelName ?? "",
+                Model = null!,
+                Weight = variant.Weight ?? 1,
+                Textures = variant.Model.Textures ?? []
+            };
+            blockVariants.Add(blockVariant);
+        }
+        return [.. blockVariants];
+    }
+
     public void Import(Module module)
     {
         var rootDirectory = Path.Join(module.AbsoluteDirectory, "blocks");
@@ -29,12 +47,23 @@ public class BlockImporter : IImporter, IResourceProcessor
 
                 var jsonContent = File.ReadAllText(file);
                 var blockData = JsonSerializer.Deserialize<ModuleBlockData>(jsonContent, JsonOptions.SerializerOptions);
-                // Copy properties from blockData to block
-                if (blockData.Model.BlockModelName is not null)
+                if (blockData.Model is not null)
                 {
-                    block.Textures = blockData.Model.Textures;
-                    block.ModelName = blockData.Model.BlockModelName;
+                    blockData.Variants = [
+                           new() {
+                            Model = blockData.Model.Value,
+                            Weight = 1
+                        }
+                    ];
                 }
+
+                if (blockData.Variants.Length == 0)
+                {
+                    Console.WriteLine($"Block {blockName} has no model or variants defined.");
+                    continue;
+                }
+
+                block.Variants = ConvertToBlockVariants(blockData.Variants);
 
                 blockStorage.Add(blockName, block);
             }
@@ -62,16 +91,24 @@ public class BlockImporter : IImporter, IResourceProcessor
         foreach (var (identifier, block) in blockStorage)
         {
             block.NumericId = index++;
-            if (block.ModelName is null)
-                continue;
 
-            if (!storage.TryGet<BlockModel>(block.ModelName, out var model))
+            for (var variantIndex = 0; variantIndex < block.Variants.Length; variantIndex++)
             {
-                Console.WriteLine($"Blockmodel {block.ModelName} for {identifier} not found.");
-                continue;
-            }
+                var variant = block.Variants[variantIndex];
 
-            block.Model = model;
+                if (variant.ModelName is null)
+                    continue;
+
+                if (!storage.TryGet<BlockModel>(variant.ModelName, out var model))
+                {
+                    Console.WriteLine($"Blockmodel {variant.ModelName} for {identifier} not found.");
+                    continue;
+                }
+
+                variant.Model = model;
+
+                block.Variants[variantIndex] = variant;
+            }
         }
     }
 }

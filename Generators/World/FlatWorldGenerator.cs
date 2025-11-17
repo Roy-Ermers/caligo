@@ -1,9 +1,10 @@
 using WorldGen.ModuleSystem;
 using WorldGen.Resources.Block;
+using WorldGen.Universe;
 using WorldGen.Universe.PositionTypes;
 using WorldGen.Utils;
 
-namespace WorldGen.Universe.WorldGenerators;
+namespace WorldGen.Generators.World;
 
 public class FlatWorldGenerator : IWorldGenerator
 {

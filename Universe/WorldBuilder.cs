@@ -1,7 +1,8 @@
 using System.Collections.Concurrent;
+using WorldGen.Generators.World;
 using WorldGen.Universe.PositionTypes;
 
-namespace WorldGen.Universe.WorldGenerators;
+namespace WorldGen.Universe;
 
 public class WorldBuilder
 {

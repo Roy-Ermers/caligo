@@ -186,22 +186,47 @@ public class ResourcesWindow : Window
 
         foreach (var (name, block) in blockStorage)
         {
+            if (ImGui.Selectable(block.Name))
+                ImGui.OpenPopup(block.Name);
 
-            ImGui.Selectable(block.Name);
+            if (ImGui.BeginPopup(block.Name))
+            {
+                ImGui.Text("Block info");
+                var info = new InfoTableComponent("blockTextures");
+                info.Add("Block ID", block.NumericId);
+                info.Add("Block Name", name);
+                info.Dispose();
+
+                foreach (var variant in block.Variants)
+                {
+                    if (ImGui.CollapsingHeader($"Variant {Array.IndexOf(block.Variants, variant) + 1}"))
+                    {
+                        ImGui.Text("Info:");
+                        using var VariantInfo = new InfoTableComponent("variant");
+
+                        VariantInfo.Add("Weight", variant.Weight);
+                        VariantInfo.Add("Model", variant.ModelName);
+                        VariantInfo.Dispose();
+
+                        if (variant.Textures.Count > 0)
+                        {
+                            ImGui.Text("Textures:");
+                            using var blockTexture = new InfoTableComponent("blockTextures");
+                            blockTexture.Set(variant.Textures);
+                        }
+                    }
+                }
+
+                ImGui.EndPopup();
+            }
             if (ImGui.BeginItemTooltip())
             {
                 var info = new InfoTableComponent("blockTextures");
                 info.Add("Block ID", block.NumericId);
                 info.Add("Block Name", name);
-                info.Add("Model Name", block.ModelName ?? "No model");
+                info.Add("Variants", block.Variants.Length);
 
                 info.Dispose();
-                if (block.Textures.Count > 0)
-                {
-                    ImGui.SeparatorText("Textures");
-                    using var blockTexture = new InfoTableComponent("blockTextures");
-                    blockTexture.Set(block.Textures);
-                }
                 ImGui.EndTooltip();
             }
             ImGui.SameLine();

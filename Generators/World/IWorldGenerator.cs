@@ -1,6 +1,7 @@
-using WorldGen.Universe.PositionTypes;
 
-namespace WorldGen.Universe.WorldGenerators;
+using WorldGen.Universe;
+
+namespace WorldGen.Generators.World;
 
 public interface IWorldGenerator
 {

@@ -1,0 +1,49 @@
+{
+	"variants": [
+		{
+			"weight": 15,
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "stone"
+				}
+			}
+		},
+		{
+			"weight": 15,
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "stone1"
+				}
+			}
+		},
+		{
+			"weight": 10,
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "andesite"
+				}
+			}
+		},
+		{
+			"model": {
+				"weight": 5,
+				"name": "block/block_all",
+				"textures": {
+					"all": "cobblestone"
+				}
+			}
+		},
+		{
+			"weight": 5,
+			"model": {
+				"name": "block/block_all",
+				"textures": {
+					"all": "mossy_cobblestone"
+				}
+			}
+		}
+	]
+}

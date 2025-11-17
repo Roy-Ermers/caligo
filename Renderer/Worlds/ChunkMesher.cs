@@ -48,14 +48,22 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
         Task.Run(() =>
             Parallel.ForEach(_chunkQueue.GetConsumingEnumerable(), new ParallelOptions() { MaxDegreeOfParallelism = 4 }, (chunk, cancellationToken) =>
             {
-                var mesh = GenerateMesh(chunk);
-                Meshes.Enqueue(mesh);
+                try
+                {
+                    var mesh = GenerateMesh(chunk);
+                    Meshes.Enqueue(mesh);
+                }
+                catch (Exception error)
+                {
+                    Console.WriteLine($"Failed to mesh chunk at {chunk.Position}, {error.Message}");
+                }
             }));
     }
 
 
     private ChunkMesh GenerateMesh(Chunk chunk)
     {
+        Random random = new(chunk.Id);
         if (chunk.BlockCount == 0)
         {
             return new ChunkMesh
@@ -83,10 +91,10 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
                 continue;
             }
 
-            var model = block.Model;
+            var variant = block.GetRandomModel(random);
 
             // nothing to render.
-            if (model is null)
+            if (variant is null)
                 continue;
 
             for (var direction = (Direction)0; direction <= (Direction)5; direction++)
@@ -94,18 +102,18 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
                 if (chunk.TryGet(position + direction.ToVector3(), out ushort neighborBlockId))
                 {
                     var neighborBlock = _blockStorage[neighborBlockId];
-                    var neighborModel = neighborBlock?.Model;
+                    var neighborModel = neighborBlock?.GetRandomModel(random);
 
-                    if (neighborModel is not null && (neighborModel.Culling?.IsCullingEnabled(direction.Opposite()) ?? false))
+                    if (neighborModel is not null && (neighborModel.Value.Model!.Culling?.IsCullingEnabled(direction.Opposite()) ?? false))
                     {
                         // Don't render face if culling is enabled and neighbor block is not air
                         continue;
                     }
                 }
 
-                foreach (var element in model.Elements.Reverse())
+                foreach (var element in variant.Value.Model.Elements.Reverse())
                 {
-                    var newFace = element.ToRenderData(direction, position, block.Textures ?? [], _materialBuffer, BlockTextureAtlas);
+                    var newFace = element.ToRenderData(direction, position, variant.Value.Textures ?? [], _materialBuffer, BlockTextureAtlas);
                     if (newFace is null)
                         continue;
 

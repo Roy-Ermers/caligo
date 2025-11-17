@@ -2,10 +2,11 @@ using System.Numerics;
 using WorldGen.ModuleSystem;
 using WorldGen.Noise;
 using WorldGen.Resources.Block;
+using WorldGen.Universe;
 using WorldGen.Universe.PositionTypes;
 using WorldGen.Utils;
 
-namespace WorldGen.Universe.WorldGenerators;
+namespace WorldGen.Generators.World;
 
 public class HillyWorldGenerator : IWorldGenerator
 {
@@ -41,15 +42,20 @@ public class HillyWorldGenerator : IWorldGenerator
         foreach (WorldPosition position in new CubeIterator(chunk))
         {
             var scaled = ((Vector3)position) / 100f;
-            var offset = detailNoise.Get2DVector(scaled.X, scaled.Z);
-            scaled.X += offset.X * 5f;
-            scaled.Z += offset.Y * 5f;
+            var (X, Y) = detailNoise.Get2DVector(scaled.X, scaled.Z);
+            scaled.X += X * 5f;
+            scaled.Z += Y * 5f;
             var density = terrainNoise.Get2D(1 / 8f * scaled.X, 1 / 8f * scaled.Z) * (MaxGroundLevel - MinGroundLevel) + MinGroundLevel;
+
 
             // Determine block type at this position
             Block? blockToPlace = null;
 
-            if (Math.Floor(density) == position.Y)
+            if (Math.Floor(density) >= position.Y && detailNoise.Get3D(scaled.X, Y, scaled.Z) > .25)
+            {
+                blockToPlace = ModuleRepository.Current.Get<Block>("stone");
+            }
+            else if (Math.Floor(density) == position.Y)
             {
                 blockToPlace = GrassBlock;
             }
@@ -57,7 +63,7 @@ public class HillyWorldGenerator : IWorldGenerator
             {
                 blockToPlace = DirtBlock;
             }
-            // Surface block
+
 
             // Place the block if one was selected
             if (blockToPlace != null)

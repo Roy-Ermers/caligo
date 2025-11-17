@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using WorldGen.Universe.PositionTypes;
-using WorldGen.Universe.WorldGenerators;
 
 namespace WorldGen.Universe;
 

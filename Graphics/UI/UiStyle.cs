@@ -154,6 +154,7 @@ public struct UiStyle
         style.Colors[(int)ColorToken.TabSelectedOverline] = Vector4.Zero;
         style.Colors[(int)ColorToken.TabDimmedSelected] = AccentColor;
         style.Colors[(int)ColorToken.TabDimmedSelectedOverline] = Vector4.Zero;
+        style.Colors[(int)ColorToken.ModalWindowDimBg] = new Vector4(0, 0, 0, 0.5f);
         Current = this;
     }
 }
