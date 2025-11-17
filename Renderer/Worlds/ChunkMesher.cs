@@ -71,6 +71,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 	private ChunkMesh GenerateMesh(Chunk chunk)
 	{
 		Random random = new(chunk.Id);
+		var world = Game.Instance.world;
 		if (chunk.BlockCount == 0)
 		{
 			return ChunkMesh.Empty with {
@@ -83,8 +84,9 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 		for (short i = 0; i < Math.Pow(Chunk.Size, 3); i++)
 		{
 			var position = ChunkLocalPosition.FromIndex(i);
+			var worldPosition = position.ToWorldPosition(chunk.Position);
 			// tryGet skips air blocks, so we only process non-air blocks
-			if (!chunk.TryGet(position, out var blockId))
+			if (!world.TryGetBlock(worldPosition, out var blockId))
 				continue;
 
 			if (!blockStorage.TryGetValue(blockId, out var block))
@@ -101,7 +103,7 @@ public class ChunkMesher(ResourceTypeStorage<Block> blockStorage, Atlas blockTex
 
 			for (var direction = (Direction)0; direction <= (Direction)5; direction++)
 			{
-				if (chunk.TryGet(position + direction.ToVector3(), out var neighborBlockId))
+				if (world.TryGetBlock(worldPosition + direction.ToVector3(), out var neighborBlockId))
 				{
 					var neighborBlock = blockStorage[neighborBlockId];
 					var neighborModel = neighborBlock?.GetRandomVariant(random);

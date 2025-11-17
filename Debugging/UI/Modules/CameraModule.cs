@@ -15,7 +15,7 @@ public class CameraDebugModule : IDebugModule
 
     private readonly Camera Camera;
 
-    private float renderDistance = 5;
+    private float renderDistance = 15;
 
     public CameraDebugModule(Game game)
     {

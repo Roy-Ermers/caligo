@@ -7,31 +7,28 @@ public readonly record struct ChunkLocalPosition(int X, int Y, int Z)
 {
     public static readonly ChunkLocalPosition Zero = new(0, 0, 0);
 
-    public int X { get; init; } = X;
-    public int Y { get; init; } = Y;
-    public int Z { get; init; } = Z;
-
     public readonly int Id => HashCode.Combine(X, Y, Z);
 
-    public int Index => ZOrderCurve.GetIndex(X, Y, Z, Chunk.Size);
+    public int Index => ZOrderCurve.GetIndex(X, Y, Z);
 
     public readonly WorldPosition ToWorldPosition(ChunkPosition chunkPosition)
     {
-        (int chunkX, int chunkY, int chunkZ) = chunkPosition.ToWorldPosition();
+        var (chunkX, chunkY, chunkZ) = chunkPosition.ToWorldPosition();
         return new WorldPosition(chunkX + X, chunkY + Y, chunkZ + Z);
     }
 
-    override public readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         return Id;
     }
 
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
         return $"(L;{X}, {Y}, {Z})";
     }
 
-    public static ChunkLocalPosition FromWorldPosition(WorldPosition position) => FromWorldPosition(position.X, position.Y, position.Z);
+    public static ChunkLocalPosition FromWorldPosition(WorldPosition position) =>
+        FromWorldPosition(position.X, position.Y, position.Z);
 
     public static ChunkLocalPosition FromWorldPosition(int x, int y, int z)
     {
@@ -45,7 +42,9 @@ public readonly record struct ChunkLocalPosition(int X, int Y, int Z)
 
     public static ChunkLocalPosition FromIndex(int index) => ZOrderCurve.GetPosition(index, Chunk.Size);
 
-    public static implicit operator ChunkLocalPosition((int X, int Y, int Z) position) => new(position.X, position.Y, position.Z);
+    public static implicit operator ChunkLocalPosition((int X, int Y, int Z) position) =>
+        new(position.X, position.Y, position.Z);
+
     public static implicit operator Vector3(ChunkLocalPosition position) => new(position.X, position.Y, position.Z);
 
     public static ChunkLocalPosition operator +(ChunkLocalPosition left, ChunkLocalPosition right)

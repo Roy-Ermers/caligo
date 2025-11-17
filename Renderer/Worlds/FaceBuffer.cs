@@ -15,15 +15,15 @@ public class FaceBuffer: IDisposable
 	private bool isDirty = false;
 	
 	private readonly MaterialBuffer _materialBuffer;
-	
-	public readonly ShaderBuffer<int> FaceShaderBuffer;
-	public IndirectBuffer IndirectBuffer;
-	public readonly ShaderBuffer<int> MaterialShaderBuffer;
-	public readonly ShaderBuffer<Vector4> ChunkInfoShaderBuffer;
 
-	public RingBuffer<ChunkMesh> Meshes;
+	private readonly ShaderBuffer<int> FaceShaderBuffer;
+	private readonly IndirectBuffer IndirectBuffer;
+	private readonly ShaderBuffer<int> MaterialShaderBuffer;
+	private readonly ShaderBuffer<Vector4> ChunkInfoShaderBuffer;
 
-	public Dictionary<ChunkMesh, float> MeshStartTimes = [];
+	private RingBuffer<ChunkMesh> Meshes;
+
+	private readonly Dictionary<ChunkMesh, float> MeshStartTimes = [];
 
 	private int maxChunks => (int)Math.Pow(renderDistance, 3);
 	
@@ -71,6 +71,7 @@ public class FaceBuffer: IDisposable
 		isDirty = true;
 
 		Meshes = new RingBuffer<ChunkMesh>(maxChunks);
+		IndirectBuffer.Resize(maxChunks);
 	}
 	
 	public void AddMesh(ChunkMesh mesh)

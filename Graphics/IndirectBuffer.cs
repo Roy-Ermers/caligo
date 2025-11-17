@@ -53,9 +53,9 @@ static class IndirectDrawCommandExtensions
 /// </summary>
 public class IndirectBuffer
 {
-    private readonly int _handle;
+    private int _handle;
     private IntPtr _mappedPtr;
-    private readonly int _capacity;
+    private int _capacity;
     private int Size => Marshal.SizeOf<IndirectDrawCommand>() * _capacity;
     private int _drawCount;
 
@@ -95,6 +95,34 @@ public class IndirectBuffer
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
         if (_drawCount > 0)
             GL.MultiDrawArraysIndirect(primitive, IntPtr.Zero, _drawCount, 0);
+    }
+
+    public void Resize(int newCapacity)
+    {
+        _drawCount = 0;
+        _capacity = newCapacity;
+        
+        GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
+        GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);
+        GL.DeleteBuffer(_handle);
+
+        _handle = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
+        
+        GL.BufferStorage(
+            BufferTarget.DrawIndirectBuffer,
+            Size,
+            IntPtr.Zero,
+            BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit
+        );
+        _mappedPtr = GL.MapBufferRange(
+            BufferTarget.DrawIndirectBuffer,
+            IntPtr.Zero,
+            Size,
+            MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit | MapBufferAccessMask.MapCoherentBit
+        );
+
+        if (_mappedPtr == 0x0) throw new Exception(GL.GetError().ToString());
     }
 
     public void Clear()

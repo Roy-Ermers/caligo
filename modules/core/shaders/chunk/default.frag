@@ -63,6 +63,6 @@ void main()
     float fogFactor = 1.0 - clamp(exp(-fogDensity * distance), 0.0, 1.0);
     vec3 fogColor = vec3(0.9, 0.9, 1);
     result = mix(result, fogColor, min(1, fogFactor + (1 - interpolation)));
-
+    
     FragColor = vec4(result, 1.0);
 }

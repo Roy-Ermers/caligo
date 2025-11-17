@@ -53,6 +53,17 @@ public partial class World : IEnumerable<Chunk>
 
         return chunk.Get(position.ChunkLocalPosition);
     }
+    
+    public bool TryGetBlock(WorldPosition position, out ushort blockId)
+    {
+        if (!TryGetChunk(position.ChunkPosition, out var chunk))
+        {
+            blockId = 0;
+            return false;
+        }
+
+        return chunk.TryGet(position.ChunkLocalPosition, out blockId);
+    }
 
 
     public IEnumerator<Chunk> GetEnumerator()

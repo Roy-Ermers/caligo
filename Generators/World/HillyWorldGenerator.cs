@@ -172,7 +172,7 @@ public class HillyWorldGenerator : IWorldGenerator
             Block? blockToPlace = null;
             
             // Add 3D caves/overhangs using 3D noise
-            float caveNoise = _detailNoise.Get3D(x * 0.02f, position.Y * 0.02f, z * 0.02f);
+            float caveNoise = _detailNoise.Get3D(x * 0.05f, position.Y * 0.05f, z * 0.05f);
             bool isCave = caveNoise > 0.6f;
             
             if (position.Y < height && !isCave)

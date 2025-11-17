@@ -55,24 +55,6 @@ public class WorldRenderer
 
 		FaceBuffer = new FaceBuffer(_materialBuffer);
 
-		// ChunkInfoShaderBuffer = ShaderBuffer<Vector4>.Create(
-		// 		BufferTarget.ShaderStorageBuffer,
-		// 		BufferUsageHint.DynamicDraw,
-		// 		1
-		// );
-		// ChunkInfoShaderBuffer.Name = "ChunkInfoBuffer";
-		//
-		// FaceShaderBuffer = ShaderBuffer<int>.Create(
-		// 		BufferTarget.ShaderStorageBuffer,
-		// 		BufferUsageHint.DynamicDraw,
-		// 		100_000 // Initial size, will grow as needed
-		// );
-		// FaceShaderBuffer.Name = "blockFaceBuffer";
-		//
-		// IndirectBuffer = new IndirectBuffer(100000);
-		//
-		// UpdateMaterialBuffer(true);
-
 		CreateQuadVertexArrayObject();
 
 		ChunkMesher.StartProcessing();

@@ -170,6 +170,6 @@ void main()
             material.textureId
         );
 
-    fragPos = vertexPosition.xyz;
+    fragPos = vertexPosition.xyz * interpolation;
     gl_Position = camera.projection * camera.view * vec4(vertexPosition, 1.0);
 }
