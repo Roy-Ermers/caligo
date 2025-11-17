@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client/Client.csproj", "{DF501C58-7C88-4170-898F-42017085DB3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caligo.Client", "Caligo.Client\Caligo.Client.csproj", "{DF501C58-7C88-4170-898F-42017085DB3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{4E026D42-8FE6-459E-B860-6853E2B22669}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caligo.Core", "Caligo.Core\Caligo.Core.csproj", "{4E026D42-8FE6-459E-B860-6853E2B22669}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caligo.ModuleSystem", "Caligo.ModuleSystem\Caligo.ModuleSystem.csproj", "{6A0CB45A-E39A-4138-8099-AB96558E72A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{4E026D42-8FE6-459E-B860-6853E2B22669}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E026D42-8FE6-459E-B860-6853E2B22669}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E026D42-8FE6-459E-B860-6853E2B22669}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A0CB45A-E39A-4138-8099-AB96558E72A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A0CB45A-E39A-4138-8099-AB96558E72A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A0CB45A-E39A-4138-8099-AB96558E72A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A0CB45A-E39A-4138-8099-AB96558E72A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
