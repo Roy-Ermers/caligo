@@ -103,7 +103,7 @@ public class Game : GameWindow
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
-        builder = new(world, new HillyWorldGenerator(Random.Shared.Next()));
+        builder = new(world, new LayeredWorldGenerator(Random.Shared.Next()));
         renderer = new WorldRenderer(world, atlas, blockStorage);
 
         _uiRenderer = new UiRenderer(this);
