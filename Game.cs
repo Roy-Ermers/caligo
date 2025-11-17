@@ -20,11 +20,15 @@ using WorldGen.Graphics.UI.PaperComponents;
 using WorldGen.Debugging.UI;
 using WorldGen.Debugging.UI.Modules;
 using OpenTK.Windowing.Common.Input;
+using WorldGen.Debugging;
+using System.Numerics;
+using System.Drawing;
 
 namespace WorldGen;
 
 public class Game : GameWindow
 {
+    public static Game Instance { get; protected set; }
     public readonly Camera Camera;
     public readonly ModuleRepository ModuleRepository;
     private readonly PaperRenderer uiRenderer;
@@ -52,7 +56,7 @@ public class Game : GameWindow
         new() { ClientSize = new(1280, 720), Title = "Voxels", WindowState = WindowState.Maximized })
     {
         AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(UnhandledExceptionHandler);
-
+        Instance = this;
         renderdoc = RenderDoc.Load();
 
         var importer = new ModuleImporter()
@@ -80,12 +84,15 @@ public class Game : GameWindow
 
         uiRenderer = new(this);
 
+        Gizmo3D.Initialize(uiRenderer.Paper, this);
+
         debugUiRenderer = [
             new CameraDebugModule(this),
             new OpenGLDebugModule(),
             new StatsDebugModule(this),
             new ResourcesDebugModule(this),
-            new ModuleDebugModule(this)
+            new ModuleDebugModule(this),
+            new ChunkDebugModule(this)
         ];
 
     }
@@ -124,7 +131,7 @@ public class Game : GameWindow
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
-        builder = new(world, new HillyWorldGenerator(Random.Shared.Next()));
+        builder = new(world, new LayeredWorldGenerator(0));
         renderer = new WorldRenderer(world, atlas, blockStorage);
 
         // _uiRenderer = new UiRenderer(this);
@@ -159,7 +166,7 @@ public class Game : GameWindow
         world.Update();
 
         // Update the main thread actions
-        MainThread?.Update();
+        // MainThread?.Update();
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
@@ -167,6 +174,7 @@ public class Game : GameWindow
         base.OnRenderFrame(args);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         Time += args.Time;
+        world.DebugRender();
 
         using var shader = _shader.Use();
         _shader.SetMatrix4("camera.projection", Camera.ProjectionMatrix);
@@ -177,7 +185,6 @@ public class Game : GameWindow
         renderer.Draw(_shader);
 
         Camera.Update(args.Time);
-
         RenderUI(args);
         SwapBuffers();
     }
@@ -185,55 +192,10 @@ public class Game : GameWindow
     void RenderUI(FrameEventArgs args)
     {
         using var uiFrame = uiRenderer.Start(args.Time);
+        Gizmo3D.Render();
 
         Components.Text($"FPS: {(int)(1 / args.Time)}", fontFamily: FontFamily.Monospace).Margin(8);
-
         debugUiRenderer.Render();
-
-        // using var frame = _uiRenderer.StartFrame(args.Time);
-
-
-        // var oldPos = ImGui.GetCursorScreenPos();
-
-        // var center = Camera.WorldToScreen(Vector3.Zero);
-
-        // if (center is not null)
-        // {
-        //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(center.Value.X, center.Value.Y));
-        //     ImGui.TextColored(System.Numerics.Vector4.One, "o");
-        // }
-
-        // var unitX = Camera.WorldToScreen(Vector3.UnitX);
-        // if (unitX is not null)
-        // {
-        //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitX.Value.X, unitX.Value.Y));
-        //     ImGui.TextColored(System.Numerics.Vector4.UnitX + System.Numerics.Vector4.UnitW, "X");
-        // }
-        // var unitY = Camera.WorldToScreen(Vector3.UnitY);
-        // if (unitY is not null)
-        // {
-        //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitY.Value.X, unitY.Value.Y));
-        //     ImGui.TextColored(System.Numerics.Vector4.UnitY + System.Numerics.Vector4.UnitW, "Y");
-        // }
-
-        // var unitZ = Camera.WorldToScreen(Vector3.UnitZ);
-        // if (unitZ is not null)
-        // {
-        //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(unitZ.Value.X, unitZ.Value.Y));
-        //     ImGui.TextColored(System.Numerics.Vector4.UnitZ + System.Numerics.Vector4.UnitW, "Z");
-        // }
-
-        // var blockCenter = Camera.WorldToScreen(Vector3.One * 0.5f);
-        // if (blockCenter is not null)
-        // {
-        //     ImGui.SetCursorScreenPos(new System.Numerics.Vector2(blockCenter.Value.X, blockCenter.Value.Y));
-        //     ImGui.TextColored(System.Numerics.Vector4.One, "B");
-        // }
-
-        // ImGui.SetCursorScreenPos(oldPos);
-
-        // _uiRenderer.Draw(args.Time);
-        // }
     }
 
 

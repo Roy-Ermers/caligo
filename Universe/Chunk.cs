@@ -1,4 +1,5 @@
 using WorldGen.Resources.Block;
+using WorldGen.Spatial;
 using WorldGen.Universe.PositionTypes;
 using WorldGen.Utils;
 
@@ -19,6 +20,13 @@ public class Chunk
     private ushort blockCount = 0;
 
     public int BlockCount => blockCount;
+
+    public BoundingBox BoundingBox => new(
+          Position.ToWorldPosition(),
+          Size,
+          Size,
+          Size
+        );
 
     public Chunk(ChunkPosition position)
     {

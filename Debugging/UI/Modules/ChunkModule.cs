@@ -10,47 +10,45 @@ public class ChunkDebugModule : IDebugModule
     public string Name => "Chunks";
     public char? Icon => PaperIcon.Apps;
 
-    private readonly World _world;
     private readonly Game _game;
 
     public ChunkDebugModule(Game game)
     {
         _game = game;
-        _world = game.world;
     }
 
     public void Render()
     {
-        if (_world is null)
+        if (_game.world is null)
             return;
 
-        Components.Text("Current Chunks: " + _world.ChunkLoaders.Length);
+        Components.Text("Current Chunks: " + _game.world.ChunkLoaders.Length);
 
         if (Components.Button("Unload All Chunks"))
         {
-            foreach (var chunkLoader in _world.ChunkLoaders)
+            foreach (var chunkLoader in _game.world.ChunkLoaders)
             {
-                _world.RemoveChunk(chunkLoader.Position);
+                _game.world.RemoveChunk(chunkLoader.Position);
             }
             _game.renderer.Clear();
         }
 
         if (Components.Accordion("Chunks"))
         {
-            using var scrollContainer = Components.ScrollContainer().Enter();
+            using var scrollContainer = Components.ScrollContainer(Prowl.PaperUI.Scroll.ScrollXY).Enter();
 
-            foreach (var loader in _world.ChunkLoaders)
+            var id = 0;
+            foreach (var loader in _game.world.ChunkLoaders)
             {
                 var state = ChunkState.None;
                 var (position, ticks) = loader;
 
-                if (_world.TryGetChunk(position, out var chunk))
+                if (_game.world.TryGetChunk(position, out var chunk))
                     state = chunk.State;
 
-                using (Components.Row())
+                using (Components.Row(8, id++))
                 {
                     Components.Text($"Position: {position.X,3} {position.Y,3} {position.Z,3}", fontFamily: FontFamily.Monospace);
-                    Components.Text($"Ticks: {ticks + 1}");
                     Components.Text($"State: {state}");
                 }
             }

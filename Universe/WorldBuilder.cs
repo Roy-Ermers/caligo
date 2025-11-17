@@ -39,7 +39,7 @@ public class WorldBuilder
 
     public void WorkGenerationQueue()
     {
-        Parallel.ForEach(GenerationQueue.GetConsumingEnumerable(), new ParallelOptions() { MaxDegreeOfParallelism = 4 }, (position, cancellationToken) =>
+        Parallel.ForEach(GenerationQueue.GetConsumingEnumerable(), (position, cancellationToken) =>
         {
             if (!World.TryGetChunk(position, out var chunk))
                 return;

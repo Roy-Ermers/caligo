@@ -1,0 +1,8 @@
+{
+	"model": {
+		"name": "leaves",
+		"textures": {
+			"leaves": "birch_leaves"
+		}
+	}
+}

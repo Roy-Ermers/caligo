@@ -48,10 +48,6 @@ public class DebugUiRenderer : IEnumerable<IDebugModule>
                   .SetScroll(Scroll.ScrollY)
                   .Width(400)
                   .Border(32)
-                  .TranslateX(385)
-                  .Transition(GuiProp.TranslateX, 0.500, Easing.QuartOut)
-                  .Hovered.TranslateX(0).End()
-                  .Focused.TranslateX(0).End()
                   .Enter();
 
         foreach (var module in Modules)

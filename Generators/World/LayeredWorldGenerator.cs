@@ -11,6 +11,7 @@ public class LayeredWorldGenerator : IWorldGenerator
     private readonly int Seed;
     private readonly TransportNetwork Network;
     private readonly Block TerrainBlock;
+    private readonly Block OddTerrainBlock;
     private readonly Block NodeBlock;
 
     public LayeredWorldGenerator(int seed)
@@ -18,20 +19,30 @@ public class LayeredWorldGenerator : IWorldGenerator
         Seed = seed;
         Network = new TransportNetwork(seed);
 
-        TerrainBlock = ModuleRepository.Current.Get<Block>("dirt");
+        TerrainBlock = ModuleRepository.Current.Get<Block>("grass_block");
+        OddTerrainBlock = ModuleRepository.Current.Get<Block>("stone");
         NodeBlock = ModuleRepository.Current.Get<Block>("node");
     }
 
     public void GenerateChunk(ref Chunk chunk)
     {
-        // var transportNode = Network.GetNode(chunk.Position.ToWorldPosition());
+        var sector = Network.GetSector(chunk.Position.ToWorldPosition());
 
         foreach (var position in new CubeIterator(chunk))
         {
-            if (position.Y == 1 && position.X == 0 && position.Z == 0)
-                chunk.Set(position.ChunkLocalPosition, NodeBlock);
-            // if (transportNode.BoundingBox.Contains(position))
-            else if (position.Y <= 0)
+            var features = Game.Instance.world.Features.QueryPoint(position);
+            foreach (var feature in features)
+            {
+                var blockId = feature.GetBlock(position);
+
+                if (blockId != 0)
+                {
+                    chunk.Set(position.ChunkLocalPosition, blockId);
+                    continue;
+                }
+            }
+
+            if (position.Y <= 0)
             {
                 chunk.Set(position.ChunkLocalPosition, TerrainBlock);
             }

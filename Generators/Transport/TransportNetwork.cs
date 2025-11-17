@@ -1,16 +1,18 @@
 using WorldGen.Noise;
 using WorldGen.Universe.PositionTypes;
-using WorldGen.Generators.Transport.Ways;
+using WorldGen.Utils;
+using WorldGen.Generators.Features;
 
 namespace WorldGen.Generators.Transport;
 
 public class TransportNetwork
 {
     readonly GradientNoise Noise;
-    readonly int Spacing = 64;
     readonly int Seed;
 
-    public Dictionary<int, TransportNode> Nodes = [];
+    public Dictionary<int, Sector> Sectors = [];
+
+    Mutex _writeLock = new();
 
     public TransportNetwork(int seed)
     {
@@ -18,39 +20,41 @@ public class TransportNetwork
         Noise = new GradientNoise(seed);
     }
 
-    public TransportNode GetNode(WorldPosition position)
+    public Sector GetSector(WorldPosition position)
     {
-        int sectorX = position.X / Spacing * Spacing;
-        int sectorZ = position.Z / Spacing * Spacing;
-        int key = HashCode.Combine(sectorX, sectorZ);
-
-        if (Nodes.TryGetValue(key, out var node))
+        if (Sectors.TryGetValue(Sector.GetKey(position), out var sector))
         {
-            return node;
+            return sector;
         }
 
-        float offsetX = Noise.Get2D(1f / (sectorX * 1f / Spacing), 1f / (sectorZ * 1f / Spacing)) * 0.5f + 0.5f;
-        float offsetZ = Noise.Get2D(1f / (sectorZ * 1f / Spacing), 1f / (sectorX * 1f / Spacing)) * 0.5f + 0.5f;
+        sector = new Sector(position);
 
-        int nodeX = sectorX + (int)(offsetX * Spacing);
-        int nodeZ = sectorZ + (int)(offsetZ * Spacing);
+        // Use prime number mixing for better random distribution
+        var seed = (sector.X * 73856093) ^ (sector.Z * 19349663) ^ (Seed * 83492791);
 
-        var newNode = GenerateNode((sectorX, sectorZ), (nodeX, nodeZ));
+        var random = new Random(seed);
 
-        Nodes[key] = newNode;
+        var newNode = GenerateNode(sector, random);
+        sector.Nodes.Add(newNode);
 
-        return newNode;
+        _writeLock.WaitOne();
+        Sectors[sector.Key] = sector;
+        _writeLock.ReleaseMutex();
+        return sector;
     }
 
-    private static TransportNode GenerateNode((int X, int Z) sector, (int X, int Z) node)
+    private static Tree GenerateNode(Sector sector, Random random)
     {
-        var position = new WorldPosition(node.X, 0, node.Z);
+        float offsetX = random.NextSingle();
+        float offsetZ = random.NextSingle();
+        int nodeX = (int)(sector.Start.X + offsetX * Sector.SectorSize);
+        int nodeZ = (int)(sector.Start.Z + offsetZ * Sector.SectorSize);
 
-        return new TransportNode
-        {
-            Position = position,
-            Sector = new WorldPosition(sector.X, 0, sector.Z),
-            BoundingBox = new(position, 1, 1, 1)
-        };
+        var position = new WorldPosition(nodeX, 1, nodeZ);
+
+        var node = new Tree(random, position);
+        Game.Instance.world.Features.Insert(node);
+
+        return node;
     }
 }

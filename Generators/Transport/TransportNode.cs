@@ -1,13 +1,10 @@
+using WorldGen.Generators.Features;
 using WorldGen.Universe.PositionTypes;
 using WorldGen.Utils;
 
 namespace WorldGen.Generators.Transport;
 
-public class TransportNode
+public abstract class TransportNode(Random random) : Feature(random)
 {
-    public WorldPosition Position { get; init; }
-
-    public WorldPosition Sector { get; init; }
-
-    public BoundingBox BoundingBox { get; init; }
+    public Sector Sector { get; init; }
 }

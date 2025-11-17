@@ -1,0 +1,36 @@
+{
+	"cullFaces": {
+		"down": false,
+		"up": false,
+		"north": false,
+		"south": false,
+		"west": false,
+		"east": false
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"faces": {
+				"down": {
+					"texture": "#leaves"
+				},
+				"up": {
+					"texture": "#leaves"
+				},
+				"north": {
+					"texture": "#leaves"
+				},
+				"south": {
+					"texture": "#leaves"
+				},
+				"west": {
+					"texture": "#leaves"
+				},
+				"east": {
+					"texture": "#leaves"
+				}
+			}
+		}
+	]
+}

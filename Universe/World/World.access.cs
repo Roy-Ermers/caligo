@@ -1,12 +1,16 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using WorldGen.Generators.Features;
+using WorldGen.Spatial.BoundingVolumeHierarchy;
 using WorldGen.Universe.PositionTypes;
 
 namespace WorldGen.Universe;
 
 public partial class World : IEnumerable<Chunk>
 {
+    public Bhv<Feature> Features = new();
+
     public Chunk? GetChunk(ChunkPosition position)
     {
         if (_chunks.TryGetValue(position.Id, out var chunk))

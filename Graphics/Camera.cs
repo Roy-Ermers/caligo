@@ -105,29 +105,27 @@ public class Camera
 
         UpdateMatrices();
     }
+
+    public Vector2? WorldToScreen(System.Numerics.Vector3 worldPosition) => WorldToScreen(new Vector3(worldPosition.X, worldPosition.Y, worldPosition.Z));
     /// <summary>
     /// Projects a world-space position to screen-space coordinates.
     /// Returns a Vector2 where (0,0) is top-left and (windowWidth, windowHeight) is bottom-right. Or null if the position is outside of the camera.
     /// </summary>
     public Vector2? WorldToScreen(Vector3 worldPosition)
     {
-        // Transform to clip space
-        var clipSpace = new Vector4(worldPosition, 1.0f) * ViewMatrix * ProjectionMatrix;
+        Vector4 posH = new Vector4(worldPosition, 1.0f) * (Matrix4.Identity * ViewMatrix * ProjectionMatrix);
 
-        // If behind the camera or at infinity, return null
-        if (clipSpace.W <= 0)
+        if (posH.W < 1e-10)
             return null;
 
-        var ndc = new Vector3(clipSpace.X, clipSpace.Y, clipSpace.Z) / clipSpace.W;
+        posH /= posH.W;
+        posH.Y *= -1.0f;
 
-        // If outside the normalized device coordinates, return null
-        if (ndc.X < -1f || ndc.X > 1f || ndc.Y < -1f || ndc.Y > 1f || ndc.Z < 0f || ndc.Z > 1f)
-            return null;
+        var center = new Vector2(_game.Size.X / 2f, _game.Size.Y / 2f);
 
-        // Convert NDC (-1..1) to window coordinates (0..width, 0..height)
-        float x = (ndc.X + 1f) * 0.5f * _game.Size.X;
-        float y = (1f - ndc.Y) * 0.5f * _game.Size.Y; // Y is inverted
-
-        return new Vector2(x, y);
+        return new Vector2(
+            center.X + posH.X * center.X,
+            center.Y + posH.Y * center.Y
+        );
     }
 }
