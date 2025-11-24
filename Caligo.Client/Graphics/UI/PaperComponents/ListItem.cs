@@ -19,7 +19,6 @@ public static partial class Components
         .Hovered.BackgroundColor(Style.FrameActiveBackground).End()
         .TabIndex(0)
         .Border(8)
-        .TabIndex(0)
         .OnHover(_ => SetCursor(OpenTK.Windowing.Common.Input.MouseCursor.PointingHand));
 
         if (onClick is not null)

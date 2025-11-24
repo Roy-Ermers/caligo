@@ -25,9 +25,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Caligo.Core\Caligo.Core.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-    <Folder Include="Universe\World\" />
-  </ItemGroup>
 
 </Project>

@@ -12,4 +12,12 @@ public partial class World : IEnumerable<Chunk>
         _chunks.Remove(position.Id);
         chunkLoaders.Remove(position);
     }
+
+    public void Clear()
+    {
+        _chunks.Clear();
+        Features.Clear();
+        chunkLoaders.Clear();
+        loadedChunks.Clear();
+    }
 }

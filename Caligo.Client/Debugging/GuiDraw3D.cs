@@ -228,7 +228,7 @@ public static class Gizmo3D
         GL.GetFloat(GetPName.LineWidth, out lineWidth);
 
         // Configure OpenGL state for line rendering
-        GL.Enable(EnableCap.DepthTest);
+        GL.Disable(EnableCap.DepthTest);
         GL.LineWidth(2.0f);
 
         // Use our shader program
@@ -254,8 +254,8 @@ public static class Gizmo3D
         GL.BindVertexArray(0);
         GL.UseProgram(0);
 
-        if (depthTestEnabled == 0)
-            GL.Disable(EnableCap.DepthTest);
+        if (depthTestEnabled == 1)
+            GL.Enable(EnableCap.DepthTest);
 
         GL.LineWidth(lineWidth);
     }

@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="TUnit" Version="1.2.11" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Caligo.Core\Caligo.Core.csproj" />
+    </ItemGroup>
+
+</Project>

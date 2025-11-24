@@ -2,7 +2,7 @@ using System.Collections;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
 
-namespace Caligo.Core.Utils;
+namespace Caligo.Core.Spatial;
 
 public readonly struct CubeIterator : IEnumerable<WorldPosition>
 {
@@ -11,7 +11,7 @@ public readonly struct CubeIterator : IEnumerable<WorldPosition>
 
     public CubeIterator(Chunk chunk) : this(
         chunk.Position.ToWorldPosition(),
-        chunk.Position.ToWorldPosition() + (Chunk.Size - 1)
+        chunk.Position.ToWorldPosition() + (Chunk.Size)
     )
     {
     }
@@ -24,11 +24,11 @@ public readonly struct CubeIterator : IEnumerable<WorldPosition>
 
     public IEnumerator<WorldPosition> GetEnumerator()
     {
-        for (int x = Start.X; x <= End.X; x++)
+        for (var x = Start.X; x < End.X; x++)
         {
-            for (int y = Start.Y; y <= End.Y; y++)
+            for (var y = Start.Y; y < End.Y; y++)
             {
-                for (int z = Start.Z; z <= End.Z; z++)
+                for (var z = Start.Z; z < End.Z; z++)
                 {
                     yield return new WorldPosition(x, y, z);
                 }

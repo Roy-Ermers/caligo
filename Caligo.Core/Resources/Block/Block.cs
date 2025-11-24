@@ -1,4 +1,6 @@
 using Caligo.Core.Resources.Block.Models;
+using Caligo.Core.Utils;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Resources.Block;
 
@@ -37,7 +39,7 @@ public record class Block
         // Build cumulative weights array for efficient binary search
         _cumulativeWeights = new int[Variants.Length];
         var cumulative = 0;
-        for (int i = 0; i < Variants.Length; i++)
+        for (var i = 0; i < Variants.Length; i++)
         {
             cumulative += Variants[i].Weight;
             _cumulativeWeights[i] = cumulative;
@@ -47,7 +49,7 @@ public record class Block
 
     public BlockVariant? GetRandomVariant(Random? random)
     {
-        random ??= Random.Shared;
+        random ??= new Random();
 
         if (Variants.Length == 0)
             return null;
@@ -59,8 +61,8 @@ public record class Block
         var target = random.Next(0, _variantTotal);
 
         // Binary search through cumulative weights
-        int low = 0;
-        int high = Variants.Length - 1;
+        var low = 0;
+        var high = Variants.Length - 1;
 
         while (low < high)
         {

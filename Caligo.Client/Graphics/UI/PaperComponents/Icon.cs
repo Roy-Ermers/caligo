@@ -4116,6 +4116,7 @@ public static partial class Components
         .Text("" + icon, Font)
         .Height(size)
         .Width(size)
+        .Alignment(TextAlignment.Center)
         .FontSize(size);
         return parent;
     }

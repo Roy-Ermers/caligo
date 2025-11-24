@@ -3,6 +3,7 @@ using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.ModuleSystem;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Generators.Features;
 

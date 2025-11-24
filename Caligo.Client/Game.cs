@@ -3,11 +3,13 @@ using Caligo.Client.Debugging;
 using Caligo.Client.Debugging.RenderDoc;
 using Caligo.Client.Debugging.UI;
 using Caligo.Client.Debugging.UI.Modules;
+using Caligo.Client.Generators.World;
 using Caligo.Client.Graphics;
 using Caligo.Client.Graphics.Shaders;
 using Caligo.Client.Graphics.UI;
 using Caligo.Client.Graphics.UI.PaperComponents;
 using Caligo.Client.ModuleSystem.Importers;
+using Caligo.Client.Renderer;
 using Caligo.Client.Renderer.Worlds;
 using Caligo.Client.Resources.Atlas;
 using Caligo.Client.Threading;
@@ -25,6 +27,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using World = Caligo.Core.Universe.World.World;
 
 namespace Caligo.Client;
@@ -35,7 +38,7 @@ public class Game : GameWindow
     public readonly Camera Camera;
     public readonly ModuleRepository ModuleRepository;
     private readonly PaperRenderer uiRenderer;
-    private readonly DebugUiRenderer debugUiRenderer;
+    private DebugUiRenderer debugUiRenderer;
 
     private readonly RenderShader _shader;
 
@@ -45,18 +48,19 @@ public class Game : GameWindow
     public World world = null!;
     public WorldBuilder builder = null!;
     public WorldRenderer renderer = null!;
-    
+
 
     public double Time;
 
     public Game() : base(new GameWindowSettings(),
-        new NativeWindowSettings { ClientSize = new Vector2i(1280, 720), Title = "Voxels", WindowState = WindowState.Maximized })
+        new NativeWindowSettings
+            { ClientSize = new Vector2i(1280, 720), Title = "Voxels", WindowState = WindowState.Maximized })
     {
         Instance = this;
         renderdoc = RenderDoc.Load();
 
         ModuleRepository = new ModuleRepository();
-        
+
         new ModuleImporter(ModuleRepository)
             .AddImporter<TextureImporter>()
             .AddImporter<ShaderImporter>()
@@ -76,16 +80,6 @@ public class Game : GameWindow
         uiRenderer = new PaperRenderer(this);
 
         Gizmo3D.Initialize(this);
-
-        debugUiRenderer = [
-            new CameraDebugModule(this),
-            new OpenGLDebugModule(),
-            new StatsDebugModule(this),
-            new ResourcesDebugModule(this),
-            new ModuleDebugModule(this),
-            new ChunkDebugModule(this)
-        ];
-
     }
 
     protected override void OnLoad()
@@ -104,33 +98,47 @@ public class Game : GameWindow
         builder = new WorldBuilder(world, new HillyWorldGenerator(0));
         renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
 
-        // _uiRenderer = new UiRenderer(this);
+        debugUiRenderer =
+        [
+            new CameraDebugModule(this),
+            new OpenGLDebugModule(),
+            new StatsDebugModule(this),
+            new ResourcesDebugModule(this),
+            new ModuleDebugModule(this),
+            new ChunkDebugModule(this)
+        ];
     }
 
     private void LoadChunksAroundPlayer()
     {
         var RenderDistance = renderer.RenderDistance / 2;
-        
+
         var playerPosition = Camera.Position;
         for (var x = -RenderDistance; x < RenderDistance; x++)
-            for (var y = -RenderDistance; y < RenderDistance; y++)
-                for (var z = -RenderDistance; z < RenderDistance; z++)
-                {
-                    var chunkPosition = ChunkPosition.FromWorldPosition(
-                        (x * Chunk.Size) + (int)playerPosition.X,
-                        (y * Chunk.Size) + (int)playerPosition.Y,
-                        (z * Chunk.Size) + (int)playerPosition.Z
-                    );
-        
-                    var chunkLoader = new ChunkLoader(chunkPosition, 1);
-                    world.EnqueueChunk(chunkLoader);
-                }
+        for (var y = -RenderDistance; y < RenderDistance; y++)
+        for (var z = -RenderDistance; z < RenderDistance; z++)
+        {
+            var chunkPosition = ChunkPosition.FromWorldPosition(
+                (x * Chunk.Size) + (int)playerPosition.X,
+                (y * Chunk.Size) + (int)playerPosition.Y,
+                (z * Chunk.Size) + (int)playerPosition.Z
+            );
+
+            var chunkLoader = new ChunkLoader(chunkPosition, 1);
+            world.EnqueueChunk(chunkLoader);
+        }
     }
 
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
         LoadChunksAroundPlayer();
+
+        if (KeyboardState.IsKeyPressed(Keys.R))
+        {
+            world.Clear();
+            renderer.Clear();
+        }
 
         builder.Update();
         renderer.Update();
@@ -145,6 +153,8 @@ public class Game : GameWindow
         base.OnRenderFrame(args);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         Time += args.Time;
+        FpsMeter.FpsGauge.Record(1.0 / args.Time);
+
         world.DebugRender();
 
         using var shader = _shader.Use();

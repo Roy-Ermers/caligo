@@ -1,11 +1,12 @@
 using Caligo.Core.Generators.Transport;
-using Caligo.Core.ModuleSystem;
+using Caligo.Core.Generators.World;
 using Caligo.Core.Resources.Block;
+using Caligo.Core.Spatial;
 using Caligo.Core.Universe;
 using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 
-namespace Caligo.Core.Generators.World;
+namespace Caligo.Client.Generators.World;
 
 public class LayeredWorldGenerator : IWorldGenerator
 {
@@ -15,9 +16,9 @@ public class LayeredWorldGenerator : IWorldGenerator
 	private readonly Block OddTerrainBlock;
 	private readonly Block NodeBlock;
 
-	private readonly Universe.World.World _world;
+	private readonly Core.Universe.World.World _world;
 
-	public LayeredWorldGenerator(Universe.World.World world, int seed)
+	public LayeredWorldGenerator(Core.Universe.World.World world, int seed)
 	{
 		_world = world;
 		Seed = seed;

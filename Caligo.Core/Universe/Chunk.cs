@@ -46,7 +46,7 @@ public class Chunk
     public void Set(int x, int y, int z, Block block) => Set(x, y, z, block.NumericId);
     public void Set(int x, int y, int z, ushort value)
     {
-        var index = ZOrderCurve.GetIndex(x, y, z, Size);
+        var index = ZOrderCurve.GetIndex(x, y, z);
         var currentBlock = data[index];
 
         if (value > 0 && currentBlock == 0)

@@ -161,7 +161,7 @@ void main()
     vec3 chunkOffset = chunkInfo[gl_DrawID].xyz;
     float chunkStart = chunkInfo[gl_DrawID].w;
     interpolation = 1 - pow(1 - min(1, (uTime - chunkStart)), 3);
-    chunkOffset.y += interpolation * 4.0;
+//    chunkOffset.y -= interpolation * 4.0;
 
     vec3 vertexPosition = face.position + vertexOffset + chunkOffset;
 

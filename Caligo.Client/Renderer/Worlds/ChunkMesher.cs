@@ -10,6 +10,7 @@ using Caligo.Core.Universe;
 using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 using Caligo.ModuleSystem.Storage;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Client.Renderer.Worlds;
 

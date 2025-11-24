@@ -1,4 +1,5 @@
 using Caligo.Core.Generators.Features;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Generators.Transport;
 

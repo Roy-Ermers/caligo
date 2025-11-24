@@ -1,6 +1,7 @@
 using Caligo.Core.Generators.Features;
 using Caligo.Core.Noise;
 using Caligo.Core.Spatial.PositionTypes;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Generators.Transport;
 
@@ -45,12 +46,11 @@ public class TransportNetwork
 
     private Tree GenerateNode(Sector sector, Random random)
     {
-        
         sector.Lock.EnterWriteLock();
-        var offsetX = random.NextSingle();
-        var offsetZ = random.NextSingle();
-        var nodeX = (int)(sector.Start.X + offsetX * Sector.SectorSize);
-        var nodeZ = (int)(sector.Start.Z + offsetZ * Sector.SectorSize);
+        var offsetX = random.Next(Sector.SectorSize);
+        var offsetZ = random.Next(Sector.SectorSize);
+        var nodeX = (int)(sector.Start.X + offsetX);
+        var nodeZ = (int)(sector.Start.Z + offsetZ);
 
         var position = new WorldPosition(nodeX, 1, nodeZ);
 

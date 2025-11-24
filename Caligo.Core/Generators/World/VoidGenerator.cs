@@ -7,7 +7,7 @@ namespace Caligo.Core.Generators.World;
 
 public class VoidGenerator : IWorldGenerator
 {
-    public Block Spawn { get; init; } = ModuleRepository.Current.Get<Block>("air");
+    public Block Spawn { get; init; } = ModuleRepository.Current.Get<Block>("grass_block");
 
 
     public void GenerateChunk(ref Chunk chunk)

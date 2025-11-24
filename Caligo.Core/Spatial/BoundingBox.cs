@@ -47,7 +47,10 @@ public readonly struct BoundingBox
     {
         Start = start;
         End = new WorldPosition(start.X + width, start.Y + height, start.Z + depth);
-    }
+    }    
+    
+    public BoundingBox(WorldPosition start, int size) : this(start, size, size, size) { }
+    
 
     /// <summary>
     /// Checks if a position is contained within this bounding box.

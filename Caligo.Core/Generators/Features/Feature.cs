@@ -1,6 +1,7 @@
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.BoundingVolumeHierarchy;
 using Caligo.Core.Spatial.PositionTypes;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Generators.Features;
 

@@ -41,9 +41,9 @@ public readonly record struct ChunkPosition
     {
         return new ChunkPosition
         {
-            X = x / Chunk.Size,
-            Y = y / Chunk.Size,
-            Z = z / Chunk.Size
+            X = (int)Math.Floor((float)x / Chunk.Size),
+            Y = (int)Math.Floor((float)y / Chunk.Size),
+            Z = (int)Math.Floor((float)z / Chunk.Size)
         };
     }
 

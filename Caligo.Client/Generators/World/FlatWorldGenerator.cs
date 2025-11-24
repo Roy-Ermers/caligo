@@ -1,11 +1,12 @@
-using Caligo.Core.ModuleSystem;
+using Caligo.Core.Generators.World;
 using Caligo.Core.Resources.Block;
+using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
 using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 
-namespace Caligo.Core.Generators.World;
+namespace Caligo.Client.Generators.World;
 
 public class FlatWorldGenerator : IWorldGenerator
 {
@@ -16,10 +17,10 @@ public class FlatWorldGenerator : IWorldGenerator
 
     public void GenerateChunk(ref Chunk chunk)
     {
-        if (chunk.Position.Y > GroundLevel)
-        {
-            return;
-        }
+        // if (chunk.Position.Y + Chunk.Size > GroundLevel)
+        // {
+        //     return;
+        // }
 
         foreach (WorldPosition position in new CubeIterator(chunk))
         {
