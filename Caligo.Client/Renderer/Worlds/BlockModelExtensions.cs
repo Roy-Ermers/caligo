@@ -16,14 +16,14 @@ public static class BlockModelExtensions
         ChunkLocalPosition chunkPosition,
         Dictionary<string, string> textures,
         MaterialBuffer materialBuffer,
+        (short x, short y, short z) offset,
         Atlas atlas
         )
     {
         var face = cube.TextureFaces[direction];
 
-        if (face is null || face.Value.Texture == null)
+        if (face?.Texture == null)
             return null;
-
 
         var textureKey = face.Value.Texture;
 
@@ -31,6 +31,11 @@ public static class BlockModelExtensions
             textureKey = textures[textureKey[1..]];
 
         var textureId = atlas[textureKey];
+        
+        if(textureId == -1) 
+        {
+            throw new Exception($"Texture '{textureKey}' not found in atlas.");
+        }
 
         var size = Vector3.Abs(cube.To - cube.From);
         var width = (ushort)size.X;
@@ -44,28 +49,30 @@ public static class BlockModelExtensions
             TextureId = textureId,
             UV0 = new Vector2(face.Value.UV.X, face.Value.UV.Y),
             UV1 = new Vector2(face.Value.UV.Z, face.Value.UV.W),
-            Tint = face.Value.Tint
+            Tint = face.Value.Tint,
+            Shade = face.Value.Shade,
         };
 
-        var materialIndex = materialBuffer.Add(material);
 
         // Compute face center for each direction
         var from = cube.From;
-        var x = (ushort)(chunkPosition.X * 16);
-        var y = (ushort)(chunkPosition.Y * 16);
-        var z = (ushort)(chunkPosition.Z * 16);
+        var x = (ushort)Math.Clamp(chunkPosition.X * 16 + offset.x, 0, 511);
+        var y = (ushort)Math.Clamp(chunkPosition.Y * 16 + offset.y, 0, 511);
+        var z = (ushort)Math.Clamp(chunkPosition.Z * 16 + offset.z, 0, 511);
 
         if (direction == Direction.Up)
         {
             x += (ushort)(from.X + width);
             y += (ushort)(from.Y + height);
             z += (ushort)from.Z;
+            material.Height = depth;
         }
         else if (direction == Direction.Down)
         {
             x += (ushort)from.X;
             y += (ushort)from.Y;
             z += (ushort)from.Z;
+            material.Height = depth;
         }
         else if (direction == Direction.North)
         {
@@ -84,13 +91,20 @@ public static class BlockModelExtensions
             x += (ushort)from.X;
             y += (ushort)from.Y;
             z += (ushort)from.Z;
+            
+            material.Width = depth;
+            
         }
         else if (direction == Direction.East)
         {
             x += (ushort)(from.X + width);
             y += (ushort)from.Y;
             z += (ushort)(from.Z + depth);
+            material.Width = depth;
         }
+        
+        var materialIndex = materialBuffer.Add(material);
+        
 
         var faceRenderData = new BlockFaceRenderData
         {

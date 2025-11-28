@@ -107,7 +107,6 @@ public class FaceBuffer: IDisposable
 			{
 				Count = 4,
 				InstanceCount = (uint)mesh.RenderData.Count / BlockFaceRenderData.Size,
-				First = 0,
 				BaseInstance = (uint)index / BlockFaceRenderData.Size
 			});
 		}

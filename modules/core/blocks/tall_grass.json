@@ -1,0 +1,31 @@
+{
+  "variants": [
+    {
+      "model": {
+        "name": "tall_grass",
+        "textures": {
+          "top": "grass/tall_grass_top",
+          "bottom": "grass/tall_grass_bottom"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "tall_grass",
+        "textures": {
+          "top": "grass/tall_grass_top_1",
+          "bottom": "grass/tall_grass_bottom_1"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "tall_grass",
+        "textures": {
+          "top": "grass/tall_grass_top_2",
+          "bottom": "grass/tall_grass_bottom_2"
+        }
+      }
+    }
+  ]
+}

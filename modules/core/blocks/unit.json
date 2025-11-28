@@ -1,8 +1,8 @@
 {
 	"model": {
-		"name": "unit_block",
+		"name": "overlay:pyramid",
 		"textures": {
-			"0": ""
+			"missing": "cobblestone"
 		}
 	}
 }

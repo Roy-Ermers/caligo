@@ -1,10 +1,34 @@
 {
-	"model": {
-		"name": "block/block_column",
-		"textures": {
-			"up": "birch_log_top",
-			"down": "birch_log_top",
-			"side": "birch_log"
-		}
-	}
+  "variants": [
+    {
+      "model": {
+        "name": "block/block_column",
+        "textures": {
+          "up": "oak_log_top",
+          "down": "oak_log_top",
+          "side": "oak_log"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_column",
+        "textures": {
+          "up": "oak_log_top",
+          "down": "oak_log_top",
+          "side": "oak_log1"
+        }
+      }
+    },    
+    {
+      "model": {
+        "name": "block/block_column",
+        "textures": {
+          "up": "oak_log_top",
+          "down": "oak_log_top",
+          "side": "oak_log2"
+        }
+      }
+    }
+  ]
 }

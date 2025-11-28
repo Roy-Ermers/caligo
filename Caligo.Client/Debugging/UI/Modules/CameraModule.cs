@@ -63,6 +63,7 @@ public class CameraDebugModule : IDebugModule
         if (Components.Accordion("Current Block"))
         {
             var position = (Vector3)Camera.Position;
+            Components.Checkbox(ref renderHit, "Render Hit Info");
 
             if (world.Raycast(
                     new Ray(position, (Vector3)Camera.Forward),
@@ -74,8 +75,7 @@ public class CameraDebugModule : IDebugModule
                 Components.Text("Hit Position: " + hit.Position);
                 Components.Text("Distance: " + hit.Distance.ToString("0.00"));
                 Components.Text($"Normal: {hit.Normal.X}, {hit.Normal.Y}, {hit.Normal.Z}");
-                
-                Components.Checkbox(ref renderHit, "Render Hit Info");
+
 
                 if (renderHit)
                 {

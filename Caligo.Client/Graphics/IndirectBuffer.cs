@@ -24,6 +24,7 @@ public struct IndirectDrawCommand
     /// The starting index in the vertex buffer (usually 0 for non-indexed drawing).
     /// </summary>
     public uint First;
+
     /// <summary>
     /// The base instance for instanced rendering (used as gl_InstanceID base).
     /// </summary>
@@ -127,7 +128,6 @@ public class IndirectBuffer
 
     public void Clear()
     {
-        Console.WriteLine($"Clearing IndirectBuffer with {_drawCount} commands");
         _drawCount = 0;
         if (_mappedPtr == IntPtr.Zero) return;
         GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);

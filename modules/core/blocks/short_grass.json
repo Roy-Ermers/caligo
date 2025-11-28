@@ -1,0 +1,44 @@
+{
+  "variants": [
+    {
+      "model": {
+        "name": "grass",
+        "textures": {
+          "grass": "grass/short_grass"
+        }
+      }
+    },    
+    {
+      "model": {
+        "name": "grass",
+        "textures": {
+          "grass": "grass/short_grass1"
+        }
+      }
+    },    
+    {
+      "model": {
+        "name": "grass",
+        "textures": {
+          "grass": "grass/short_grass2"
+        }
+      }
+    },    
+    {
+      "model": {
+        "name": "grass",
+        "textures": {
+          "grass": "grass/short_grass3"
+        }
+      }
+    },    
+    {
+      "model": {
+        "name": "grass",
+        "textures": {
+          "grass": "grass/short_grass4"
+        }
+      }
+    }
+  ]
+}

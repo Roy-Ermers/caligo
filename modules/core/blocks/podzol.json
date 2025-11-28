@@ -1,0 +1,24 @@
+{
+  "variants": [
+    {
+      "model": {
+        "name": "block/block_column",
+        "textures": {
+          "up": "podzol_top",
+          "down": "dirt",
+          "side": "podzol_side"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_column",
+        "textures": {
+          "up": "podzol_top1",
+          "down": "dirt",
+          "side": "podzol_side"
+        }
+      }
+    }
+  ]
+}

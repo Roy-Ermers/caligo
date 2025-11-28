@@ -26,7 +26,7 @@ public abstract class BaseResourceTypeStorage
 public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), IEnumerable<KeyValuePair<string, T>> where T : class
 {
     public override Type Type => typeof(T);
-    private Dictionary<string, T> _storage = [];
+    private SortedList<string, T> _storage = [];
     public override int Count => _storage.Count;
 
     public T this[string key]
@@ -41,20 +41,15 @@ public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), 
         {
             if (index < 0 || index >= _storage.Count)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
-            return _storage.ElementAt(index).Value;
+            return _storage.Values[index];
         }
         set
         {
             if (index < 0 || index >= _storage.Count)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
-            var key = _storage.ElementAt(index).Key;
+            var key = _storage.Keys[index];
             _storage[key] = value;
         }
-    }
-
-    public void Prepend(string key, T value)
-    {
-        _storage = _storage.Prepend(new KeyValuePair<string, T>(key, value)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public void Add(string key, T value)
@@ -112,7 +107,7 @@ public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), 
             return false;
         }
 
-        value = _storage.ElementAt(index).Value;
+        value = _storage.Values[index];
         return true;
     }
 

@@ -149,7 +149,6 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
     /// </summary>
     public void UpdateProjection(int width, int height)
     {
-        Console.WriteLine($"Updating projection to {width}x{height}");
         Paper.SetResolution(width, height);
         _projection = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1);
     }

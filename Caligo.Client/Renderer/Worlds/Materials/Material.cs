@@ -55,13 +55,18 @@ public record struct Material : IEquatable<Material>
     /// </remarks>
     /// </summary>
     public int TextureId;
+    
+    /// <summary>
+    /// Whether the face should be shaded based on its normal.
+    /// </summary>
+    public bool Shade;
 
 
     public readonly bool Equals(Material other)
     {
         var thisEncoded = Encode();
         var otherEncoded = other.Encode();
-        return thisEncoded[0] == otherEncoded[0] && thisEncoded[1] == otherEncoded[1];
+        return thisEncoded[0b0] == otherEncoded[0b0] && thisEncoded[0b1] == otherEncoded[0b1];
     }
 
     private readonly Vector3 EncodeTint()
@@ -75,7 +80,7 @@ public record struct Material : IEquatable<Material>
             );
         }
 
-        return new Vector3(15, 15, 15);
+        return new Vector3(0b1111, 0b1111, 0b1111);
     }
 
     private static Vector2 EncodeUV(Vector2 uv)
@@ -86,35 +91,36 @@ public record struct Material : IEquatable<Material>
 
     public readonly int[] Encode()
     {
-        int upper = 0;
+        int upper = 0b0;
 
-        int width = (Width - 1) & 0x0F;
-        int height = (Height - 1) & 0x0F;
+        int width = (Width - 0b1) & 0b1111;
+        int height = (Height - 0b1) & 0b1111;
 
         Vector2 uv0 = EncodeUV(UV0);
         Vector2 uv1 = EncodeUV(UV1);
-        int uv0u = (int)uv0.X & 0x1F;
-        int uv0v = (int)uv0.Y & 0x1F;
-        int uv1u = (int)uv1.X & 0x1F;
-        int uv1v = (int)uv1.Y & 0x1F;
+        int uv0u = (int)uv0.X & 0b11111;
+        int uv0v = (int)uv0.Y & 0b11111;
+        int uv1u = (int)uv1.X & 0b11111;
+        int uv1v = (int)uv1.Y & 0b11111;
 
-        upper |= width << 0;
-        upper |= height << 4;
-        upper |= uv0u << 8;
-        upper |= uv0v << 13;
-        upper |= uv1u << 18;
-        upper |= uv1v << 23;
+        upper |= width << 0b0;
+        upper |= height << 0b100;
+        upper |= uv0u << 0b1000;
+        upper |= uv0v << 0b1101;
+        upper |= uv1u << 0b10010;
+        upper |= uv1v << 0b10111;
 
-        int lower = 0;
+        int lower = 0b0;
         Vector3 Tint = EncodeTint();
-        int tintR = (int)Tint.X & 0x0F;
-        int tintG = (int)Tint.Y & 0x0F;
-        int tintB = (int)Tint.Z & 0x0F;
-        int textureId = TextureId & 0xFFFF;
-        lower |= textureId << 0;
-        lower |= tintR << 16;
-        lower |= tintG << 20;
-        lower |= tintB << 24;
+        int tintR = (int)Tint.X & 0b1111;
+        int tintG = (int)Tint.Y & 0b1111;
+        int tintB = (int)Tint.Z & 0b1111;
+        int textureId = TextureId & 0b1111111111111111;
+        lower |= textureId << 0b0;
+        lower |= tintR << 0b10000;
+        lower |= tintG << 0b10100;
+        lower |= tintB << 0b11000;
+        lower |= (Shade ? 1 : 0) << 28;
 
         return [upper, lower];
     }
@@ -122,6 +128,6 @@ public record struct Material : IEquatable<Material>
     public readonly override int GetHashCode()
     {
         var encoded = Encode();
-        return HashCode.Combine(encoded[0], encoded[1]);
+        return HashCode.Combine(encoded[0b0], encoded[0b1]);
     }
 }

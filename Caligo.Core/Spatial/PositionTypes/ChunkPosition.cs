@@ -1,5 +1,7 @@
 using System.Numerics;
+using System.Xml.Schema;
 using Caligo.Core.Universe;
+using Caligo.Core.Utils;
 
 namespace Caligo.Core.Spatial.PositionTypes;
 
@@ -18,7 +20,7 @@ public readonly record struct ChunkPosition
     public int Y { get; init; }
     public int Z { get; init; }
 
-    public readonly int Id => HashCode.Combine(X, Y, Z);
+    public readonly int Id => HashCode.Combine(X,Y,Z);
 
     public readonly WorldPosition ToWorldPosition()
     {

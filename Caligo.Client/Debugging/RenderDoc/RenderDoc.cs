@@ -31,7 +31,7 @@ public unsafe class RenderDoc
         {
             var renderDoc = new RenderDoc(lib);
             Console.WriteLine("RenderDoc loaded");
-            renderDoc.API.SetCaptureFilePathTemplate("captures/WorldGenCapture");
+            renderDoc.API.SetCaptureFilePathTemplate("captures");
             return renderDoc;
         }
 
@@ -55,9 +55,9 @@ public unsafe class RenderDoc
     public void ToggleCapture()
     {
         if (IsCapturing)
-            API.EndFrameCapture(IntPtr.Zero, IntPtr.Zero);
+            API.EndFrameCapture(IntPtr.Zero, (IntPtr)Game.Instance.WindowPtr);
         else
-            API.StartFrameCapture(IntPtr.Zero, IntPtr.Zero);
+            API.StartFrameCapture(IntPtr.Zero, (IntPtr)Game.Instance.WindowPtr);
     }
 
     private static string GetRenderDocLibName()

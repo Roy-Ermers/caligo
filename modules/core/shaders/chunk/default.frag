@@ -13,6 +13,7 @@ struct Material {
     vec2 uv1;
     vec3 tint;
     int textureId;
+    bool shade;
 };
 
 out vec4 FragColor;
@@ -36,8 +37,9 @@ struct Camera
 };
 
 uniform Camera camera;
-const float fogDistance = 10*16.0;
+const float fogDistance = 4*16.0;
 const float fogDensity = 0.005;
+const vec3 fogColor = vec3(0.46, 0.66, 0.9);
 
 void main()
 {
@@ -52,8 +54,10 @@ void main()
 
     vec3 lightDir = normalize(sun);
     // diffuse shading
-    float diffuse = max(dot(normal, lightDir), 0.0);
-
+    
+    float diffuse = 0;
+    if(material.shade)
+        diffuse = max(dot(normal, lightDir), 0.0);
     vec3 ambient = ambient + diffuse;
 
     vec3 result = ambient * (texColor.rgb * material.tint);
@@ -61,7 +65,6 @@ void main()
     // fog
     float distance = length(fragPos - camera.position);
     float fogFactor = 1.0 - clamp(exp(-fogDensity * distance), 0.0, 1.0);
-    vec3 fogColor = vec3(0.9, 0.9, 1);
     result = mix(result, fogColor, min(1, fogFactor + (1 - interpolation)));
     
     FragColor = vec4(result, 1.0);

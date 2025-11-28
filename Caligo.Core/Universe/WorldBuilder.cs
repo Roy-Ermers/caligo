@@ -18,8 +18,6 @@ public class WorldBuilder
 
 		Generator.Initialize();
 
-
-
 		StartProcessing();
 	}
 

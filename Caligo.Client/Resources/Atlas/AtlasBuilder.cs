@@ -40,7 +40,7 @@ public class AtlasBuilder()
         var entries = new string?[_sprites.Count];
 
         var index = 0;
-        foreach (var name in _sprites.Select(sprite => GetTextureName(sprite.Key)))
+        foreach (var (name, _) in _sprites)
         {
             entries[index] = name;
 

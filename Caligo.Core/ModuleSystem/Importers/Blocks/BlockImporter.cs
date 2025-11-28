@@ -36,6 +36,8 @@ public class BlockImporter : IImporter, IResourceProcessor
 
         var files = Directory.EnumerateFiles(rootDirectory, "*.json", SearchOption.AllDirectories);
         var blockStorage = module.GetStorage<Block>();
+        
+        blockStorage.Add(Block.Air.Name, Block.Air);
 
         foreach (var file in files)
         {
@@ -84,10 +86,7 @@ public class BlockImporter : IImporter, IResourceProcessor
 
         var Air = Identifier.Resolve("air");
         ushort index = 0;
-
-        blockStorage.Prepend(Air, new Block
-        { Name = Air });
-
+        
         if (blockStorage.Count == 1)
             return;
 

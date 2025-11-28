@@ -74,7 +74,7 @@ public class WorldRenderer
 			if (!_world.TryGetChunk(position, out var chunk))
 				continue;
 
-			if (chunk.State.HasFlag(ChunkState.Generated) && !chunk.State.HasFlag(ChunkState.Meshing) && !chunk.State.HasFlag(ChunkState.Meshed))
+			if ((chunk.State & (ChunkState.Generated | ChunkState.Meshing | ChunkState.Meshed)) == ChunkState.Generated)
 			{
 				ChunkMesher.EnqueueChunk(chunk);
 			}
@@ -112,7 +112,7 @@ public class WorldRenderer
 
 		shader.SetTextureArray("atlas", _blockTextureAtlas.TextureArray);
 		shader.SetVector3("sun", Vector3.UnitY + Vector3.UnitZ);
-		shader.SetVector3("ambient", new Vector3(0.75f, 0.75f, 0.75f));
+		shader.SetVector3("ambient", new Vector3(0.46f, 0.66f, 0.9f));
 		
 		FaceBuffer.Render();
 	}

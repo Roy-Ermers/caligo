@@ -1,0 +1,13 @@
+{
+  "model": {
+    "name": "basket",
+    "textures": {
+      "0": "basket_inner",
+      "1": "basket_side",
+      "2": "basket_side_handles",
+      "3": "basket_top",
+      "4": "wicker_block",
+      "particle": "basket_inner"
+    }
+  }
+}

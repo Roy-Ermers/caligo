@@ -1,4 +1,5 @@
 using System.Diagnostics.Metrics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Caligo.Core.FileSystem;
 using OpenTK.Graphics.OpenGL;
@@ -50,27 +51,31 @@ public class ShaderBuffer<T> where T : struct
 		GL.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, name.Length, name);
 	}
 
-	public void SetData(Span<T> data, bool orphan = false)
+	public unsafe void SetData(Span<T> data, bool orphan = false)
 	{
 		var oldSize = Size;
 		Size = data.Length * Marshal.SizeOf(default(T));
 		Bind();
-		if (Size > oldSize)
+
+		fixed (T* ptr = data)
 		{
-			// Resize and upload new data
-			Console.WriteLine($"Resizing {Name} buffer to " + ByteSizeFormatter.FormatByteSize(data.Length));
-			GL.NamedBufferData(Handle, Size, [.. data], _usageHint);
-		}
-		else if (orphan)
-		{
-			// Orphan and upload new data
-			GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint); // Orphan
-			GL.NamedBufferSubData(Handle, IntPtr.Zero, Size, [.. data]);    // Upload
-		}
-		else
-		{
-			// Direct upload (faster but may stall if GPU is reading)
-			GL.NamedBufferSubData(Handle, IntPtr.Zero, Size, [.. data]);
+			var pointer = new IntPtr(ptr);
+			if (Size > oldSize)
+			{
+				// Resize and upload new data
+				GL.NamedBufferData(Handle, Size, pointer, _usageHint);
+			}
+			else if (orphan)
+			{
+				// Orphan and upload new data
+				GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint); // Orphan
+				GL.NamedBufferSubData(Handle, IntPtr.Zero, Size, pointer); // Upload
+			}
+			else
+			{
+				// Direct upload (faster but may stall if GPU is reading)
+				GL.NamedBufferSubData(Handle, IntPtr.Zero, Size, pointer);
+			}
 		}
 	}
 
@@ -92,7 +97,6 @@ public class ShaderBuffer<T> where T : struct
 			return;
 
 		Size = newSize * Stride;
-		Console.WriteLine($"Resizing {Name} buffer to " + ByteSizeFormatter.FormatByteSize(newSize));
 		Bind();
 		GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint);
 	}

@@ -8,6 +8,7 @@ public class JsonOptions
     public static JsonSerializerOptions SerializerOptions => new()
     {
         PropertyNameCaseInsensitive = true,
+        RespectNullableAnnotations = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
         PropertyNamingPolicy = new JsonPolicy(),

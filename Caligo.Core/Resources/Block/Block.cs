@@ -1,5 +1,6 @@
 using Caligo.Core.Resources.Block.Models;
 using Caligo.Core.Utils;
+using Caligo.ModuleSystem;
 using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Resources.Block;
@@ -14,20 +15,23 @@ public record struct BlockVariant
 
 public record class Block
 {
+    public static readonly Block Air = new()
+    {
+        Name = Identifier.Resolve("air"),
+    };
+    
     public ushort NumericId = 0;
     public required string Name;
 
     public BlockVariant[] Variants
     {
-        get => _variants;
+        get;
         set
         {
-            _variants = value;
+            field = value;
             RecalculateWeights();
         }
-    }
-
-    private BlockVariant[] _variants = [];
+    } = [];
 
     private int _variantTotal = 0;
     private int[] _cumulativeWeights = [];

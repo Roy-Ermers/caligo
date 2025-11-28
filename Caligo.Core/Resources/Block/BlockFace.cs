@@ -14,6 +14,8 @@ public struct BlockFace
 
     [JsonPropertyName("uv")]
     public Vector4 UV;
+    
+    public bool Shade = true;
 
     [JsonConstructor]
     public BlockFace(string? texture)
@@ -28,7 +30,8 @@ public struct BlockFace
         return new BlockFace(Texture)
         {
             UV = UV,
-            Tint = Tint
+            Tint = Tint,
+            Shade = Shade
         };
     }
 }

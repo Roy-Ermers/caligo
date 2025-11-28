@@ -12,12 +12,12 @@ public class ZOrderCurve
     /// <returns></returns>
     public static int GetIndex(int x, int y, int z, int size = 16)
     {
-        if (x < 0 || x > size)
-            throw new ArgumentOutOfRangeException(nameof(x));
-        if (y < 0 || y > size)
-            throw new ArgumentOutOfRangeException(nameof(y));
-        if (z < 0 || z > size)
-            throw new ArgumentOutOfRangeException(nameof(z));
+        // if (x < 0 || x > size)
+        //     throw new ArgumentOutOfRangeException(nameof(x));
+        // if (y < 0 || y > size)
+        //     throw new ArgumentOutOfRangeException(nameof(y));
+        // if (z < 0 || z > size)
+        //     throw new ArgumentOutOfRangeException(nameof(z));
 
         // use morton order to interleave x,y and z components
         var result = (int)Math.Pow(size, 2) * z + size * x + y;

@@ -86,7 +86,7 @@ public class Game : GameWindow
     {
         base.OnLoad();
         GL.DebugMessageCallback(DebugMessageDelegate, nint.Zero);
-        GL.ClearColor(0.9f, 0.9f, 1f, 1.0f);
+        GL.ClearColor(0.46f, 0.66f, 0.9f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);
         GL.PolygonMode(TriangleFace.Front, PolygonMode.Fill);
@@ -95,7 +95,7 @@ public class Game : GameWindow
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
-        builder = new WorldBuilder(world, new HillyWorldGenerator(0));
+        builder = new WorldBuilder(world, new LayeredWorldGenerator(world, 0));
         renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
 
         debugUiRenderer =

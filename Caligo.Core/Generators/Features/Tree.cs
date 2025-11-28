@@ -26,26 +26,20 @@ public class Tree : Feature
 
     public override ushort GetBlock(WorldPosition position)
     {
-        var y = position.Y - Seed.Y;
+        float y = position.Y - Seed.Y;
 
-        float leafRadius = BoundingBox.Width / 2f - 1f;
-        if (position.X == Seed.X && position.Z == Seed.Z && y <= Height - leafRadius / 2)
+        var leafRadius = BoundingBox.Width / 2f - 1f;
+        if (position.X == Seed.X && position.Z == Seed.Z && y <= Height - leafRadius / 3)
         {
             return LogBlock.NumericId;
         }
 
-        if (y >= Height - leafRadius * 2 && y <= Height && leafRadius > 0)
+        var distanceFromCenter = MathF.Sqrt(MathF.Pow(position.X - Seed.X, 2) + MathF.Pow(position.Z - Seed.Z, 2));
+        var heightFactor = 1f - y / Height;
+        var currentLeafRadius = leafRadius * heightFactor;
+        if (distanceFromCenter <= currentLeafRadius && y >= Height / 4f)
         {
-            var dx = position.X - Seed.X;
-            var dy = position.Y - (Seed.Y + Height - leafRadius);
-            var dz = position.Z - Seed.Z;
-
-            var distanceFromCenter = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-
-            if (distanceFromCenter <= leafRadius)
-            {
-                return LeafBlock.NumericId;
-            }
+            return LeafBlock.NumericId;
         }
 
         return 0;

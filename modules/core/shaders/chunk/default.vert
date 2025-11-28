@@ -28,6 +28,7 @@ struct Material {
     vec2 uv1;
     vec3 tint;
     int textureId;
+    bool shade;
 };
 
 flat out float time;
@@ -105,7 +106,7 @@ Material DecodeMaterial(BlockFace face) {
             ((lowerMaterial >> 20) & 0x0F) / 15.0,
             ((lowerMaterial >> 24) & 0x0F) / 15.0
         );
-
+    material.shade = ((lowerMaterial >> 28) & 0x0F) != 0;
     return material;
 }
 
@@ -161,7 +162,7 @@ void main()
     vec3 chunkOffset = chunkInfo[gl_DrawID].xyz;
     float chunkStart = chunkInfo[gl_DrawID].w;
     interpolation = 1 - pow(1 - min(1, (uTime - chunkStart)), 3);
-//    chunkOffset.y -= interpolation * 4.0;
+    chunkOffset.y -= 1.0 - interpolation;
 
     vec3 vertexPosition = face.position + vertexOffset + chunkOffset;
 

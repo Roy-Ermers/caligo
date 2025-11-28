@@ -9,6 +9,9 @@ public class BlockModel
 
     [JsonIgnore]
     public BlockModel? Parent { get; set; }
+    
+    [JsonPropertyName("offsetType")]
+    public string? OffsetType { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
@@ -19,7 +22,7 @@ public class BlockModel
 
     public Dictionary<string, string>? Textures { get; set; }
 
-    private bool _isBuilt = false;
+    private bool _isBuilt;
 
     [JsonIgnore]
     public bool IsBuilt => _isBuilt;
@@ -40,6 +43,7 @@ public class BlockModel
             Parent.Build();
 
             Culling ??= Parent.Culling;
+            OffsetType ??= Parent.OffsetType;
 
             if (Elements.Length == 0)
             {
@@ -77,6 +81,7 @@ public class BlockModel
         var copy = new BlockModel
         {
             ParentName = ParentName,
+            OffsetType = OffsetType,
             Name = Name,
             Culling = Culling,
             Elements = (BlockModelCube[])Elements.Clone(),
