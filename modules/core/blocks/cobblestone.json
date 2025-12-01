@@ -1,0 +1,68 @@
+{
+  "variants": [
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/cobblestone"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/cobblestone1"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/cobblestone2"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/cobblestone_slab"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/silverfish_cobble"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/mossy_cobblestone"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/cobble_mossy_wall"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "block/block_all",
+        "textures": {
+          "all": "cobblestone/cobble_wall_side"
+        }
+      }
+    }
+  ]
+}

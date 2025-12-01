@@ -26,24 +26,6 @@
 					"all": "andesite"
 				}
 			}
-		},
-		{
-			"model": {
-				"weight": 5,
-				"name": "block/block_all",
-				"textures": {
-					"all": "cobblestone"
-				}
-			}
-		},
-		{
-			"weight": 5,
-			"model": {
-				"name": "block/block_all",
-				"textures": {
-					"all": "mossy_cobblestone"
-				}
-			}
 		}
 	]
 }

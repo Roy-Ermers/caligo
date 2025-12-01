@@ -1,13 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
-using Caligo.Core.Generators.Features;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 
-namespace Caligo.Core.Generators.Transport;
+namespace Caligo.Core.Generators.Features;
 
 public struct Sector
 {
-    public const int SectorSize = 16;
+    public const int SectorSize = 64;
 
     public int X { get; init; }
     public int Z { get; init; }

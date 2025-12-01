@@ -1,11 +1,10 @@
-using Caligo.Core.Generators.Features;
 using Caligo.Core.Noise;
 using Caligo.Core.Spatial.PositionTypes;
 using Random = Caligo.Core.Utils.Random;
 
-namespace Caligo.Core.Generators.Transport;
+namespace Caligo.Core.Generators.Features;
 
-public class TransportNetwork
+public class FeatureNetwork
 {
     readonly GradientNoise Noise;
     readonly int Seed;
@@ -14,7 +13,7 @@ public class TransportNetwork
 
     readonly Mutex _writeLock = new();
 
-    public TransportNetwork(Universe.World.World world, int seed)
+    public FeatureNetwork(Universe.World.World world, int seed)
     {
         Seed = seed;
         _world = world;
@@ -37,20 +36,24 @@ public class TransportNetwork
         var seed = (sector.X * 73856093) ^ (sector.Z * 19349663) ^ (Seed * 83492791);
 
         var random = new Random(seed);
+        var amount = random.Next(25, 100);
 
-        var newNode = GenerateNode(sector, random);
-        sector.Nodes.Add(newNode);
+        for (var i = 0; i < amount; i++)
+        {
+            var newNode = GenerateNode(sector, random);
+            sector.Nodes.Add(newNode);
+        }
 
         return sector;
     }
 
-    private Tree GenerateNode(Sector sector, Random random)
+    private Feature GenerateNode(Sector sector, Random random)
     {
         sector.Lock.EnterWriteLock();
         var offsetX = random.Next(Sector.SectorSize);
         var offsetZ = random.Next(Sector.SectorSize);
-        var nodeX = (int)(sector.Start.X + offsetX);
-        var nodeZ = (int)(sector.Start.Z + offsetZ);
+        var nodeX = sector.Start.X + offsetX;
+        var nodeZ = sector.Start.Z + offsetZ;
 
         var position = new WorldPosition(nodeX, 1, nodeZ);
 

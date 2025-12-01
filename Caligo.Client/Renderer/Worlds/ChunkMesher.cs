@@ -69,7 +69,7 @@ public class ChunkMesher
 
     public void StartProcessing()
     {
-        for (var processor = 0; processor < 4; processor++)
+        for (var processor = 0; processor < 1; processor++)
         {
             var thread = new Thread(Process)
             {

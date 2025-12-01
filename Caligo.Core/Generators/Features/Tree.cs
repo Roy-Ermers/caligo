@@ -12,6 +12,7 @@ public class Tree : Feature
     private readonly Block LogBlock;
     private readonly Block LeafBlock;
     private readonly short Height;
+    private readonly short Radius;
 
     private WorldPosition Seed;
 
@@ -20,8 +21,9 @@ public class Tree : Feature
         LogBlock = ModuleRepository.Current.Get<Block>("log");
         LeafBlock = ModuleRepository.Current.Get<Block>("leaves");
         Seed = seed;
-        Height = (short)Random.Next(16, 24);
-        BoundingBox = new BoundingBox(seed.X - 7, seed.Y, seed.Z - 7, seed.X + 7, seed.Y + Height, seed.Z + 7);
+        Height = (short)Random.Next(8, 32);
+        Radius = (short)Math.Max(4, Height / 4);
+        BoundingBox = new BoundingBox(seed.X - Radius, seed.Y, seed.Z - Radius, seed.X + Radius, seed.Y + Height, seed.Z + Radius);
     }
 
     public override ushort GetBlock(WorldPosition position)
@@ -29,7 +31,7 @@ public class Tree : Feature
         float y = position.Y - Seed.Y;
 
         var leafRadius = BoundingBox.Width / 2f - 1f;
-        if (position.X == Seed.X && position.Z == Seed.Z && y <= Height - leafRadius / 3)
+        if (position.X == Seed.X && position.Z == Seed.Z && y <= Height - leafRadius)
         {
             return LogBlock.NumericId;
         }

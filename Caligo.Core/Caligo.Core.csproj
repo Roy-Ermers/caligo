@@ -24,4 +24,8 @@
       <ProjectReference Include="..\Caligo.ModuleSystem\Caligo.ModuleSystem.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Generators\Transport\" />
+    </ItemGroup>
+
 </Project>
