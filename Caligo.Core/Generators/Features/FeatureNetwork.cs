@@ -1,4 +1,5 @@
 using Caligo.Core.Noise;
+using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Random = Caligo.Core.Utils.Random;
 
@@ -9,14 +10,16 @@ public class FeatureNetwork
     readonly GradientNoise Noise;
     readonly int Seed;
     private readonly Universe.World.World _world;
+    private readonly Heightmap _heightmap;
     private readonly Dictionary<int, Sector> Sectors = [];
 
     readonly Mutex _writeLock = new();
 
-    public FeatureNetwork(Universe.World.World world, int seed)
+    public FeatureNetwork(Universe.World.World world, int seed, Heightmap heightmap)
     {
         Seed = seed;
         _world = world;
+        _heightmap = heightmap;
         Noise = new GradientNoise(seed);
     }
 
@@ -54,8 +57,9 @@ public class FeatureNetwork
         var offsetZ = random.Next(Sector.SectorSize);
         var nodeX = sector.Start.X + offsetX;
         var nodeZ = sector.Start.Z + offsetZ;
-
-        var position = new WorldPosition(nodeX, 1, nodeZ);
+        
+        var nodeY = _heightmap.GetHeightAt(nodeX, nodeZ);
+        var position = new WorldPosition(nodeX, (int)nodeY, nodeZ);
 
         var node = new Tree(random, position);
         _world.Features.Insert(node);
