@@ -1,62 +1,52 @@
 {
-    "parent": "block/block",
-    "elements": [
-        {
-            "from": [
-                0,
-                0,
-                0
-            ],
-            "to": [
-                16,
-                16,
-                16
-            ],
-            "faces": {
-                "down": {
-                    "texture": "#underground"
-                },
-                "up": {
-                    "texture": "#grass",
-                    "tint": [
-                        87,
-                        132,
-                        75
-                    ]
-                },
-                "north": {
-                    "texture": "#grass",
-                  "tint": [
-                    87,
-                    132,
-                    75
-                  ]
-                },
-                "south": {
-                    "texture": "#grass",
-                  "tint": [
-                    87,
-                    132,
-                    75
-                  ]
-                },
-                "west": {
-                    "texture": "#grass",
-                  "tint": [
-                    87,
-                    132,
-                    75
-                  ]
-                },
-                "east": {
-                    "texture": "#grass",
-                  "tint": [
-                    87,
-                    132,
-                    75
-                  ]
-                }
-            }
+  "parent": "block/block",
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#underground"
+        },
+        "up": {
+          "texture": "#grass",
+          "tint": [
+            133, 158, 72
+          ]
+        },
+        "north": {
+          "texture": "#grass",
+          "tint": [
+            133, 158, 72
+          ]
+        },
+        "south": {
+          "texture": "#grass",
+          "tint": [
+            133, 158, 72
+          ]
+        },
+        "west": {
+          "texture": "#grass",
+          "tint": [
+            133, 158, 72
+          ]
+        },
+        "east": {
+          "texture": "#grass",
+          "tint": [
+            133, 158, 72
+          ]
         }
-    ]
+      }
+    }
+  ]
 }

@@ -22,9 +22,7 @@
           ],
           "texture": "#bottom",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         },
@@ -37,9 +35,7 @@
           ],
           "texture": "#bottom",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         }
@@ -66,9 +62,7 @@
           ],
           "texture": "#bottom",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         },
@@ -81,9 +75,7 @@
           ],
           "texture": "#bottom",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         }
@@ -119,9 +111,7 @@
           ],
           "texture": "#top",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         },
@@ -134,9 +124,7 @@
           ],
           "texture": "#top",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         }
@@ -172,9 +160,7 @@
           ],
           "texture": "#top",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         },
@@ -187,9 +173,7 @@
           ],
           "texture": "#top",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         }

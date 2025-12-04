@@ -5,5 +5,4 @@
   <Project Path="Caligo.Core.Tests\Caligo.Core.Tests.csproj" Type="Classic C#" />
   <Project Path="Caligo.Core\Caligo.Core.csproj" Type="C#" />
   <Project Path="Caligo.ModuleSystem\Caligo.ModuleSystem.csproj" Type="C#" />
-  <Project Path="Caligo.Renderer\Caligo.Renderer.csproj" Type="Classic C#" />
 </Solution>

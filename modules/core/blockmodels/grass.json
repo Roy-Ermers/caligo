@@ -22,11 +22,9 @@
           ],
           "texture": "#grass",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
-          "shade":true
+          "shade": true
         },
         "south": {
           "uv": [
@@ -37,9 +35,7 @@
           ],
           "texture": "#grass",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         }
@@ -66,9 +62,7 @@
           ],
           "texture": "#grass",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         },
@@ -81,9 +75,7 @@
           ],
           "texture": "#grass",
           "tint": [
-            116,
-            158,
-            77
+            133, 158, 72
           ],
           "shade": false
         }
