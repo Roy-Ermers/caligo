@@ -18,6 +18,7 @@ using Caligo.Core.ModuleSystem;
 using Caligo.Core.ModuleSystem.Importers;
 using Caligo.Core.ModuleSystem.Importers.Blocks;
 using Caligo.Core.Resources.Block;
+using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
 using Caligo.Core.Universe.World;
@@ -28,6 +29,8 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Prowl.PaperUI;
+using Prowl.PaperUI.LayoutEngine;
 using World = Caligo.Core.Universe.World.World;
 
 namespace Caligo.Client;
@@ -173,7 +176,47 @@ public class Game : GameWindow
     void RenderUI(FrameEventArgs args)
     {
         using var uiFrame = uiRenderer.Start(args.Time);
+
+
+        Components.Text("+").PositionType(PositionType.SelfDirected).Margin(UnitValue.StretchOne);
+        
         Gizmo3D.Render();
+
+        var hitinfo = uiFrame.Paper.Column("hitinfo")
+            .PositionType(PositionType.SelfDirected)
+            .Top(0)
+            .Left(0)
+            .Margin(UnitValue.StretchOne, 0)
+            .BackgroundColor(Components.Style.FrameBackground)
+            .Width(UnitValue.Auto)
+            .MinWidth(64)
+            .MaxHeight(0)
+            .Clip()
+            .Border(8)
+            .Transition(GuiProp.MaxHeight, 0.1)
+            .Rounded(0, 0, 8, 8);
+        using (hitinfo.Enter())
+        {
+            if (world.Raycast(Camera.Ray, 5f, out var hit))
+            {
+                hitinfo.MaxHeight(46);
+                Gizmo3D.DrawBoundingBox(new BoundingBox(hit.Position, 1, 1, 1));
+
+                var identifier = Identifier.Parse(hit.Block.Name);
+                using (uiFrame.Paper.Row("debuginfo")
+                           .Height(UnitValue.Auto)
+                           .Enter())
+                {
+                    Components.Text(identifier.module, 12f, FontFamily.Monospace)
+                        .TextColor(Components.Style.SecondaryTextColor).Width(UnitValue.StretchOne);
+                    Components.Text(hit.BlockId.ToString(), 12f, FontFamily.Monospace)
+                        .TextColor(Components.Style.SecondaryTextColor);
+                }
+
+
+                Components.Text(identifier.name, 18f).Margin(UnitValue.StretchOne,0);
+            }
+        }
 
         Components.Text($"FPS: {(int)(1 / args.Time)}", fontFamily: FontFamily.Monospace).Margin(8);
         debugUiRenderer.Render();

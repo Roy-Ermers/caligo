@@ -1,3 +1,4 @@
+using Caligo.Core.Spatial;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -15,6 +16,8 @@ public class Camera
     private Vector3 _forward = -Vector3.UnitZ;
 
     public Vector3 Forward => _forward;
+    
+    public Ray Ray => new Ray((System.Numerics.Vector3)Position, (System.Numerics.Vector3)Forward);
     public Vector3 Right => Vector3.Normalize(Vector3.Cross(Forward, Vector3.UnitY));
     public Vector3 Up => Vector3.Normalize(Vector3.Cross(Right, Forward));
 
