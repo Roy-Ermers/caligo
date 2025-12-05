@@ -85,7 +85,7 @@ public class LayeredWorldGenerator : IWorldGenerator
 			Block[] decoration = [flower, shortGrass, tallGrass, Block.Air];
 
 			var decorationIndex = noiseValue + (float)(random.NextDouble() / double.MaxValue);
-			chunk.Set(position.ChunkLocalPosition, decoration[(int)(MathF.Pow(decorationIndex / 2f + 0.5f, 2) * decoration.Length)]);
+			chunk.Set(position.ChunkLocalPosition, decoration[(int)(Easings.EaseInOutQuad(decorationIndex / 2f + 0.5f) * decoration.Length)]);
 		}
 	}
 
