@@ -131,7 +131,7 @@ public class ChunkMesher
                 continue;
             }
 
-            var variant = block.GetRandomVariant(random);
+            var variant = block.GetVariant(worldPosition.Id);
             // nothing to render.
             if (variant is null)
                 continue;

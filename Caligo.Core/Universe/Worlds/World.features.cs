@@ -1,7 +1,7 @@
 using Caligo.Core.Generators.Features;
 using Caligo.Core.Spatial.BoundingVolumeHierarchy;
 
-namespace Caligo.Core.Universe.World;
+namespace Caligo.Core.Universe.Worlds;
 
 public partial class World
 {

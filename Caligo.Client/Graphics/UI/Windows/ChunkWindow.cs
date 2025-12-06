@@ -1,7 +1,7 @@
 using Caligo.Client.Graphics.UI.ImGuiComponents.Tables;
 using Caligo.Core.Universe;
 using ImGuiNET;
-using World = Caligo.Core.Universe.World.World;
+using World = Caligo.Core.Universe.Worlds.World;
 
 namespace Caligo.Client.Graphics.UI.Windows;
 

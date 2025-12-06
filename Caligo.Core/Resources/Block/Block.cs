@@ -54,16 +54,20 @@ public record class Block
     public BlockVariant? GetRandomVariant(Random? random)
     {
         random ??= new Random();
+        var seed = random.Next(0, _variantTotal);
+        return GetVariant(seed);
+    }
 
+    public BlockVariant? GetVariant(int seed)
+    {
         if (Variants.Length == 0)
             return null;
 
         if (Variants.Length == 1)
             return Variants[0];
-
-
-        var target = random.Next(0, _variantTotal);
-
+        
+        var target = seed % _variantTotal;
+        
         // Binary search through cumulative weights
         var low = 0;
         var high = Variants.Length - 1;

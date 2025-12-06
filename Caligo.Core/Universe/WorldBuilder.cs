@@ -2,20 +2,21 @@ using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Caligo.Core.Generators.World;
 using Caligo.Core.Spatial.PositionTypes;
+using Caligo.Core.Universe.Worlds;
 
 namespace Caligo.Core.Universe;
 
 public class WorldBuilder
 {
 	const int MAX_GENERATION_THREADS = 8;
-	public World.World World { init; get; }
+	public World World { init; get; }
 	public IWorldGenerator Generator { init; get; }
 
 	private Channel<ChunkPosition> _channel;
 
 	// private readonly BlockingCollection<ChunkPosition> _generationQueue = [];
 
-	public WorldBuilder(World.World world, IWorldGenerator generator)
+	public WorldBuilder(World world, IWorldGenerator generator)
 	{
 		World = world;
 		Generator = generator;

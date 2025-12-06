@@ -1,0 +1,24 @@
+{
+  "variants": [
+    {
+      "model": {
+        "name": "cross",
+        "textures": {
+          "texture": "saplings/spruce_sapling"
+        }
+      }
+    },
+    {
+      "model": {
+        "name": "big_sapling",
+        "textures": {
+          "1": "saplings/spruce_sapling_stage_1",
+          "2": "saplings/spruce_sapling_stage_2",
+          "3": "saplings/spruce_sapling_stage_3",
+          "4": "saplings/spruce_sapling_stage_4"
+        }
+      }
+    }
+  ]
+}
+   

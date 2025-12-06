@@ -8,13 +8,12 @@ using Caligo.Core.ModuleSystem;
 using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
-using Caligo.Core.Universe.World;
 using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 using Caligo.ModuleSystem.Storage;
 using OpenTK.Graphics.OpenGL;
 using Vector4 = OpenTK.Mathematics.Vector4;
-using World = Caligo.Core.Universe.World.World;
+using World = Caligo.Core.Universe.Worlds.World;
 
 namespace Caligo.Client.Renderer.Worlds;
 

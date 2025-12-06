@@ -9,13 +9,13 @@ public class FeatureNetwork
 {
     readonly GradientNoise Noise;
     readonly int Seed;
-    private readonly Universe.World.World _world;
+    private readonly Universe.Worlds.World _world;
     private readonly Heightmap _heightmap;
     private readonly Dictionary<int, Sector> Sectors = [];
 
     readonly Mutex _writeLock = new();
 
-    public FeatureNetwork(Universe.World.World world, int seed, Heightmap heightmap)
+    public FeatureNetwork(Universe.Worlds.World world, int seed, Heightmap heightmap)
     {
         Seed = seed;
         _world = world;

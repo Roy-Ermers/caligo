@@ -4,7 +4,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/allium"
+          "texture": "flowers/allium"
         }
       }
     },    
@@ -12,7 +12,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/allium1"
+          "texture": "flowers/allium1"
         }
       }
     },    
@@ -20,7 +20,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/allium2"
+          "texture": "flowers/allium2"
         }
       }
     },    
@@ -28,7 +28,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/blue_orchid"
+          "texture": "flowers/blue_orchid"
         }
       }
     },    
@@ -36,7 +36,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/dandelion"
+          "texture": "flowers/dandelion"
         }
       }
     },
@@ -44,7 +44,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/dandelion1"
+          "texture": "flowers/dandelion1"
         }
       }
     },    
@@ -52,7 +52,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/firefly_bush"
+          "texture": "flowers/firefly_bush"
         }
       }
     },
@@ -60,7 +60,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/orange_tulip"
+          "texture": "flowers/orange_tulip"
         }
       }
     },
@@ -68,7 +68,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/pink_tulip"
+          "texture": "flowers/pink_tulip"
         }
       }
     },
@@ -76,7 +76,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/poppy"
+          "texture": "flowers/poppy"
         }
       }
     },
@@ -84,7 +84,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/poppy_base"
+          "texture": "flowers/poppy_base"
         }
       }
     },
@@ -92,7 +92,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/poppy_base1"
+          "texture": "flowers/poppy_base1"
         }
       }
     },
@@ -100,7 +100,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/poppy_base2"
+          "texture": "flowers/poppy_base2"
         }
       }
     },
@@ -108,7 +108,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/red_tulip"
+          "texture": "flowers/red_tulip"
         }
       }
     },
@@ -116,7 +116,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/sweet_berry_bush_stage0"
+          "texture": "flowers/sweet_berry_bush_stage0"
         }
       }
     },
@@ -124,7 +124,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/sweet_berry_bush_stage1"
+          "texture": "flowers/sweet_berry_bush_stage1"
         }
       }
     },
@@ -132,7 +132,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/sweet_berry_bush_stage2"
+          "texture": "flowers/sweet_berry_bush_stage2"
         }
       }
     },
@@ -140,7 +140,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/sweet_berry_bush_stage3"
+          "texture": "flowers/sweet_berry_bush_stage3"
         }
       }
     },
@@ -148,7 +148,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/tall_dry_grass"
+          "texture": "flowers/tall_dry_grass"
         }
       }
     },
@@ -156,7 +156,7 @@
       "model": {
         "name": "cross",
         "textures": {
-          "flower": "flowers/white_tulip"
+          "texture": "flowers/white_tulip"
         }
       }
     }

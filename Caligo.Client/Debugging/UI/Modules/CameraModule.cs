@@ -5,7 +5,7 @@ using Caligo.Client.Graphics.UI.PaperComponents.fields;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
-using Caligo.Core.Universe.World;
+using Caligo.Core.Universe.Worlds;
 using OpenTK.Mathematics;
 using Vector3 = System.Numerics.Vector3;
 

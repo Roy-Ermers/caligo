@@ -1,6 +1,6 @@
 using Caligo.Core.Spatial.PositionTypes;
 
-namespace Caligo.Core.Universe.World;
+namespace Caligo.Core.Universe.Worlds;
 
 public partial class World : IEnumerable<Chunk>
 {

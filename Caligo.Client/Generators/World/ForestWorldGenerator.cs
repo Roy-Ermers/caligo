@@ -11,7 +11,7 @@ using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Client.Generators.World;
 
-public class LayeredWorldGenerator : IWorldGenerator
+public class ForestWorldGenerator : IWorldGenerator
 {
 	private readonly int Seed;
 	private readonly FeatureNetwork Network;
@@ -25,15 +25,21 @@ public class LayeredWorldGenerator : IWorldGenerator
 	private readonly CellularNoise _pathNoise;
 	private readonly GradientNoise _heightNoise;
 	private readonly Heightmap _heightmap;
-	private readonly Core.Universe.World.World _world;
+	private readonly Core.Universe.Worlds.World _world;
 
-	public LayeredWorldGenerator(Core.Universe.World.World world, int seed)
+	public ForestWorldGenerator(Core.Universe.Worlds.World world, int seed)
 	{
 		_world = world;
 		Seed = seed;
 
 		_heightNoise = new GradientNoise(seed);
-		_heightmap = new Heightmap((x,z) => Easings.EaseInCubic(_heightNoise.Get2D(x, z) * 0.5f + 0.5f) * 100f);
+		_heightmap = new Heightmap((x,z) =>
+		{
+            var offset = _heightNoise.Get2DVector(x, z);
+			
+			return Easings.EaseInCubic(_heightNoise.Get2D(x + offset.X, z + offset.Y) * 0.5f + 0.5f) * 100f;
+		});
+		
 		_noise = new GradientNoise(seed ^ 7777);
 		_pathNoise = new CellularNoise(seed);
 
@@ -56,7 +62,7 @@ public class LayeredWorldGenerator : IWorldGenerator
 		{
 			var noiseValue = _noise.Get2D(position.X / 20f, position.Z / 20f);
 			
-			var height = (int)_heightmap.GetHeightAt(position.X / 50f, position.Z / 50f, 4);
+			var height = (int)_heightmap.GetHeightAt(position.X / 50f, position.Z / 50f, 1);
 			if (position.Y < height)
 			{
 				chunk.Set(position.ChunkLocalPosition, TerrainBlock);

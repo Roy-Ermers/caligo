@@ -1,10 +1,8 @@
 using System.Numerics;
-using Caligo.Core.Generators.Features;
 using Caligo.Core.Spatial;
-using Caligo.Core.Spatial.BoundingVolumeHierarchy;
 using Caligo.Core.Spatial.PositionTypes;
 
-namespace Caligo.Core.Universe.World;
+namespace Caligo.Core.Universe.Worlds;
 
 public partial class World
 {
@@ -24,10 +22,10 @@ public partial class World
         var positionY = (int)MathF.Round(ray.Origin.Y);
         var positionZ = (int)MathF.Round(ray.Origin.Z);
 
-        var stepX = Math.Sign(ray.Direction.X);
-        var stepY = Math.Sign(ray.Direction.Y);
-        var stepZ = Math.Sign(ray.Direction.Z);
-        
+        var stepX = ray.Direction.X >= 0 ? 1 : -1;
+        var stepY = ray.Direction.Y >= 0 ? 1 : -1;
+        var stepZ = ray.Direction.Z >= 0 ? 1 : -1;
+
         var deltaX = ray.Direction.X == 0 ? float.MaxValue : MathF.Abs(1.0f / ray.Direction.X);
         var deltaY = ray.Direction.Y == 0 ? float.MaxValue : MathF.Abs(1.0f / ray.Direction.Y);
         var deltaZ = ray.Direction.Z == 0 ? float.MaxValue : MathF.Abs(1.0f / ray.Direction.Z);
@@ -35,7 +33,7 @@ public partial class World
         var firstBoundaryX = stepX >= 0 ? ray.Origin.X + 1.0f : ray.Origin.X;
         var firstBoundaryY = stepY >= 0 ? ray.Origin.Y + 1.0f : ray.Origin.Y;
         var firstBoundaryZ = stepZ >= 0 ? ray.Origin.Z + 1.0f : ray.Origin.Z;
-        
+
         var maxX = Math.Abs(firstBoundaryX - ray.Origin.X) * deltaX;
         var maxY = Math.Abs(firstBoundaryY - ray.Origin.Y) * deltaY;
         var maxZ = Math.Abs(firstBoundaryZ - ray.Origin.Z) * deltaZ;
@@ -44,7 +42,7 @@ public partial class World
             (int)MathF.Floor(positionY),
             (int)MathF.Floor(positionZ)
         );
-        
+
         if (TryGetBlock(position, out var blockId))
         {
             hitInfo = new RaycastHit()
@@ -57,10 +55,9 @@ public partial class World
             };
             return true;
         }
-        
+
         while (maxX < maxDistance || maxY < maxDistance || maxZ < maxDistance)
         {
-            
             float currentT; // The distance to the next intersection point
             int normalX = 0, normalY = 0, normalZ = 0; // The normal of the face hit
 
@@ -79,7 +76,7 @@ public partial class World
                 currentT = maxY;
                 maxY += deltaY;
                 positionY += stepY;
-                normalY = -stepY; 
+                normalY = -stepY;
             }
             else
             {
@@ -87,14 +84,14 @@ public partial class World
                 currentT = maxZ;
                 maxZ += deltaZ;
                 positionZ += stepZ;
-                normalZ = -stepZ; 
+                normalZ = -stepZ;
             }
 
             if (currentT >= maxDistance)
             {
                 break;
             }
-            
+
             position = new WorldPosition(
                 (int)MathF.Floor(positionX),
                 (int)MathF.Floor(positionY),
@@ -102,7 +99,7 @@ public partial class World
             );
 
             if (!TryGetBlock(position, out var block)) continue;
-            
+
             hitInfo = new RaycastHit()
             {
                 BlockId = block,
@@ -114,7 +111,7 @@ public partial class World
 
             return true;
         }
-        
+
         hitInfo = default;
         return false;
     }

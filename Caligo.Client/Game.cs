@@ -3,6 +3,7 @@ using Caligo.Client.Debugging;
 using Caligo.Client.Debugging.RenderDoc;
 using Caligo.Client.Debugging.UI;
 using Caligo.Client.Debugging.UI.Modules;
+using Caligo.Client.Generators.Layers;
 using Caligo.Client.Generators.World;
 using Caligo.Client.Graphics;
 using Caligo.Client.Graphics.Shaders;
@@ -21,7 +22,6 @@ using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
-using Caligo.Core.Universe.World;
 using Caligo.ModuleSystem;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -31,7 +31,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Prowl.PaperUI;
 using Prowl.PaperUI.LayoutEngine;
-using World = Caligo.Core.Universe.World.World;
+using World = Caligo.Core.Universe.Worlds.World;
 
 namespace Caligo.Client;
 
@@ -98,7 +98,12 @@ public class Game : GameWindow
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
-        builder = new WorldBuilder(world, new LayeredWorldGenerator(world, 0));
+        builder = new WorldBuilder(world, new LayerWorldGenerator(0, world, [
+            new HeightLayer(),
+            new GroundLayer(),
+            new FeatureLayer(),
+            new VegetationLayer()
+        ]));
         renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
 
         debugUiRenderer =
@@ -189,6 +194,7 @@ public class Game : GameWindow
             .Margin(UnitValue.StretchOne, 0)
             .BackgroundColor(Components.Style.FrameBackground)
             .Width(UnitValue.Auto)
+            .Height(UnitValue.Auto)
             .MinWidth(64)
             .MaxHeight(0)
             .Clip()
@@ -199,7 +205,7 @@ public class Game : GameWindow
         {
             if (world.Raycast(Camera.Ray, 5f, out var hit))
             {
-                hitinfo.MaxHeight(46);
+                hitinfo.MaxHeight(300);
                 Gizmo3D.DrawBoundingBox(new BoundingBox(hit.Position, 1, 1, 1));
 
                 var identifier = Identifier.Parse(hit.Block.Name);
@@ -212,6 +218,10 @@ public class Game : GameWindow
                     Components.Text(hit.BlockId.ToString(), 12f, FontFamily.Monospace)
                         .TextColor(Components.Style.SecondaryTextColor);
                 }
+
+                Components.Text("Variant: " + Array.IndexOf(hit.Block.Variants, hit.Block.GetVariant(hit.Position.Id)), 12f, FontFamily.Monospace)
+                        .TextColor(Components.Style.SecondaryTextColor);
+                    
 
 
                 Components.Text(identifier.name, 18f).Margin(UnitValue.StretchOne,0);

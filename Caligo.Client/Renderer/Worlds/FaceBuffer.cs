@@ -46,14 +46,14 @@ public class FaceBuffer: IDisposable
 		FaceShaderBuffer = ShaderBuffer<int>.Create(
 			BufferTarget.ShaderStorageBuffer,
 			BufferUsageHint.DynamicDraw,
-			(int)(maxChunks * Math.Pow(Chunk.Size + 2, 6))
+			0
 		);
 		FaceShaderBuffer.Name = "blockFaceBuffer";
 		
 		ChunkInfoShaderBuffer = ShaderBuffer<Vector4>.Create(
 			BufferTarget.ShaderStorageBuffer,
 			BufferUsageHint.DynamicDraw,
-			maxChunks
+			1
 		);
 		ChunkInfoShaderBuffer.Name = "ChunkInfoBuffer";
 		
@@ -75,6 +75,9 @@ public class FaceBuffer: IDisposable
 	
 	public void AddMesh(ChunkMesh mesh)
 	{
+		if(mesh.RenderData.Count == 0)
+			return;
+		
 		Meshes.PushBack(mesh);
 		isDirty = true;
 	}
