@@ -10,6 +10,7 @@ using Caligo.Client.Graphics.Shaders;
 using Caligo.Client.Graphics.UI;
 using Caligo.Client.Graphics.UI.PaperComponents;
 using Caligo.Client.ModuleSystem.Importers;
+using Caligo.Client.Player;
 using Caligo.Client.Renderer;
 using Caligo.Client.Renderer.Worlds;
 using Caligo.Client.Resources.Atlas;
@@ -38,7 +39,11 @@ namespace Caligo.Client;
 public class Game : GameWindow
 {
     public static Game Instance { get; protected set; } = null!;
-    public readonly Camera Camera;
+    
+    public Camera Camera { get; set; }
+
+    public PlayerController Controller;
+    
     public readonly ModuleRepository ModuleRepository;
     private readonly PaperRenderer uiRenderer;
     private DebugUiRenderer debugUiRenderer;
@@ -54,6 +59,10 @@ public class Game : GameWindow
 
 
     public double Time;
+
+    private Vector2 _lastMousePosition;
+    private bool _firstMouseMove = true;
+    private bool _cursorLocked = true;
 
     public Game() : base(new GameWindowSettings(),
         new NativeWindowSettings
@@ -77,6 +86,7 @@ public class Game : GameWindow
         _shader.Initialize();
 
         Camera = new Camera(this);
+        Camera.Position = Vector3.UnitY * 64f;
 
         MainThread = new MainThread();
 
@@ -104,6 +114,7 @@ public class Game : GameWindow
             new VegetationLayer()
         ]));
         renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
+        Controller = new PlayerController(Camera, world);
 
         debugUiRenderer =
         [
@@ -114,6 +125,9 @@ public class Game : GameWindow
             new ModuleDebugModule(this),
             new ChunkDebugModule(this)
         ];
+        
+        // Lock cursor for FPS controls
+        CursorState = CursorState.Grabbed;
     }
 
     private void LoadChunksAroundPlayer()
@@ -146,11 +160,48 @@ public class Game : GameWindow
             world.Clear();
             renderer.Clear();
         }
+        
+        // Toggle cursor lock with Escape
+        if (KeyboardState.IsKeyPressed(Keys.Escape))
+        {
+            _cursorLocked = !_cursorLocked;
+            CursorState = _cursorLocked ? CursorState.Grabbed : CursorState.Normal;
+            _firstMouseMove = true; // Reset to avoid camera jump when re-locking
+        }
+
+        // Mouse look (only when cursor is locked)
+        var mouse = MouseState;
+        var mousePos = new Vector2(mouse.X, mouse.Y);
+        if (_firstMouseMove)
+        {
+            _lastMousePosition = mousePos;
+            _firstMouseMove = false;
+        }
+        if (_cursorLocked)
+        {
+            var delta = mousePos - _lastMousePosition;
+            Controller.ProcessMouseLook(delta.X, delta.Y);
+        }
+        _lastMousePosition = mousePos;
+        
+        // Update camera so Forward/Right vectors are current before processing movement
+        Camera.Update();
+        
+        // Movement keys (must be after Camera.Update so Forward/Right are up-to-date)
+        var forward = KeyboardState.IsKeyDown(Keys.W);
+        var backward = KeyboardState.IsKeyDown(Keys.S);
+        var left = KeyboardState.IsKeyDown(Keys.A);
+        var right = KeyboardState.IsKeyDown(Keys.D);
+        var jump = KeyboardState.IsKeyDown(Keys.Space);
+        var sprint = KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift);
+        Controller.ProcessMovement(forward, backward, left, right, jump, sprint);
+        // --- END PLAYER INPUT HANDLING ---
 
         builder.Update();
         renderer.Update();
         world.Update();
 
+        Controller.Update(args.Time);
         // Update the main thread actions
         MainThread?.Update();
     }
@@ -172,7 +223,7 @@ public class Game : GameWindow
 
         renderer.Draw(_shader);
 
-        Camera.Update(args.Time);
+        Camera.Update();
         RenderUI(args);
         SwapBuffers();
     }

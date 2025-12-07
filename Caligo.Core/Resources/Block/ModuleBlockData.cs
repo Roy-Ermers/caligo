@@ -9,5 +9,6 @@ public struct BlockVariantData
 public struct ModuleBlockData
 {
     public BlockModelLink? Model;
+    public bool IsSolid;
     public BlockVariantData[] Variants;
 }

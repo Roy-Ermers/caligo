@@ -21,6 +21,7 @@ public record class Block
     };
     
     public ushort NumericId = 0;
+    public bool IsSolid;
     public required string Name;
 
     public BlockVariant[] Variants

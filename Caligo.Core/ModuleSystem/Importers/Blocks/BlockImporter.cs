@@ -67,6 +67,7 @@ public class BlockImporter : IImporter, IResourceProcessor
                 Block block = new()
                 {
                     Name = blockName,
+                    IsSolid = blockData.IsSolid,
                     Variants = ConvertToBlockVariants(blockData.Variants)
                 };
 
