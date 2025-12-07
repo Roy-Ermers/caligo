@@ -352,7 +352,6 @@ public abstract class BaseShader
         GL.BindTexture(TextureTarget.Texture2D, textureHandle);
         SetUniform1(ActiveUniformType.Sampler2D, name, textureUnit);
     }
-
     public void SetTextureArray(string name, Texture2DArray textureArray, int unit = 0) =>
         SetTextureArray(name, textureArray.Handle, unit);
 

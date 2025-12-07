@@ -42,7 +42,7 @@ public class Game : GameWindow
     public readonly ModuleRepository ModuleRepository;
     private readonly PaperRenderer uiRenderer;
     private DebugUiRenderer debugUiRenderer;
-
+    
     private readonly RenderShader _shader;
 
     private readonly RenderDoc? renderdoc;
@@ -93,8 +93,7 @@ public class Game : GameWindow
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);
         GL.PolygonMode(TriangleFace.Front, PolygonMode.Fill);
-
-
+        
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();

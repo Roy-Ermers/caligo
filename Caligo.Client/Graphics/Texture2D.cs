@@ -60,7 +60,7 @@ public class Texture2D
         }
     }
 
-    private Texture2D(int handle, int width, int height)
+    private Texture2D(int handle, int width, int height, bool generateMipmaps = true)
     {
         Handle = handle;
         Width = width;
@@ -73,7 +73,56 @@ public class Texture2D
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)_wrapS);
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)_wrapT);
 
-        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+        if (generateMipmaps)
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+    }
+
+    public Texture2D(int width, int height, PixelInternalFormat internalFormat, PixelFormat format, PixelType type)
+    {
+        Handle = GL.GenTexture();
+        Width = width;
+        Height = height;
+
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
+        GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, format, type, IntPtr.Zero);
+
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
+            (int)_minFilter);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)_magFilter);
+
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)_wrapS);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)_wrapT);
+    }
+
+    public void SetFiltering(TextureMinFilter minFilter, TextureMagFilter magFilter)
+    {
+        _minFilter = minFilter;
+        _magFilter = magFilter;
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)minFilter);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);
+    }
+
+    public void SetWrapMode(TextureWrapMode wrapS, TextureWrapMode wrapT)
+    {
+        _wrapS = wrapS;
+        _wrapT = wrapT;
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)wrapS);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)wrapT);
+    }
+
+    public void Resize(int width, int height)
+    {
+        if (Width == width && Height == height)
+            return;
+
+        Width = width;
+        Height = height;
+
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
+        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba16f, width, height, 0, 
+            PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
     }
 
 
