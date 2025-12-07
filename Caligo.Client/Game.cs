@@ -241,40 +241,40 @@ public class Game : GameWindow
             .PositionType(PositionType.SelfDirected)
             .Top(0)
             .Left(0)
-            .Margin(UnitValue.StretchOne, 0)
+            .Margin(UnitValue.StretchOne, 8)
             .BackgroundColor(Components.Style.FrameBackground)
+            .BorderWidth(1)
+            .BorderColor(Components.Style.BorderColor)
+            .BoxShadow(0, 2, 4, 0, Components.Style.BorderShadow)
             .Width(UnitValue.Auto)
             .Height(UnitValue.Auto)
             .MinWidth(64)
-            .MaxHeight(0)
+            .Visible(false)
             .Clip()
             .Border(8)
-            .Transition(GuiProp.MaxHeight, 0.1)
-            .Rounded(0, 0, 8, 8);
+            .Rounded(8);
         using (hitinfo.Enter())
         {
             if (world.Raycast(Camera.Ray, 5f, out var hit))
             {
-                hitinfo.MaxHeight(300);
+                hitinfo.Visible(true);
                 Gizmo3D.DrawBoundingBox(new BoundingBox(hit.Position, 1, 1, 1));
 
                 var identifier = Identifier.Parse(hit.Block.Name);
-                using (uiFrame.Paper.Row("debuginfo")
-                           .Height(UnitValue.Auto)
-                           .Enter())
+
+                using (uiFrame.Paper.Row("identifier").Height(UnitValue.Auto).Width(UnitValue.Auto).RowBetween(8).Enter())
                 {
-                    Components.Text(identifier.module, 12f, FontFamily.Monospace)
-                        .TextColor(Components.Style.SecondaryTextColor).Width(UnitValue.StretchOne);
-                    Components.Text(hit.BlockId.ToString(), 12f, FontFamily.Monospace)
-                        .TextColor(Components.Style.SecondaryTextColor);
+                    Components.Text(identifier.module, 20f)
+                        .TextColor(Components.Style.AccentColor).Alignment(TextAlignment.MiddleLeft);
+                    Components.Text(identifier.name, 20f)
+                        .TextColor(Components.Style.TextColor).Alignment(TextAlignment.MiddleRight);
                 }
 
-                Components.Text("Variant: " + Array.IndexOf(hit.Block.Variants, hit.Block.GetVariant(hit.Position.Id)), 12f, FontFamily.Monospace)
+                Components.Text($"Variant: {Array.IndexOf(hit.Block.Variants, hit.Block.GetVariant(hit.Position.Id)) + 1}/{hit.Block.Variants.Length}", 12f, FontFamily.Monospace)
                         .TextColor(Components.Style.SecondaryTextColor);
                     
 
 
-                Components.Text(identifier.name, 18f).Margin(UnitValue.StretchOne,0);
             }
         }
 

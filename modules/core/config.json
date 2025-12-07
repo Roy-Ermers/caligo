@@ -6,9 +6,9 @@
 		"fontSize": 16,
 		"textColor": "#FFFFFF",
 		"secondaryTextColor": "#FFFFFF88",
-		"accentColor": "#6a6acd",
-		"accentHoverColor": "#44448d",
-		"accentActiveColor": "#31315e",
+		"accentColor": "#50af99",
+		"accentHoverColor": "#7ec4b3",
+		"accentActiveColor": "#3b8171",
 		"border": {
 			"color": "#6E6E8080",
 			"shadow": "#0000004f",
@@ -35,8 +35,8 @@
 				"horizontal": 4
 			},
 			"borderWidth": 0,
-			"background": "#333333ff",
-			"hoverBackground": "#3D3D3DFF",
+			"background": "#333333dd",
+			"hoverBackground": "#3D3D3Dee",
 			"activeBackground": "#3D3D3DFF"
 		},
 		"header": {
