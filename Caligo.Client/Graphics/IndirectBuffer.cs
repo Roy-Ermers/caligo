@@ -16,10 +16,12 @@ public struct IndirectDrawCommand
     /// For a quad rendered as a triangle strip, this is typically 4.
     /// </summary>
     public uint Count;
+
     /// <summary>
     /// The number of instances to draw (e.g., number of faces or quads).
     /// </summary>
     public uint InstanceCount;
+
     /// <summary>
     /// The starting index in the vertex buffer (usually 0 for non-indexed drawing).
     /// </summary>
@@ -52,97 +54,67 @@ static class IndirectDrawCommandExtensions
 /// A buffer for storing and issuing indirect draw commands for instanced rendering.
 /// Use Append to add commands, and Draw to issue all commands in the buffer.
 /// </summary>
-public class IndirectBuffer
+public class IndirectBuffer : IDisposable
 {
     private int _handle;
-    private IntPtr _mappedPtr;
     private int _capacity;
     private int Size => Marshal.SizeOf<IndirectDrawCommand>() * _capacity;
     private int _drawCount;
+    private IndirectDrawCommand[] _commands;
 
     public IndirectBuffer(int capacity = 500)
     {
         _capacity = capacity;
+        _commands = new IndirectDrawCommand[capacity];
         _handle = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
-
-        GL.BufferStorage(
-            BufferTarget.DrawIndirectBuffer,
-            Size,
-            IntPtr.Zero,
-            BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit
-        );
-
-        _mappedPtr = GL.MapBufferRange(
-            BufferTarget.DrawIndirectBuffer,
-            IntPtr.Zero,
-            Size,
-            MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit | MapBufferAccessMask.MapCoherentBit
-        );
+        GL.BufferData(BufferTarget.DrawIndirectBuffer, Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
     }
 
     public void Append(IndirectDrawCommand command)
     {
-        if (_drawCount > _capacity)
+        if (_drawCount >= _capacity)
             throw new InvalidOperationException("IndirectBuffer overflow");
 
-        var dest = _mappedPtr + _drawCount * Marshal.SizeOf<IndirectDrawCommand>();
-        Marshal.StructureToPtr(command, dest, false);
+        _commands[_drawCount] = command;
         _drawCount++;
     }
 
     public void Draw(PrimitiveType primitive)
     {
+        if (_drawCount == 0)
+            return;
+
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
-        if (_drawCount > 0)
-            GL.MultiDrawArraysIndirect(primitive, IntPtr.Zero, _drawCount, 0);
+
+        // Upload only the commands we need
+        var uploadSize = _drawCount * Marshal.SizeOf<IndirectDrawCommand>();
+        GL.BufferSubData(BufferTarget.DrawIndirectBuffer, IntPtr.Zero, uploadSize, _commands);
+
+        GL.MultiDrawArraysIndirect(primitive, IntPtr.Zero, _drawCount, 0);
     }
 
     public void Resize(int newCapacity)
     {
         _drawCount = 0;
         _capacity = newCapacity;
-        
+        _commands = new IndirectDrawCommand[newCapacity];
+
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
-        GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);
         GL.DeleteBuffer(_handle);
 
         _handle = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
-        
-        GL.BufferStorage(
-            BufferTarget.DrawIndirectBuffer,
-            Size,
-            IntPtr.Zero,
-            BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit
-        );
-        _mappedPtr = GL.MapBufferRange(
-            BufferTarget.DrawIndirectBuffer,
-            IntPtr.Zero,
-            Size,
-            MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit | MapBufferAccessMask.MapCoherentBit
-        );
-
-        if (_mappedPtr == 0x0) throw new Exception(GL.GetError().ToString());
+        GL.BufferData(BufferTarget.DrawIndirectBuffer, Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
     }
 
     public void Clear()
     {
         _drawCount = 0;
-        if (_mappedPtr == IntPtr.Zero) return;
-        GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);
-        _mappedPtr = GL.MapBufferRange(
-            BufferTarget.DrawIndirectBuffer,
-            IntPtr.Zero,
-            Size,
-            MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit | MapBufferAccessMask.MapCoherentBit
-        );
     }
 
     public void Dispose()
     {
-        if (_mappedPtr != IntPtr.Zero)
-            GL.UnmapBuffer(BufferTarget.DrawIndirectBuffer);
         GL.DeleteBuffer(_handle);
     }
 }

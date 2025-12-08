@@ -6,7 +6,7 @@ public class FrameBuffer : IDisposable
 {
     public int Handle { get; private set; }
     public Texture2D ColorTexture { get; private set; }
-    public int DepthRenderBuffer { get; private set; }
+    public Texture2D DepthTexture { get; private set; }
     public int Width { get; private set; }
     public int Height { get; private set; }
 
@@ -14,36 +14,43 @@ public class FrameBuffer : IDisposable
     {
         Width = width;
         Height = height;
-        
+
         // Create framebuffer
         Handle = GL.GenFramebuffer();
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
-        
+
         // Create color texture
         ColorTexture = new Texture2D(width, height, PixelInternalFormat.Rgba16f, PixelFormat.Rgba, PixelType.Float);
         ColorTexture.SetFiltering(TextureMinFilter.Linear, TextureMagFilter.Linear);
         ColorTexture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
-        
+
         // Attach color texture to framebuffer
-        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, 
+        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0,
             TextureTarget.Texture2D, ColorTexture.Handle, 0);
-        
-        // Create depth renderbuffer
-        DepthRenderBuffer = GL.GenRenderbuffer();
-        GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, DepthRenderBuffer);
-        GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent24, width, height);
-        GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, 
-            RenderbufferTarget.Renderbuffer, DepthRenderBuffer);
-        
+
+        // Create depth texture (instead of renderbuffer, so we can sample it)
+        DepthTexture = new Texture2D(width, height, PixelInternalFormat.DepthComponent24, PixelFormat.DepthComponent,
+            PixelType.Float);
+        DepthTexture.SetFiltering(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+        DepthTexture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
+
+        // Disable depth comparison mode so we can sample raw depth values
+        GL.BindTexture(TextureTarget.Texture2D, DepthTexture.Handle);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)TextureCompareMode.None);
+
+        // Attach depth texture to framebuffer
+        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment,
+            TextureTarget.Texture2D, DepthTexture.Handle, 0);
+
         // Check if framebuffer is complete
         var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
         if (status != FramebufferErrorCode.FramebufferComplete)
         {
             throw new Exception($"Framebuffer is not complete: {status}");
         }
-        
+
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-        
+
         var label = $"Framebuffer {width}x{height}";
         GL.ObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, label.Length, label);
     }
@@ -70,12 +77,13 @@ public class FrameBuffer : IDisposable
         // Resize color texture
         ColorTexture.Resize(width, height);
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
-        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, 
+        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0,
             TextureTarget.Texture2D, ColorTexture.Handle, 0);
 
-        // Resize depth renderbuffer
-        GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, DepthRenderBuffer);
-        GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent24, width, height);
+        // Resize depth texture
+        DepthTexture.Resize(width, height);
+        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment,
+            TextureTarget.Texture2D, DepthTexture.Handle, 0);
 
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
     }
@@ -88,13 +96,7 @@ public class FrameBuffer : IDisposable
             Handle = 0;
         }
 
-        if (DepthRenderBuffer != 0)
-        {
-            GL.DeleteRenderbuffer(DepthRenderBuffer);
-            DepthRenderBuffer = 0;
-        }
-
         ColorTexture?.Dispose();
+        DepthTexture?.Dispose();
     }
 }
-

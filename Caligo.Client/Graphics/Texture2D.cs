@@ -10,6 +10,11 @@ public class Texture2D
     public int Width;
     public int Height;
 
+    // Store format info for proper resizing
+    private PixelInternalFormat _internalFormat = PixelInternalFormat.Rgba;
+    private PixelFormat _pixelFormat = PixelFormat.Rgba;
+    private PixelType _pixelType = PixelType.UnsignedByte;
+
     private TextureMinFilter _minFilter = TextureMinFilter.NearestMipmapLinear;
 
     public TextureMinFilter MinFilter
@@ -37,6 +42,7 @@ public class Texture2D
     }
 
     private TextureWrapMode _wrapS = TextureWrapMode.Repeat;
+
     public TextureWrapMode WrapS
     {
         get => _wrapS;
@@ -49,6 +55,7 @@ public class Texture2D
     }
 
     private TextureWrapMode _wrapT = TextureWrapMode.Repeat;
+
     public TextureWrapMode WrapT
     {
         get => _wrapT;
@@ -82,6 +89,9 @@ public class Texture2D
         Handle = GL.GenTexture();
         Width = width;
         Height = height;
+        _internalFormat = internalFormat;
+        _pixelFormat = format;
+        _pixelType = type;
 
         GL.BindTexture(TextureTarget.Texture2D, Handle);
         GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, format, type, IntPtr.Zero);
@@ -121,8 +131,8 @@ public class Texture2D
         Height = height;
 
         GL.BindTexture(TextureTarget.Texture2D, Handle);
-        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba16f, width, height, 0, 
-            PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
+        GL.TexImage2D(TextureTarget.Texture2D, 0, _internalFormat, width, height, 0,
+            _pixelFormat, _pixelType, IntPtr.Zero);
     }
 
 
@@ -169,11 +179,12 @@ public class Texture2D
 
         GL.BindTexture(TextureTarget.Texture2D, Handle);
         GL.TexSubImage2D(TextureTarget.Texture2D, 0, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height,
-                PixelFormat.Rgba, PixelType.UnsignedByte, data.ToArray());
+            PixelFormat.Rgba, PixelType.UnsignedByte, data.ToArray());
     }
 
     public void SetData(byte[] data) => SetData(data.AsSpan());
     public void SetData(ReadOnlySpan<byte> data) => SetData(data, Width, Height);
+
     public void SetData(ReadOnlySpan<byte> data, int width, int height)
     {
         if (data.Length != width * height * 4)
@@ -191,7 +202,7 @@ public class Texture2D
     /// Get a part of the texture defined by area
     /// </summary>
     /// <param name="area"></param>
-    public ReadOnlySpan<byte> GetData(System.Drawing.Rectangle area)
+    public ReadOnlySpan<byte> GetData(Rectangle area)
     {
         var data = GetData();
         Span<byte> result = new byte[area.Width * area.Height * 4];

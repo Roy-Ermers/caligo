@@ -1,8 +1,6 @@
 using Caligo.Core.Spatial;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Caligo.Client.Graphics;
 
@@ -15,13 +13,36 @@ public class Camera
     private Vector3 _forward = -Vector3.UnitZ;
 
     public Vector3 Forward => _forward;
-    
+
     public Ray Ray => new((System.Numerics.Vector3)Position, (System.Numerics.Vector3)Forward);
     public Vector3 Right => Vector3.Normalize(Vector3.Cross(Forward, Vector3.UnitY));
     public Vector3 Up => Vector3.Normalize(Vector3.Cross(Right, Forward));
 
     public Matrix4 ViewMatrix { get; private set; }
     public Matrix4 ProjectionMatrix { get; private set; }
+
+    private float _nearPlane = 0.1f;
+    private float _farPlane = 1000f;
+
+    public float NearPlane
+    {
+        get => _nearPlane;
+        set
+        {
+            _nearPlane = value;
+            UpdateMatrices();
+        }
+    }
+
+    public float FarPlane
+    {
+        get => _farPlane;
+        set
+        {
+            _farPlane = value;
+            UpdateMatrices();
+        }
+    }
 
     private readonly GameWindow _game;
 
@@ -35,7 +56,8 @@ public class Camera
     {
         ViewMatrix = Matrix4.LookAt(Position, Position + Forward, Vector3.UnitY);
 
-        ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, _game.Size.X / (float)_game.Size.Y, .1f, 1000f);
+        ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, _game.Size.X / (float)_game.Size.Y,
+            NearPlane, FarPlane);
     }
 
     public void Update()
@@ -50,6 +72,7 @@ public class Camera
     }
 
     public Vector2? WorldToScreen(System.Numerics.Vector3 worldPosition) => WorldToScreen((Vector3)worldPosition);
+
     /// <summary>
     /// Projects a world-space position to screen-space coordinates.
     /// Returns a Vector2 where (0,0) is top-left and (windowWidth, windowHeight) is bottom-right. Or null if the position is outside the camera.

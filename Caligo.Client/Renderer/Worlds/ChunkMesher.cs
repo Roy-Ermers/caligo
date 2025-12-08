@@ -3,7 +3,6 @@ using Caligo.Client.Renderer.Worlds.Materials;
 using Caligo.Client.Renderer.Worlds.Mesh;
 using Caligo.Client.Resources.Atlas;
 using Caligo.Core.FileSystem.Images;
-using Caligo.Core.ModuleSystem;
 using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
@@ -89,23 +88,24 @@ public class ChunkMesher
             Meshes.Enqueue(mesh);
         }
     }
-    
+
     private (short x, short y, short z) GetBlockOffset(WorldPosition worldPosition, string? offsetType, Random random)
     {
         if (string.IsNullOrEmpty(offsetType))
         {
             return (0, 0, 0);
         }
-        
-        var offsetX = (short)(offsetType.Contains('x') ? random.Next(-8, 8) : 0);
-        var offsetY = (short)(offsetType.Contains('y') ? random.Next(-8, 8) : 0);
-        var offsetZ = (short)(offsetType.Contains('z') ? random.Next(-8, 8) : 0);
+
+        var offsetX = (short)(offsetType.Contains('x') ? random.Next(-7, 7) : 0);
+        var offsetY = (short)(offsetType.Contains('y') ? random.Next(-7, 7) : 0);
+        var offsetZ = (short)(offsetType.Contains('z') ? random.Next(-7, 7) : 0);
         return (offsetX, offsetY, offsetZ);
     }
+
     private ChunkMesh GenerateMesh(Chunk chunk)
     {
         Random random = new(chunk.Id);
-        
+
         var world = Game.Instance.world;
         if (chunk.BlockCount == 0)
         {
@@ -135,9 +135,9 @@ public class ChunkMesher
             // nothing to render.
             if (variant is null)
                 continue;
-            
+
             var offset = GetBlockOffset(worldPosition, variant.Value.Model.OffsetType, random);
-            
+
             for (var direction = (Direction)0; direction <= (Direction)5; direction++)
             {
                 if (world.TryGetBlock(worldPosition + direction.ToVector3(), out var neighborBlockId))
