@@ -17,7 +17,6 @@ Content is organized into **modules** stored in the `modules/` directory. Each m
 
 ```
 modules/mymodule/
-├── config.json          # Module metadata
 ├── blocks/              # Block definitions (JSON)
 ├── textures/            # Block textures (PNG)
 ├── shaders/             # Shaders (.vert, .frag, .comp)
