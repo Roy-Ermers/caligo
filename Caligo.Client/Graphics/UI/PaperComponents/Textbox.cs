@@ -6,7 +6,8 @@ namespace Caligo.Client.Graphics.UI.PaperComponents;
 
 public static partial class Components
 {
-    private static Dictionary<string, string> TextboxValues = [];
+    private static readonly Dictionary<string, string> TextboxValues = [];
+
     public static ElementBuilder Textbox(
         ref string text,
         FontFamily fontFamily = FontFamily.Regular,
@@ -19,25 +20,25 @@ public static partial class Components
 
         ElementBuilder element;
 
-        using (Components.InputBox(id, icon))
+        using (InputBox(id, icon))
         {
             element = Paper.Box(intID + "area")
-            .HookToParent()
-            .Width(UnitValue.StretchOne)
-            .Height(UnitValue.StretchOne)
-            .IsNotInteractable()
-            .FontSize(RootFontSize)
-            .TextField(
-                text,
-                new ElementBuilder.TextInputSettings()
-                {
-                    Font = fontFamily.GetFont(),
-                    Placeholder = placeholder,
-                    TextColor = Style.TextColor,
-                    PlaceholderColor = Style.SecondaryTextColor
-                },
-                value => TextboxValues[id] = value
-            );
+                .HookToParent()
+                .Width(UnitValue.StretchOne)
+                .Height(UnitValue.StretchOne)
+                .IsNotInteractable()
+                .FontSize(RootFontSize)
+                .TextField(
+                    text,
+                    new ElementBuilder.TextInputSettings
+                    {
+                        Font = fontFamily.GetFont(),
+                        Placeholder = placeholder,
+                        TextColor = Style.TextColor,
+                        PlaceholderColor = Style.SecondaryTextColor
+                    },
+                    value => TextboxValues[id] = value
+                );
         }
 
         if (TextboxValues.TryGetValue(id, out var newVal))

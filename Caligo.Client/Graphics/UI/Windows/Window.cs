@@ -11,7 +11,9 @@ public abstract class Window
     public virtual Rectangle? Area { get; set; } = null;
     public virtual bool Enabled { get; set; } = false;
 
-    public virtual void Initialize(Game game) { }
+    public virtual void Initialize(Game game)
+    {
+    }
 
     public abstract void Draw(double deltaTime);
 }

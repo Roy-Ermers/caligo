@@ -1,5 +1,4 @@
 using Caligo.Client.Graphics;
-using Caligo.Core.ModuleSystem;
 using Caligo.ModuleSystem;
 
 namespace Caligo.Client.Resources.Atlas;
@@ -19,10 +18,8 @@ public record class Atlas
         get
         {
             if (index < 0 || index >= Aliases.Length)
-            {
                 throw new IndexOutOfRangeException(
                     $"Index {index} is out of range for atlas with {Aliases.Length} entries.");
-            }
 
             return index;
         }

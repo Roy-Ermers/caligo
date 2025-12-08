@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Caligo.Core.FileSystem.Json.Converters;
 
 namespace Caligo.Core.FileSystem.Json;
@@ -14,12 +15,13 @@ public class JsonOptions
         PropertyNamingPolicy = new JsonPolicy(),
         IncludeFields = true,
         WriteIndented = true,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         IgnoreReadOnlyProperties = true,
-        Converters = {
+        Converters =
+        {
             new JsonVector3Converter(),
             new JsonVector4Converter(),
-            new JsonVector2Converter(),
+            new JsonVector2Converter()
         }
     };
 }

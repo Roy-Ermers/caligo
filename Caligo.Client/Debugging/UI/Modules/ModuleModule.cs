@@ -1,23 +1,23 @@
 using Caligo.Client.Graphics.UI.PaperComponents;
 using Caligo.Core.FileSystem;
-using Caligo.Core.ModuleSystem;
 using Caligo.ModuleSystem;
 
 namespace Caligo.Client.Debugging.UI.Modules;
 
 public class ModuleDebugModule : IDebugModule
 {
-    public bool Enabled { get; set; }
-    public string Name => "Modules";
-    public char? Icon => PaperIcon.Extension;
-
-    private Module? currentModule = null;
     private readonly Game _game;
+
+    private Module? currentModule;
 
     public ModuleDebugModule(Game game)
     {
         _game = game;
     }
+
+    public bool Enabled { get; set; }
+    public string Name => "Modules";
+    public char? Icon => PaperIcon.Extension;
 
     public void Render()
     {
@@ -27,7 +27,7 @@ public class ModuleDebugModule : IDebugModule
         if (currentModule is not null)
         {
             Components.Button("← Back", () =>
-            currentModule = null
+                currentModule = null
             );
 
             if (currentModule is null)
@@ -39,20 +39,13 @@ public class ModuleDebugModule : IDebugModule
             {
                 Components.Text("Identifier: " + currentModule.Identifier);
 
-                if (Components.Button("Open Directory"))
-                {
-                    FileSystemUtils.OpenDirectory(currentModule.AbsoluteDirectory);
-                }
+                if (Components.Button("Open Directory")) FileSystemUtils.OpenDirectory(currentModule.AbsoluteDirectory);
 
                 Components.Text("Directory: " + currentModule.AbsoluteDirectory);
 
                 if (Components.Accordion("Resources"))
-                {
                     foreach (var storage in currentModule.Storages)
-                    {
                         Components.Text($"{storage.Key}: {storage.Value.Count} items");
-                    }
-                }
 
                 Components.Text("Total resources: " + currentModule.Storages.Sum(s => s.Value.Count));
             }
@@ -70,10 +63,7 @@ public class ModuleDebugModule : IDebugModule
                 if (identifier == Identifier.MainModule)
                     identifier += " (Built-in)";
 
-                if (Components.Button(identifier))
-                {
-                    currentModule = module;
-                }
+                if (Components.Button(identifier)) currentModule = module;
             }
         }
     }

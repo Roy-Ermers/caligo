@@ -4,12 +4,12 @@ using ImGuiNET;
 
 namespace Caligo.Client.Graphics.UI.ImGuiComponents;
 
-
 public enum TextStyle
 {
     Regular,
     Secondary
 }
+
 public struct TextComponent(string content) : IDrawableComponent
 {
     public readonly string Content = content;

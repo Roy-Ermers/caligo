@@ -1,6 +1,4 @@
 using Caligo.Client.Graphics.Shaders;
-using Caligo.Core.ModuleSystem;
-using Caligo.Core.ModuleSystem.Importers;
 using Caligo.ModuleSystem;
 using Caligo.ModuleSystem.Importers;
 
@@ -19,15 +17,11 @@ public class ShaderImporter : IImporter
         var computeStorage = module.GetStorage<ComputeShader>();
 
         foreach (var file in files)
-        {
             try
             {
                 var extension = Path.GetExtension(file);
 
-                if (extension != ".vert" && extension != ".comp")
-                {
-                    continue;
-                }
+                if (extension != ".vert" && extension != ".comp") continue;
 
                 var name = Path.GetFileNameWithoutExtension(file);
                 var directory = Path.GetDirectoryName(file) ?? "";
@@ -36,23 +30,23 @@ public class ShaderImporter : IImporter
                 switch (extension)
                 {
                     case ".vert":
+                    {
+                        var fragFile = Path.Combine(directory, $"{name}.frag");
+                        var vertFile = Path.Combine(directory, $"{name}.vert");
+                        if (File.Exists(fragFile) && File.Exists(vertFile))
                         {
-                            var fragFile = Path.Combine(directory, $"{name}.frag");
-                            var vertFile = Path.Combine(directory, $"{name}.vert");
-                            if (File.Exists(fragFile) && File.Exists(vertFile))
-                            {
-                                var renderShader = new RenderShader(vertFile, fragFile);
-                                renderStorage.Add(shaderName, renderShader);
-                            }
+                            var renderShader = new RenderShader(vertFile, fragFile);
+                            renderStorage.Add(shaderName, renderShader);
+                        }
 
-                            break;
-                        }
+                        break;
+                    }
                     case ".comp":
-                        {
-                            var computeShader = new ComputeShader(file);
-                            computeStorage.Add(shaderName, computeShader);
-                            break;
-                        }
+                    {
+                        var computeShader = new ComputeShader(file);
+                        computeStorage.Add(shaderName, computeShader);
+                        break;
+                    }
                 }
             }
             catch (Exception e)
@@ -60,6 +54,5 @@ public class ShaderImporter : IImporter
                 Console.WriteLine($"Error importing shader: {file}");
                 Console.WriteLine(e.Message);
             }
-        }
     }
 }

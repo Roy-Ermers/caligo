@@ -7,10 +7,10 @@ namespace Caligo.Client.Graphics.UI.Windows;
 
 public class ChunkWindow : Window
 {
+    private Game _game = null!;
+    private World _world = null!;
     public override bool Enabled => true;
     public override string Name => "Chunks";
-    World _world = null!;
-    Game _game = null!;
 
     public override void Initialize(Game game)
     {
@@ -19,6 +19,7 @@ public class ChunkWindow : Window
         _game = game;
         _world = game.world;
     }
+
     public override void Draw(double deltaTime)
     {
         if (_world is null)
@@ -28,22 +29,21 @@ public class ChunkWindow : Window
 
         if (ImGui.Button("Unload All Chunks"))
         {
-            foreach (var position in _world.LoadedChunks)
-            {
-                _world.RemoveChunk(position);
-            }
+            foreach (var position in _world.LoadedChunks) _world.RemoveChunk(position);
             _game.renderer.Clear();
         }
+
         if (ImGui.CollapsingHeader("Chunks"))
         {
             using var table = new TableComponent("Loaded chunks")
             {
                 EnableVirtualization = true,
-                Headers = [
-                  "Position",
-                  "State",
+                Headers =
+                [
+                    "Position",
+                    "State"
                 ],
-                Border = true,
+                Border = true
             };
 
             foreach (var position in _world.LoadedChunks)
@@ -54,11 +54,11 @@ public class ChunkWindow : Window
                     state = chunk.State;
 
                 var tableRow = new TableRowComponent(
-                $"{position.X,3} {position.Y,3} {position.Z,3}",
-                state.ToString());
+                    $"{position.X,3} {position.Y,3} {position.Z,3}",
+                    state.ToString());
 
                 table.AddRow(
-                            tableRow
+                    tableRow
                 );
             }
         }

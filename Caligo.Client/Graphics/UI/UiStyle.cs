@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Numerics;
 using Caligo.Core.Utils;
 using Caligo.ModuleSystem.Storage;
+using ImGuiNET;
 using ColorToken = ImGuiNET.ImGuiCol;
 
 namespace Caligo.Client.Graphics.UI;
@@ -81,7 +82,7 @@ public struct UiStyle
             HeaderActiveBackground = ParseColor(config, "ui.header.activeBackground"),
             AccentColor = ParseColor(config, "ui.accentColor"),
             AccentHoverColor = ParseColor(config, "ui.accentHoverColor"),
-            AccentActiveColor = ParseColor(config, "ui.accentActiveColor"),
+            AccentActiveColor = ParseColor(config, "ui.accentActiveColor")
         };
 
         return style;
@@ -93,10 +94,11 @@ public struct UiStyle
         if (HexParser.TryParseHex(hex, out Vector4 color))
             return Color.FromArgb((int)color.W, (int)color.X, (int)color.Y, (int)color.Z);
 
-        throw new InvalidDataException($"{hex} is not a valid color in the config file {name}. Expected format: #RRGGBB or #RRGGBBAA");
+        throw new InvalidDataException(
+            $"{hex} is not a valid color in the config file {name}. Expected format: #RRGGBB or #RRGGBBAA");
     }
 
-    public readonly void Apply(ImGuiNET.ImGuiStylePtr style)
+    public readonly void Apply(ImGuiStylePtr style)
     {
         style.WindowPadding = WindowPadding;
         style.ItemSpacing = ItemMargin;

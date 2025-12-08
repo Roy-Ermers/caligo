@@ -7,16 +7,24 @@ public enum TableSizing
     None = 0,
     FixedFit = 8192,
     FixedSame = 16384,
-    StretchSame = 32768,
+    StretchSame = 32768
 }
 
 public class TableComponent : IDisposable, IComponent
 {
     private readonly string Id;
-    public List<string> Headers { get; set; } = [];
     private readonly List<TableRowComponent> Rows = [];
 
-    private bool rendered = false;
+    private bool rendered;
+
+    public TableComponent(string Name)
+    {
+        Id = Name;
+        Current = this;
+        DisableHeaders = Headers.Count > 0;
+    }
+
+    public List<string> Headers { get; set; } = [];
 
     public TableSizing TableSizing { get; init; } = TableSizing.None;
 
@@ -27,11 +35,13 @@ public class TableComponent : IDisposable, IComponent
 
     internal static TableComponent? Current { get; private set; }
 
-    public TableComponent(string Name)
+    public void Dispose()
     {
-        Id = Name;
-        Current = this;
-        DisableHeaders = Headers.Count > 0;
+        Render();
+
+        GC.SuppressFinalize(this);
+        if (Current == this)
+            Current = null;
     }
 
     public void AddRow(TableRowComponent component)
@@ -40,7 +50,8 @@ public class TableComponent : IDisposable, IComponent
             Headers = [.. new string[component.ColumnCount].Select((_, i) => $"Column {i + 1}")];
 
         if (component.ColumnCount != Headers.Count)
-            throw new ArgumentException($"Row data length {component.ColumnCount} does not match column length {Headers.Count}");
+            throw new ArgumentException(
+                $"Row data length {component.ColumnCount} does not match column length {Headers.Count}");
 
         Rows.Add(component);
     }
@@ -70,7 +81,7 @@ public class TableComponent : IDisposable, IComponent
 
         ImGui.PushID(Id);
 
-        ImGuiTableFlags tableFlags = (ImGuiTableFlags)TableSizing;
+        var tableFlags = (ImGuiTableFlags)TableSizing;
 
         if (Border)
             tableFlags |= ImGuiTableFlags.BordersOuter;
@@ -113,25 +124,14 @@ public class TableComponent : IDisposable, IComponent
             listClipper.Begin(Rows.Count);
 
             while (listClipper.Step())
-            {
-                for (int i = listClipper.DisplayStart; i < listClipper.DisplayEnd; i++)
+                for (var i = listClipper.DisplayStart; i < listClipper.DisplayEnd; i++)
                 {
                     ImGui.TableNextRow();
                     var row = Rows[i];
                     row.Draw();
                 }
-            }
 
             listClipper.End();
         }
-    }
-
-    public void Dispose()
-    {
-        Render();
-
-        GC.SuppressFinalize(this);
-        if (Current == this)
-            Current = null;
     }
 }

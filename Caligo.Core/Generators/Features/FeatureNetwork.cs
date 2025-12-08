@@ -7,13 +7,13 @@ namespace Caligo.Core.Generators.Features;
 
 public class FeatureNetwork
 {
-    readonly GradientNoise Noise;
-    readonly int Seed;
-    private readonly Universe.Worlds.World _world;
     private readonly Heightmap _heightmap;
-    private readonly Dictionary<int, Sector> Sectors = [];
+    private readonly Universe.Worlds.World _world;
 
-    readonly Mutex _writeLock = new();
+    private readonly Mutex _writeLock = new();
+    private readonly GradientNoise Noise;
+    private readonly Dictionary<int, Sector> Sectors = [];
+    private readonly int Seed;
 
     public FeatureNetwork(Universe.Worlds.World world, int seed, Heightmap heightmap)
     {
@@ -25,10 +25,7 @@ public class FeatureNetwork
 
     public Sector GetSector(WorldPosition position)
     {
-        if (Sectors.TryGetValue(Sector.GetKey(position), out var sector))
-        {
-            return sector;
-        }
+        if (Sectors.TryGetValue(Sector.GetKey(position), out var sector)) return sector;
 
         sector = new Sector(position);
         _writeLock.WaitOne();
@@ -57,7 +54,7 @@ public class FeatureNetwork
         var offsetZ = random.Next(Sector.SectorSize);
         var nodeX = sector.Start.X + offsetX;
         var nodeZ = sector.Start.Z + offsetZ;
-        
+
         var nodeY = _heightmap.GetHeightAt(nodeX, nodeZ);
         var position = new WorldPosition(nodeX, (int)nodeY, nodeZ);
 

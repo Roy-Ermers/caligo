@@ -10,7 +10,7 @@ public class HeightLayer : ILayer
 {
     private GradientNoise noise;
     public Heightmap HeightMap { get; private set; }
-    
+
     public void Initialize(long seed, LayerWorldGenerator _)
     {
         noise = new GradientNoise((int)seed);

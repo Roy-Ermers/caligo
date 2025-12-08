@@ -6,8 +6,6 @@ namespace Caligo.ModuleSystem.Storage;
 public abstract class BaseResourceTypeStorage
 {
     public string Key;
-    public abstract Type Type { get; }
-    public abstract int Count { get; }
 
     public BaseResourceTypeStorage()
     {
@@ -20,13 +18,17 @@ public abstract class BaseResourceTypeStorage
         Key = key;
     }
 
+    public abstract Type Type { get; }
+    public abstract int Count { get; }
+
     public abstract void Import(string @namespace, BaseResourceTypeStorage other);
 }
 
-public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), IEnumerable<KeyValuePair<string, T>> where T : class
+public class ResourceTypeStorage<T>(string key)
+    : BaseResourceTypeStorage(key), IEnumerable<KeyValuePair<string, T>> where T : class
 {
+    private readonly SortedList<string, T> _storage = [];
     public override Type Type => typeof(T);
-    private SortedList<string, T> _storage = [];
     public override int Count => _storage.Count;
 
     public T this[string key]
@@ -52,14 +54,24 @@ public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), 
         }
     }
 
+    public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
+    {
+        return _storage.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
     public void Add(string key, T value)
     {
         _storage.Add(key, value);
     }
 
     /// <summary>
-    /// Imports the contents of another storage into this one, using the specified namespace as a prefix for the keys.
-    /// If the other storage is of a different type, an InvalidOperationException will be thrown.
+    ///     Imports the contents of another storage into this one, using the specified namespace as a prefix for the keys.
+    ///     If the other storage is of a different type, an InvalidOperationException will be thrown.
     /// </summary>
     /// <param name="namespace"></param>
     /// <param name="other"></param>
@@ -74,7 +86,7 @@ public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), 
     }
 
     /// <summary>
-    /// Imports the contents of another storage into this one, using the specified namespace as a prefix for the keys.
+    ///     Imports the contents of another storage into this one, using the specified namespace as a prefix for the keys.
     /// </summary>
     /// <param name="namespace">The namespace to use as a prefix for the keys.</param>
     /// <param name="other">The other storage to import from.</param>
@@ -101,7 +113,7 @@ public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), 
 
     public bool TryGetValue(int index, [MaybeNullWhen(false)] out T value)
     {
-        if(index < 0 || index > _storage.Count)
+        if (index < 0 || index > _storage.Count)
         {
             value = null;
             return false;
@@ -109,16 +121,6 @@ public class ResourceTypeStorage<T>(string key) : BaseResourceTypeStorage(key), 
 
         value = _storage.Values[index];
         return true;
-    }
-
-    public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
-    {
-        return _storage.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 }
 

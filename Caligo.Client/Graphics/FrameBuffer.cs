@@ -4,12 +4,6 @@ namespace Caligo.Client.Graphics;
 
 public class FrameBuffer : IDisposable
 {
-    public int Handle { get; private set; }
-    public Texture2D ColorTexture { get; private set; }
-    public Texture2D DepthTexture { get; private set; }
-    public int Width { get; private set; }
-    public int Height { get; private set; }
-
     public FrameBuffer(int width, int height)
     {
         Width = width;
@@ -45,14 +39,30 @@ public class FrameBuffer : IDisposable
         // Check if framebuffer is complete
         var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
         if (status != FramebufferErrorCode.FramebufferComplete)
-        {
             throw new Exception($"Framebuffer is not complete: {status}");
-        }
 
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
         var label = $"Framebuffer {width}x{height}";
         GL.ObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, label.Length, label);
+    }
+
+    public int Handle { get; private set; }
+    public Texture2D ColorTexture { get; }
+    public Texture2D DepthTexture { get; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+
+    public void Dispose()
+    {
+        if (Handle != 0)
+        {
+            GL.DeleteFramebuffer(Handle);
+            Handle = 0;
+        }
+
+        ColorTexture?.Dispose();
+        DepthTexture?.Dispose();
     }
 
     public void Bind()
@@ -86,17 +96,5 @@ public class FrameBuffer : IDisposable
             TextureTarget.Texture2D, DepthTexture.Handle, 0);
 
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-    }
-
-    public void Dispose()
-    {
-        if (Handle != 0)
-        {
-            GL.DeleteFramebuffer(Handle);
-            Handle = 0;
-        }
-
-        ColorTexture?.Dispose();
-        DepthTexture?.Dispose();
     }
 }

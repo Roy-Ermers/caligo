@@ -1,20 +1,21 @@
 using Caligo.Client.Graphics.UI.PaperComponents;
 using Caligo.Core.Universe;
+using Prowl.PaperUI;
 
 namespace Caligo.Client.Debugging.UI.Modules;
 
 public class ChunkDebugModule : IDebugModule
 {
-    public bool Enabled { get; set; }
-    public string Name => "Chunks";
-    public char? Icon => PaperIcon.Apps;
-
     private readonly Game _game;
 
     public ChunkDebugModule(Game game)
     {
         _game = game;
     }
+
+    public bool Enabled { get; set; }
+    public string Name => "Chunks";
+    public char? Icon => PaperIcon.Apps;
 
     public void Render()
     {
@@ -25,16 +26,13 @@ public class ChunkDebugModule : IDebugModule
 
         if (Components.Button("Unload All Chunks"))
         {
-            foreach (var chunkLoader in _game.world.LoadedChunks)
-            {
-                _game.world.RemoveChunk(chunkLoader);
-            }
+            foreach (var chunkLoader in _game.world.LoadedChunks) _game.world.RemoveChunk(chunkLoader);
             _game.renderer.Clear();
         }
 
         if (Components.Accordion("Chunks"))
         {
-            using var scrollContainer = Components.ScrollContainer(Prowl.PaperUI.Scroll.ScrollXY).Enter();
+            using var scrollContainer = Components.ScrollContainer(Scroll.ScrollXY).Enter();
 
             var id = 0;
             foreach (var position in _game.world.LoadedChunks)
@@ -46,7 +44,8 @@ public class ChunkDebugModule : IDebugModule
 
                 using (Components.Row(8, id++))
                 {
-                    Components.Text($"Position: {position.X,3} {position.Y,3} {position.Z,3}", fontFamily: FontFamily.Monospace);
+                    Components.Text($"Position: {position.X,3} {position.Y,3} {position.Z,3}",
+                        fontFamily: FontFamily.Monospace);
                     Components.Text($"State: {state}");
                 }
             }

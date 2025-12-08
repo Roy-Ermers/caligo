@@ -16,14 +16,11 @@ namespace Caligo.Client.Renderer.Worlds;
 public class ChunkMesher
 {
     public const string AtlasIdentifier = $"{Identifier.MainModule}:block_atlas";
+    private readonly ResourceTypeStorage<Block> _blockStorage;
 
     private readonly BlockingCollection<Chunk> _chunkQueue = [];
-    private readonly ConcurrentQueue<ChunkMesh> Meshes = [];
-    private readonly ResourceTypeStorage<Block> _blockStorage;
-    private readonly Atlas _blockTextureAtlas;
     private readonly MaterialBuffer _materialBuffer;
-
-    public Atlas BlockTextureAtlas => _blockTextureAtlas;
+    private readonly ConcurrentQueue<ChunkMesh> Meshes = [];
 
     public ChunkMesher(ResourceTypeStorage<Block> blockStorage, ModuleRepository repository,
         MaterialBuffer materialBuffer)
@@ -31,8 +28,10 @@ public class ChunkMesher
         _blockStorage = blockStorage;
         _materialBuffer = materialBuffer;
 
-        _blockTextureAtlas = BuildAtlas(repository);
+        BlockTextureAtlas = BuildAtlas(repository);
     }
+
+    public Atlas BlockTextureAtlas { get; }
 
     internal Atlas BuildAtlas(ModuleRepository repository)
     {
@@ -91,10 +90,7 @@ public class ChunkMesher
 
     private (short x, short y, short z) GetBlockOffset(WorldPosition worldPosition, string? offsetType, Random random)
     {
-        if (string.IsNullOrEmpty(offsetType))
-        {
-            return (0, 0, 0);
-        }
+        if (string.IsNullOrEmpty(offsetType)) return (0, 0, 0);
 
         var offsetX = (short)(offsetType.Contains('x') ? random.Next(-7, 7) : 0);
         var offsetY = (short)(offsetType.Contains('y') ? random.Next(-7, 7) : 0);
@@ -108,12 +104,10 @@ public class ChunkMesher
 
         var world = Game.Instance.world;
         if (chunk.BlockCount == 0)
-        {
             return ChunkMesh.Empty with
             {
                 Position = chunk.Position
             };
-        }
 
         var faces = new Dictionary<Direction, List<BlockFaceRenderData>>();
 
@@ -147,21 +141,21 @@ public class ChunkMesher
 
                     if (neighborModel is not null &&
                         (neighborModel.Value.Model!.Culling?.IsCullingEnabled(direction.Opposite()) ?? false))
-                    {
                         // Don't render face if culling is enabled and neighbor block is not air
                         continue;
-                    }
                 }
 
                 foreach (var element in variant.Value.Model.Elements.Reverse())
                 {
                     var newFace = element.ToRenderData(direction, position, variant.Value.Textures ?? [],
-                        _materialBuffer, offset, _blockTextureAtlas);
+                        _materialBuffer, offset, BlockTextureAtlas);
                     if (newFace is null)
                         continue;
 
                     if (faces.TryGetValue(direction, out var faceList))
+                    {
                         faceList.Add(newFace.Value);
+                    }
                     else
                     {
                         faceList = [newFace.Value];

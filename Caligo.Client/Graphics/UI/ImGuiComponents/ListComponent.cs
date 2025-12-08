@@ -11,7 +11,7 @@ public readonly struct ListComponent : IDisposable
 
     public void End()
     {
-        this.Dispose();
+        Dispose();
     }
 
     public void Dispose()

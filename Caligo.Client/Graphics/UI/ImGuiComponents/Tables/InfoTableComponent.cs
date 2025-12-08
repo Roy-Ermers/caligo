@@ -20,11 +20,31 @@ public readonly struct InfoTableComponent : IComponent, IDisposable
             Add(key, value);
     }
 
-    public void Add(string key, int value) => Add(key, value.ToString());
-    public void Add(string key, float value) => Add(key, value.ToString("0.##"));
-    public void Add(string key, double value) => Add(key, value.ToString("0"));
-    public void Add(string key, bool value) => Add(key, value ? "Yes" : "No");
-    public void Add(string key, object? value) => Add(key, value?.ToString() ?? "null");
+    public void Add(string key, int value)
+    {
+        Add(key, value.ToString());
+    }
+
+    public void Add(string key, float value)
+    {
+        Add(key, value.ToString("0.##"));
+    }
+
+    public void Add(string key, double value)
+    {
+        Add(key, value.ToString("0"));
+    }
+
+    public void Add(string key, bool value)
+    {
+        Add(key, value ? "Yes" : "No");
+    }
+
+    public void Add(string key, object? value)
+    {
+        Add(key, value?.ToString() ?? "null");
+    }
+
     public void Add(string key, string value)
     {
         table.AddRow([
@@ -36,8 +56,8 @@ public readonly struct InfoTableComponent : IComponent, IDisposable
     public void Add(string key, IComponent component)
     {
         table.AddRow([
-          new TextComponent(key).WithStyle(TextStyle.Secondary),
-          component
+            new TextComponent(key).WithStyle(TextStyle.Secondary),
+            component
         ]);
     }
 

@@ -5,26 +5,12 @@ namespace Caligo.Client.Graphics;
 
 public class Texture2DArray
 {
-    public int Handle { private set; get; }
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public int Length { get; set; }
-
     private ImageData[]? _images;
-
-    public void Bind(int unit)
-    {
-        GL.ActiveTexture(TextureUnit.Texture0 + unit);
-        GL.BindTexture(TextureTarget.Texture2DArray, Handle);
-    }
 
     public Texture2DArray(Image[] images)
     {
         var imageData = new ImageData[images.Length];
-        for (var i = 0; i < images.Length; i++)
-        {
-            imageData[i] = images[i].Load();
-        }
+        for (var i = 0; i < images.Length; i++) imageData[i] = images[i].Load();
 
         _images = imageData;
 
@@ -38,12 +24,21 @@ public class Texture2DArray
         Initialize();
     }
 
+    public int Handle { private set; get; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public int Length { get; set; }
+
+    public void Bind(int unit)
+    {
+        GL.ActiveTexture(TextureUnit.Texture0 + unit);
+        GL.BindTexture(TextureTarget.Texture2DArray, Handle);
+    }
+
     public void Initialize()
     {
         if (_images == null || _images.Length == 0)
-        {
             throw new ArgumentException("No images provided to create Texture2DArray.");
-        }
 
         var width = _images[0].Width;
         var height = _images[0].Height;

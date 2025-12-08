@@ -5,15 +5,18 @@ public static class Identifier
     public const string MainModule = "core";
 
     /// <summary>
-    /// Resolves an identifier to a namespaced identifier
+    ///     Resolves an identifier to a namespaced identifier
     /// </summary>
     /// <param name="identifier">the identifier to resolve.</param>
     /// <returns>A namespaced identifier</returns>
     /// <exception cref="Exception">Happens when the identifier is empty</exception>
-    public static string Resolve(string identifier) => Resolve(identifier, MainModule);
+    public static string Resolve(string identifier)
+    {
+        return Resolve(identifier, MainModule);
+    }
 
     /// <summary>
-    /// Resolves an identifier to a namespaced identifier
+    ///     Resolves an identifier to a namespaced identifier
     /// </summary>
     /// <param name="identifier">the identifier to resolve.</param>
     /// <param name="fallbackModule">The module namespace to fall back to.</param>
@@ -32,7 +35,7 @@ public static class Identifier
     }
 
     /// <summary>
-    /// Extracts the module from an identifier
+    ///     Extracts the module from an identifier
     /// </summary>
     /// <param name="identifier">The identifier to extract the module name from.</param>
     /// <returns>The module name</returns>
@@ -50,7 +53,7 @@ public static class Identifier
     }
 
     /// <summary>
-    /// Extracts the name from an identifier
+    ///     Extracts the name from an identifier
     /// </summary>
     /// <param name="identifier"></param>
     /// <returns></returns>

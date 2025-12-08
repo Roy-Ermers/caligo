@@ -9,11 +9,12 @@ public class LayerWorldGenerator : IWorldGenerator
     public readonly LayerCollection Layers;
     public readonly int Seed;
     public readonly Core.Universe.Worlds.World World;
+
     public LayerWorldGenerator(int seed, Core.Universe.Worlds.World world, LayerCollection layers)
     {
         Layers = layers;
         Seed = seed;
-        
+
         World = world;
     }
 

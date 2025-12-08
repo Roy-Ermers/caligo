@@ -9,14 +9,15 @@ public static partial class Components
     {
         var aspectRatio = (float)texture.Width / texture.Height;
 
-        var _width = width ?? (height is not null ? UnitValue.Pixels((height.Value.Value * aspectRatio)) : texture.Width);
-        var _height = height ?? (width is not null ? UnitValue.Pixels((width.Value.Value / aspectRatio)) : texture.Height);
+        var _width = width ?? (height is not null ? UnitValue.Pixels(height.Value.Value * aspectRatio) : texture.Width);
+        var _height = height ??
+                      (width is not null ? UnitValue.Pixels(width.Value.Value / aspectRatio) : texture.Height);
 
         using var container = Paper.Box("texture" + texture.Handle)
-        .Width(_width)
-        .Height(_height)
-        .HookToParent()
-        .Enter();
+            .Width(_width)
+            .Height(_height)
+            .HookToParent()
+            .Enter();
 
         Paper.AddActionElement((ev, rect) =>
         {

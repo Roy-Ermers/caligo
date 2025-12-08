@@ -12,7 +12,6 @@ public enum Direction
     East
 }
 
-
 public static class DirectionExtensions
 {
     public static Direction Opposite(this Direction direction)

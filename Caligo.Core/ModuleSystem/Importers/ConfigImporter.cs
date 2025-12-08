@@ -8,7 +8,6 @@ namespace Caligo.Core.ModuleSystem.Importers;
 
 public class ConfigImporter : IImporter
 {
-
     public void Import(Module module)
     {
         var configFile = Path.Join(module.AbsoluteDirectory, "config.json");
@@ -39,10 +38,7 @@ public class ConfigImporter : IImporter
         var kind = node.GetValueKind();
         var currentPath = node.GetPath();
 
-        if (currentPath.StartsWith('$'))
-        {
-            currentPath = currentPath.Length == 1 ? "" : currentPath[2..];
-        }
+        if (currentPath.StartsWith('$')) currentPath = currentPath.Length == 1 ? "" : currentPath[2..];
 
         if (kind != JsonValueKind.Object)
         {

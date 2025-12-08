@@ -5,10 +5,9 @@ namespace Caligo.Client.Graphics.UI.Windows;
 
 public class CameraWindow : Window
 {
+    private Game Game = null!;
     public override string Name => "Camera";
     public override bool Enabled { get; set; } = true;
-
-    Game Game = null!;
 
     public override void Initialize(Game game)
     {
@@ -28,5 +27,4 @@ public class CameraWindow : Window
 
         ImGui.Text("Chunk: " + blockPosition.ChunkPosition);
     }
-
 }

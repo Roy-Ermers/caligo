@@ -4,9 +4,9 @@ namespace Caligo.Core.Universe.Worlds;
 
 public partial class World : IEnumerable<Chunk>
 {
-    private readonly HashSet<ChunkPosition> loadedChunks = [];
     private readonly Dictionary<ChunkPosition, int> chunkLoaders = [];
-    
+    private readonly HashSet<ChunkPosition> loadedChunks = [];
+
     public IReadOnlySet<ChunkPosition> LoadedChunks => loadedChunks;
 
     public void EnqueueChunk(ChunkLoader loader, bool force = false)
@@ -43,7 +43,7 @@ public partial class World : IEnumerable<Chunk>
                 loadedChunks.Remove(position);
                 continue;
             }
-            
+
             chunkLoaders[position] = ticks - 1;
         }
     }

@@ -5,40 +5,25 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace Caligo.Client.Debugging;
 
-readonly record struct LineSegment
-(
+internal readonly record struct LineSegment(
     Vector3 Start,
     Vector3 End,
     Color Color
 );
 
 /// <summary>
-/// 3D debug rendering system for drawing lines and bounding boxes in world space.
-/// Uses modern OpenGL 4 core profile with shaders and vertex buffers.
-///
-/// Usage example:
-/// // Draw a red line from origin to (10, 10, 10)
-/// Gizmo3D.DrawLine(Vector3.Zero, new Vector3(10, 10, 10), Color.Red);
-///
-/// // Draw a green bounding box
-/// var bbox = new BoundingBox(new Vector3(-5, -5, -5), new Vector3(5, 5, 5));
-/// Gizmo3D.DrawBoundingBox(bbox, Color.Green);
-///
-/// // Must call Initialize() once during setup and Render() each frame
+///     3D debug rendering system for drawing lines and bounding boxes in world space.
+///     Uses modern OpenGL 4 core profile with shaders and vertex buffers.
+///     Usage example:
+///     // Draw a red line from origin to (10, 10, 10)
+///     Gizmo3D.DrawLine(Vector3.Zero, new Vector3(10, 10, 10), Color.Red);
+///     // Draw a green bounding box
+///     var bbox = new BoundingBox(new Vector3(-5, -5, -5), new Vector3(5, 5, 5));
+///     Gizmo3D.DrawBoundingBox(bbox, Color.Green);
+///     // Must call Initialize() once during setup and Render() each frame
 /// </summary>
 public static class Gizmo3D
 {
-    private static Game _game = null!;
-
-    private static readonly Lock Lock = new();
-    private static readonly Stack<LineSegment> DrawCalls = new();
-
-    // OpenGL resources
-    private static int _vao;
-    private static int _vbo;
-    private static int _shaderProgram;
-    private static bool _initialized;
-
     // Shader source code
     private const string VertexShaderSource = """
 
@@ -69,9 +54,20 @@ public static class Gizmo3D
                                                 }
                                                 """;
 
+    private static Game _game = null!;
+
+    private static readonly Lock Lock = new();
+    private static readonly Stack<LineSegment> DrawCalls = new();
+
+    // OpenGL resources
+    private static int _vao;
+    private static int _vbo;
+    private static int _shaderProgram;
+    private static bool _initialized;
+
     public static void Initialize(Game game)
     {
-        Gizmo3D._game = game;
+        _game = game;
         InitializeOpenGl();
     }
 
@@ -106,19 +102,19 @@ public static class Gizmo3D
     private static int CreateShaderProgram()
     {
         // Compile vertex shader
-        int vertexShader = GL.CreateShader(ShaderType.VertexShader);
+        var vertexShader = GL.CreateShader(ShaderType.VertexShader);
         GL.ShaderSource(vertexShader, VertexShaderSource);
         GL.CompileShader(vertexShader);
         CheckShaderCompileErrors(vertexShader, "VERTEX");
 
         // Compile fragment shader
-        int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+        var fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
         GL.ShaderSource(fragmentShader, FragmentShaderSource);
         GL.CompileShader(fragmentShader);
         CheckShaderCompileErrors(fragmentShader, "FRAGMENT");
 
         // Create and link shader program
-        int program = GL.CreateProgram();
+        var program = GL.CreateProgram();
         GL.AttachShader(program, vertexShader);
         GL.AttachShader(program, fragmentShader);
         GL.LinkProgram(program);
@@ -133,20 +129,20 @@ public static class Gizmo3D
 
     private static void CheckShaderCompileErrors(int shader, string type)
     {
-        GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
+        GL.GetShader(shader, ShaderParameter.CompileStatus, out var success);
         if (success == 0)
         {
-            string infoLog = GL.GetShaderInfoLog(shader);
+            var infoLog = GL.GetShaderInfoLog(shader);
             throw new Exception($"Shader compilation error ({type}): {infoLog}");
         }
     }
 
     private static void CheckProgramLinkErrors(int program)
     {
-        GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int success);
+        GL.GetProgram(program, GetProgramParameterName.LinkStatus, out var success);
         if (success == 0)
         {
-            string infoLog = GL.GetProgramInfoLog(program);
+            var infoLog = GL.GetProgramInfoLog(program);
             throw new Exception($"Shader program linking error: {infoLog}");
         }
     }
@@ -158,7 +154,7 @@ public static class Gizmo3D
         {
             Start = start,
             End = end,
-            Color = color == default ? Color.White : color,
+            Color = color == default ? Color.White : color
         });
     }
 
@@ -239,13 +235,14 @@ public static class Gizmo3D
         var projectionMatrix = camera.ProjectionMatrix;
         var viewProjection = viewMatrix * projectionMatrix;
 
-        int viewProjLocation = GL.GetUniformLocation(_shaderProgram, "uViewProjection");
+        var viewProjLocation = GL.GetUniformLocation(_shaderProgram, "uViewProjection");
         GL.UniformMatrix4(viewProjLocation, false, ref viewProjection);
 
         // Bind VAO and upload vertex data
         GL.BindVertexArray(_vao);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Count * sizeof(float), vertices.ToArray(), BufferUsageHint.DynamicDraw);
+        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Count * sizeof(float), vertices.ToArray(),
+            BufferUsageHint.DynamicDraw);
 
         // Draw lines
         GL.DrawArrays(PrimitiveType.Lines, 0, vertices.Count / 6);

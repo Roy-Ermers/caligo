@@ -1,12 +1,12 @@
 using System.Numerics;
-using System.Xml.Schema;
 using Caligo.Core.Universe;
-using Caligo.Core.Utils;
 
 namespace Caligo.Core.Spatial.PositionTypes;
 
 public readonly record struct ChunkPosition
 {
+    public static readonly ChunkPosition Zero = new(0, 0, 0);
+
     public ChunkPosition(int X, int Y, int Z)
     {
         this.X = X;
@@ -14,30 +14,31 @@ public readonly record struct ChunkPosition
         this.Z = Z;
     }
 
-    public static readonly ChunkPosition Zero = new(0, 0, 0);
-
     public int X { get; init; }
     public int Y { get; init; }
     public int Z { get; init; }
 
-    public readonly int Id => HashCode.Combine(X,Y,Z);
+    public readonly int Id => HashCode.Combine(X, Y, Z);
 
     public readonly WorldPosition ToWorldPosition()
     {
         return new WorldPosition(X * Chunk.Size, Y * Chunk.Size, Z * Chunk.Size);
     }
 
-    override public readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         return Id;
     }
 
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
         return $"(C;{X}, {Y}, {Z})";
     }
 
-    public static ChunkPosition FromWorldPosition(WorldPosition position) => FromWorldPosition(position.X, position.Y, position.Z);
+    public static ChunkPosition FromWorldPosition(WorldPosition position)
+    {
+        return FromWorldPosition(position.X, position.Y, position.Z);
+    }
 
     public static ChunkPosition FromWorldPosition(int x, int y, int z)
     {
@@ -49,8 +50,15 @@ public readonly record struct ChunkPosition
         };
     }
 
-    public static implicit operator ChunkPosition((int X, int Y, int Z) position) => new(position.X * Chunk.Size, position.Y * Chunk.Size, position.Z * Chunk.Size);
-    public static implicit operator Vector3(ChunkPosition position) => new(position.X * Chunk.Size, position.Y * Chunk.Size, position.Z * Chunk.Size);
+    public static implicit operator ChunkPosition((int X, int Y, int Z) position)
+    {
+        return new ChunkPosition(position.X * Chunk.Size, position.Y * Chunk.Size, position.Z * Chunk.Size);
+    }
+
+    public static implicit operator Vector3(ChunkPosition position)
+    {
+        return new Vector3(position.X * Chunk.Size, position.Y * Chunk.Size, position.Z * Chunk.Size);
+    }
 
     public static ChunkPosition operator +(ChunkPosition left, ChunkPosition right)
     {

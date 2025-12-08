@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Numerics;
+
 namespace Caligo.Core.Utils;
 
 public static class HexParser
@@ -13,7 +16,7 @@ public static class HexParser
 
         try
         {
-            value = uint.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+            value = uint.Parse(hex, NumberStyles.HexNumber);
             return true;
         }
         catch
@@ -22,9 +25,9 @@ public static class HexParser
         }
     }
 
-    public static bool TryParseHex(string hex, out System.Numerics.Vector4 color)
+    public static bool TryParseHex(string hex, out Vector4 color)
     {
-        color = System.Numerics.Vector4.Zero;
+        color = Vector4.Zero;
 
         if (!TryParseHex(hex, out uint value))
             return false;
@@ -45,16 +48,16 @@ public static class HexParser
                 color.W = (value & 0xF) / 15f;
                 break;
             case 6 or 7:
-                color.X = ((value >> 16) & 0xFF);
-                color.Y = ((value >> 8) & 0xFF);
-                color.Z = (value & 0xFF);
+                color.X = (value >> 16) & 0xFF;
+                color.Y = (value >> 8) & 0xFF;
+                color.Z = value & 0xFF;
                 color.W = 255f;
                 break;
             case 9:
-                color.X = ((value >> 24) & 0xFF);
-                color.Y = ((value >> 16) & 0xFF);
-                color.Z = ((value >> 8) & 0xFF);
-                color.W = (value & 0xFF);
+                color.X = (value >> 24) & 0xFF;
+                color.Y = (value >> 16) & 0xFF;
+                color.Z = (value >> 8) & 0xFF;
+                color.W = value & 0xFF;
                 break;
         }
 

@@ -5,61 +5,62 @@ namespace Caligo.Client.Renderer.Worlds.Materials;
 public record struct Material : IEquatable<Material>
 {
     /// <summary>
-    /// The width of the face.
+    ///     The height of the face.
     /// </summary>
     /// <remarks>
-    /// ranges from 0 to 15
-    /// </remarks>
-    public ushort Width;
-    /// <summary>
-    /// The height of the face.
-    /// </summary>
-    /// <remarks>
-    /// ranges from 0 to 15
+    ///     ranges from 0 to 15
     /// </remarks>
     public ushort Height;
 
     /// <summary>
-    /// Where is the top-left corner of the texture in the texture atlas?
+    ///     Whether the face should be shaded based on its normal.
     /// </summary>
-    /// <remarks>
-    /// the UV coordinates are ranged between 0 to 31, but you should use them as 0 - 16.
-    /// </remarks>
-    public Vector2 UV0;
+    public bool Shade;
 
     /// <summary>
-    /// Where is the bottom-right corner of the texture in the texture atlas?
+    ///     The texture ID of the face.
+    ///     <remarks>
+    ///         The texture ID is an index into a texture atlas, which contains the textures of the face.
+    ///         Max value is 65535 (0xFFFF).
+    ///     </remarks>
     /// </summary>
-    /// <remarks>
-    /// the UV coordinates are ranged between 0 to 31, but you should use them as 0 - 16.
-    /// </remarks>
-    public Vector2 UV1;
+    public int TextureId;
 
     /// <summary>
-    /// The tint color of the face.
+    ///     The tint color of the face.
     /// </summary>
     /// <remarks>
-    /// The tint color is a vector with 4 components:
-    /// - X: Red component (0-15)
-    /// - Y: Green component (0-15)
-    /// - Z: Blue component (0-15)
-    /// the values are normalized to 0-1 range on the GPU.
+    ///     The tint color is a vector with 4 components:
+    ///     - X: Red component (0-15)
+    ///     - Y: Green component (0-15)
+    ///     - Z: Blue component (0-15)
+    ///     the values are normalized to 0-1 range on the GPU.
     /// </remarks>
     public Vector3? Tint;
 
     /// <summary>
-    /// The texture ID of the face.
+    ///     Where is the top-left corner of the texture in the texture atlas?
+    /// </summary>
     /// <remarks>
-    /// The texture ID is an index into a texture atlas, which contains the textures of the face.
-    /// Max value is 65535 (0xFFFF).
+    ///     the UV coordinates are ranged between 0 to 31, but you should use them as 0 - 16.
     /// </remarks>
-    /// </summary>
-    public int TextureId;
-    
+    public Vector2 UV0;
+
     /// <summary>
-    /// Whether the face should be shaded based on its normal.
+    ///     Where is the bottom-right corner of the texture in the texture atlas?
     /// </summary>
-    public bool Shade;
+    /// <remarks>
+    ///     the UV coordinates are ranged between 0 to 31, but you should use them as 0 - 16.
+    /// </remarks>
+    public Vector2 UV1;
+
+    /// <summary>
+    ///     The width of the face.
+    /// </summary>
+    /// <remarks>
+    ///     ranges from 0 to 15
+    /// </remarks>
+    public ushort Width;
 
 
     public readonly bool Equals(Material other)
@@ -72,13 +73,11 @@ public record struct Material : IEquatable<Material>
     private readonly Vector3 EncodeTint()
     {
         if (Tint is not null)
-        {
             return new Vector3(
                 MathF.Floor(Tint.Value.X / 15.0f),
                 MathF.Floor(Tint.Value.Y / 15.0f),
                 MathF.Floor(Tint.Value.Z / 15.0f)
             );
-        }
 
         return new Vector3(0b1111, 0b1111, 0b1111);
     }
@@ -91,17 +90,17 @@ public record struct Material : IEquatable<Material>
 
     public readonly int[] Encode()
     {
-        int upper = 0b0;
+        var upper = 0b0;
 
-        int width = (Width - 0b1) & 0b1111;
-        int height = (Height - 0b1) & 0b1111;
+        var width = (Width - 0b1) & 0b1111;
+        var height = (Height - 0b1) & 0b1111;
 
-        Vector2 uv0 = EncodeUV(UV0);
-        Vector2 uv1 = EncodeUV(UV1);
-        int uv0u = (int)uv0.X & 0b11111;
-        int uv0v = (int)uv0.Y & 0b11111;
-        int uv1u = (int)uv1.X & 0b11111;
-        int uv1v = (int)uv1.Y & 0b11111;
+        var uv0 = EncodeUV(UV0);
+        var uv1 = EncodeUV(UV1);
+        var uv0u = (int)uv0.X & 0b11111;
+        var uv0v = (int)uv0.Y & 0b11111;
+        var uv1u = (int)uv1.X & 0b11111;
+        var uv1v = (int)uv1.Y & 0b11111;
 
         upper |= width << 0b0;
         upper |= height << 0b100;
@@ -110,12 +109,12 @@ public record struct Material : IEquatable<Material>
         upper |= uv1u << 0b10010;
         upper |= uv1v << 0b10111;
 
-        int lower = 0b0;
-        Vector3 Tint = EncodeTint();
-        int tintR = (int)Tint.X & 0b1111;
-        int tintG = (int)Tint.Y & 0b1111;
-        int tintB = (int)Tint.Z & 0b1111;
-        int textureId = TextureId & 0b1111111111111111;
+        var lower = 0b0;
+        var Tint = EncodeTint();
+        var tintR = (int)Tint.X & 0b1111;
+        var tintG = (int)Tint.Y & 0b1111;
+        var tintB = (int)Tint.Z & 0b1111;
+        var textureId = TextureId & 0b1111111111111111;
         lower |= textureId << 0b0;
         lower |= tintR << 0b10000;
         lower |= tintG << 0b10100;

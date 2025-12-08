@@ -5,20 +5,20 @@ namespace Caligo.Core.Resources.Block.Models;
 
 public record struct ModelCulling : IEquatable<ModelCulling>
 {
-    [JsonPropertyName("down")]
-    public bool CullDown;
-    [JsonPropertyName("up")]
-    public bool CullUp;
-    [JsonPropertyName("north")]
-    public bool CullNorth;
-    [JsonPropertyName("south")]
-    public bool CullSouth;
-    [JsonPropertyName("west")]
-    public bool CullWest;
-    [JsonPropertyName("east")]
-    public bool CullEast;
+    [JsonPropertyName("down")] public bool CullDown;
+
+    [JsonPropertyName("east")] public bool CullEast;
+
+    [JsonPropertyName("north")] public bool CullNorth;
+
+    [JsonPropertyName("south")] public bool CullSouth;
+
+    [JsonPropertyName("up")] public bool CullUp;
+
+    [JsonPropertyName("west")] public bool CullWest;
 
     public static ModelCulling None => new();
+
     public static ModelCulling All => new()
     {
         CullDown = true,

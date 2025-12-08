@@ -4,27 +4,26 @@ namespace Caligo.Core.Noise;
 
 public class CellularNoise(int seed = 0)
 {
-    readonly int Seed = seed;
-
-    static readonly NoisePeriod _noPeriod = new(10, 10);
+    private static readonly NoisePeriod _noPeriod = new(10, 10);
+    private readonly int Seed = seed;
 
     /// <summary>A noise function of random polygonal cells resembling a voronoi diagram. </summary>
     public CellularResults Get(float x, float y)
     {
-        int ix = x > 0 ? (int)x : (int)x - 1;
-        int iy = y > 0 ? (int)y : (int)y - 1;
-        float fx = x - ix;
-        float fy = y - iy;
+        var ix = x > 0 ? (int)x : (int)x - 1;
+        var iy = y > 0 ? (int)y : (int)y - 1;
+        var fx = x - ix;
+        var fy = y - iy;
 
         ix += Seed * NoiseConstants.SeedPrime;
 
-        int cx = ix * NoiseConstants.XPrime1;
-        int rx = cx + NoiseConstants.XPrime1 >> NoiseConstants.PeriodShift;
-        int lx = cx - NoiseConstants.XPrime1 >> NoiseConstants.PeriodShift;
+        var cx = ix * NoiseConstants.XPrime1;
+        var rx = (cx + NoiseConstants.XPrime1) >> NoiseConstants.PeriodShift;
+        var lx = (cx - NoiseConstants.XPrime1) >> NoiseConstants.PeriodShift;
         cx >>= NoiseConstants.PeriodShift;
-        int cy = iy * NoiseConstants.YPrime1;
-        int uy = cy + NoiseConstants.YPrime1 >> NoiseConstants.PeriodShift;
-        int ly = cy - NoiseConstants.YPrime1 >> NoiseConstants.PeriodShift;
+        var cy = iy * NoiseConstants.YPrime1;
+        var uy = (cy + NoiseConstants.YPrime1) >> NoiseConstants.PeriodShift;
+        var ly = (cy - NoiseConstants.YPrime1) >> NoiseConstants.PeriodShift;
         cy >>= NoiseConstants.PeriodShift;
 
         return SearchNeighborhood(fx, fy,
@@ -37,23 +36,23 @@ public class CellularNoise(int seed = 0)
     public CellularResults GetPeriodic(float x, float y, in NoisePeriod period)
     {
         // See comments in GradientNoisePeriodic(). differences are documented.
-        int ix = x > 0 ? (int)x : (int)x - 1;
-        int iy = y > 0 ? (int)y : (int)y - 1;
-        float fx = x - ix;
-        float fy = y - iy;
+        var ix = x > 0 ? (int)x : (int)x - 1;
+        var iy = y > 0 ? (int)y : (int)y - 1;
+        var fx = x - ix;
+        var fy = y - iy;
 
         ix += Seed * NoiseConstants.SeedPrime;
 
         // r: right c: center l: left/lower u: upper
         // worley uses 3x3 as supposed to gradient using 2x2
-        int cx = ix * period.xf;
-        int rx = cx + period.xf >> NoiseConstants.PeriodShift;
-        int lx = cx - period.xf >> NoiseConstants.PeriodShift;
+        var cx = ix * period.xf;
+        var rx = (cx + period.xf) >> NoiseConstants.PeriodShift;
+        var lx = (cx - period.xf) >> NoiseConstants.PeriodShift;
         cx >>= NoiseConstants.PeriodShift;
 
-        int cy = iy * period.yf;
-        int uy = cy + period.yf >> NoiseConstants.PeriodShift;
-        int ly = cy - period.yf >> NoiseConstants.PeriodShift;
+        var cy = iy * period.yf;
+        var uy = (cy + period.yf) >> NoiseConstants.PeriodShift;
+        var ly = (cy - period.yf) >> NoiseConstants.PeriodShift;
         cy >>= NoiseConstants.PeriodShift;
 
         return SearchNeighborhood(fx, fy,
@@ -63,13 +62,14 @@ public class CellularNoise(int seed = 0)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe CellularResults SearchNeighborhood(float fx, float fy, int llh, int lch, int lrh, int clh, int cch, int crh, int ulh, int uch, int urh)
+    private static unsafe CellularResults SearchNeighborhood(float fx, float fy, int llh, int lch, int lrh, int clh,
+        int cch, int crh, int ulh, int uch, int urh)
     {
         // intermediate variables
         int xHash, yHash;
         float dx, dy, sqDist, temp;
         // output variables
-        int r = 0;
+        var r = 0;
         float d0 = 1, d1 = 1;
 
         fy += 2f;
@@ -78,7 +78,7 @@ public class CellularNoise(int seed = 0)
         // the WorleyAndMask and WorleyOrMask set the sign bit to zero so the number is poitive and
         // set the exponent to 1 so that the value is between 1 and 2. This is why the offsets to fx / fy
         // range from 0 to 2 instead of -1 to 1.
-        xHash = llh & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (llh & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 2f;
         dy = fy - *(float*)&yHash;
@@ -89,7 +89,7 @@ public class CellularNoise(int seed = 0)
         d0 = d0 < d1 ? d0 : d1;
         d1 = temp;
 
-        xHash = lch & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (lch & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 1f;
         dy = fy - *(float*)&yHash;
@@ -100,7 +100,7 @@ public class CellularNoise(int seed = 0)
         d0 = d0 < d1 ? d0 : d1; // min
         d1 = temp;
 
-        xHash = lrh & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (lrh & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 0f;
         dy = fy - *(float*)&yHash;
@@ -114,7 +114,7 @@ public class CellularNoise(int seed = 0)
         fy -= 1f;
 
         // middle row
-        xHash = clh & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (clh & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 2f;
         dy = fy - *(float*)&yHash;
@@ -125,7 +125,7 @@ public class CellularNoise(int seed = 0)
         d0 = d0 < d1 ? d0 : d1;
         d1 = temp;
 
-        xHash = cch & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (cch & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 1f;
         dy = fy - *(float*)&yHash;
@@ -136,7 +136,7 @@ public class CellularNoise(int seed = 0)
         d0 = d0 < d1 ? d0 : d1; // min
         d1 = temp;
 
-        xHash = crh & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (crh & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 0f;
         dy = fy - *(float*)&yHash;
@@ -150,7 +150,7 @@ public class CellularNoise(int seed = 0)
         fy -= 1f;
 
         // top row
-        xHash = ulh & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (ulh & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 2f;
         dy = fy - *(float*)&yHash;
@@ -161,7 +161,7 @@ public class CellularNoise(int seed = 0)
         d0 = d0 < d1 ? d0 : d1;
         d1 = temp;
 
-        xHash = uch & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (uch & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 1f;
         dy = fy - *(float*)&yHash;
@@ -172,7 +172,7 @@ public class CellularNoise(int seed = 0)
         d0 = d0 < d1 ? d0 : d1; // min
         d1 = temp;
 
-        xHash = urh & NoiseConstants.WorleyAndMask | NoiseConstants.WorleyOrMask;
+        xHash = (urh & NoiseConstants.WorleyAndMask) | NoiseConstants.WorleyOrMask;
         yHash = xHash << 13;
         dx = fx - *(float*)&xHash + 0f;
         dy = fy - *(float*)&yHash;
@@ -187,11 +187,12 @@ public class CellularNoise(int seed = 0)
         d0 = MathF.Sqrt(d0);
         d1 = MathF.Sqrt(d1);
 
-        r = r * NoiseConstants.ZPrime1 & NoiseConstants.PortionAndMask | NoiseConstants.PortionOrMask;
-        float rFloat = *(float*)&r - 1f;
+        r = ((r * NoiseConstants.ZPrime1) & NoiseConstants.PortionAndMask) | NoiseConstants.PortionOrMask;
+        var rFloat = *(float*)&r - 1f;
         return new CellularResults(d0, d1, rFloat);
     }
 }
+
 /// <summary>The results of a Cellular Noise evaluation. </summary>
 public readonly record struct CellularResults(
     /// <summary> The distance to the closest cell center.</summary>

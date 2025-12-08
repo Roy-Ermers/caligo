@@ -8,9 +8,9 @@ namespace Caligo.Client.Generators.Layers;
 
 public class FeatureLayer : ILayer
 {
-    public FeatureNetwork FeatureNetwork { get; private set; } = null!;
     private Core.Universe.Worlds.World _world;
-    
+    public FeatureNetwork FeatureNetwork { get; private set; } = null!;
+
     public void Initialize(long seed, LayerWorldGenerator generator)
     {
         var heightMap = generator.Layers.GetLayer<HeightLayer>();
@@ -21,22 +21,18 @@ public class FeatureLayer : ILayer
     public void GenerateChunk(Chunk chunk)
     {
         FeatureNetwork.GetSector(chunk.Position.ToWorldPosition());
-		var features = _world.Features.Query(chunk.BoundingBox);
-        
-        if(features.Count == 0) return;
-        
-        foreach (var position in new CubeIterator(chunk))
-        {
-            foreach (var feature in features)
-            {
-				var blockId = feature.GetBlock(position);
+        var features = _world.Features.Query(chunk.BoundingBox);
 
-                if (blockId == 0) continue;
-                var localPosition = ChunkLocalPosition.FromWorldPosition(position);
-                chunk.Set(localPosition, blockId);
-            }
-                
+        if (features.Count == 0) return;
+
+        foreach (var position in new CubeIterator(chunk))
+        foreach (var feature in features)
+        {
+            var blockId = feature.GetBlock(position);
+
+            if (blockId == 0) continue;
+            var localPosition = ChunkLocalPosition.FromWorldPosition(position);
+            chunk.Set(localPosition, blockId);
         }
     }
-    
 }

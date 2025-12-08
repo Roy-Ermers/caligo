@@ -20,7 +20,7 @@ public struct TextureFaces
             North = SetTextureVariable(North, textures),
             South = SetTextureVariable(South, textures),
             West = SetTextureVariable(West, textures),
-            East = SetTextureVariable(East, textures),
+            East = SetTextureVariable(East, textures)
         };
     }
 

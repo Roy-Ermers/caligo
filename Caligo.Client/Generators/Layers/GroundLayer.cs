@@ -10,9 +10,9 @@ namespace Caligo.Client.Generators.Layers;
 
 public class GroundLayer : ILayer
 {
-    private HeightLayer heightLayer = null!;
     private GradientNoise _noise;
     private Block[] groundBlocks = [];
+    private HeightLayer heightLayer = null!;
 
     public void Initialize(long seed, LayerWorldGenerator generator)
     {

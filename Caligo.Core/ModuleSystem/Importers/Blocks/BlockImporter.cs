@@ -10,24 +10,6 @@ namespace Caligo.Core.ModuleSystem.Importers.Blocks;
 
 public class BlockImporter : IImporter, IResourceProcessor
 {
-
-    private static BlockVariant[] ConvertToBlockVariants(BlockVariantData[] variants)
-    {
-        var blockVariants = new List<BlockVariant>();
-        foreach (var variant in variants)
-        {
-            var blockVariant = new BlockVariant
-            {
-                ModelName = variant.Model.BlockModelName ?? "",
-                Model = null!,
-                Weight = variant.Weight ?? 1,
-                Textures = variant.Model.Textures ?? []
-            };
-            blockVariants.Add(blockVariant);
-        }
-        return [.. blockVariants];
-    }
-
     public void Import(Module module)
     {
         var rootDirectory = Path.Join(module.AbsoluteDirectory, "blocks");
@@ -36,11 +18,10 @@ public class BlockImporter : IImporter, IResourceProcessor
 
         var files = Directory.EnumerateFiles(rootDirectory, "*.json", SearchOption.AllDirectories);
         var blockStorage = module.GetStorage<Block>();
-        
+
         blockStorage.Add(Block.Air.Name, Block.Air);
 
         foreach (var file in files)
-        {
             try
             {
                 var name = Path.GetFileNameWithoutExtension(file);
@@ -49,14 +30,14 @@ public class BlockImporter : IImporter, IResourceProcessor
                 var jsonContent = File.ReadAllText(file);
                 var blockData = JsonSerializer.Deserialize<ModuleBlockData>(jsonContent, JsonOptions.SerializerOptions);
                 if (blockData.Model is not null)
-                {
-                    blockData.Variants = [
-                           new BlockVariantData {
+                    blockData.Variants =
+                    [
+                        new BlockVariantData
+                        {
                             Model = blockData.Model.Value,
                             Weight = 1
                         }
                     ];
-                }
 
                 if (blockData.Variants.Length == 0)
                 {
@@ -78,7 +59,6 @@ public class BlockImporter : IImporter, IResourceProcessor
                 Console.WriteLine($"Error importing block: {file}");
                 Console.WriteLine(e.Message);
             }
-        }
     }
 
     public void Process(ResourceStorage storage)
@@ -87,7 +67,7 @@ public class BlockImporter : IImporter, IResourceProcessor
 
         var Air = Identifier.Resolve("air");
         ushort index = 0;
-        
+
         if (blockStorage.Count == 1)
             return;
 
@@ -113,5 +93,23 @@ public class BlockImporter : IImporter, IResourceProcessor
                 block.Variants[variantIndex] = variant;
             }
         }
+    }
+
+    private static BlockVariant[] ConvertToBlockVariants(BlockVariantData[] variants)
+    {
+        var blockVariants = new List<BlockVariant>();
+        foreach (var variant in variants)
+        {
+            var blockVariant = new BlockVariant
+            {
+                ModelName = variant.Model.BlockModelName ?? "",
+                Model = null!,
+                Weight = variant.Weight ?? 1,
+                Textures = variant.Model.Textures ?? []
+            };
+            blockVariants.Add(blockVariant);
+        }
+
+        return [.. blockVariants];
     }
 }

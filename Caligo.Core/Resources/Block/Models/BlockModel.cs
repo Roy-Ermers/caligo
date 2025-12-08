@@ -4,39 +4,32 @@ namespace Caligo.Core.Resources.Block.Models;
 
 public class BlockModel
 {
-    [JsonPropertyName("parent")]
-    public string? ParentName { get; set; }
+    [JsonPropertyName("parent")] public string? ParentName { get; set; }
 
-    [JsonIgnore]
-    public BlockModel? Parent { get; set; }
-    
-    [JsonPropertyName("offsetType")]
-    public string? OffsetType { get; set; }
+    [JsonIgnore] public BlockModel? Parent { get; set; }
+
+    [JsonPropertyName("offsetType")] public string? OffsetType { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
-    [JsonPropertyName("cullFaces")]
-    public ModelCulling? Culling { get; set; }
+    [JsonPropertyName("cullFaces")] public ModelCulling? Culling { get; set; }
 
     public BlockModelCube[] Elements { get; set; } = [];
 
     public Dictionary<string, string>? Textures { get; set; }
 
-    private bool _isBuilt;
-
-    [JsonIgnore]
-    public bool IsBuilt => _isBuilt;
+    [JsonIgnore] public bool IsBuilt { get; private set; }
 
     /// <summary>
-    /// Collapses the block model by merging all parent data into this model.
-    /// This is useful for resolving inheritance in block models.
+    ///     Collapses the block model by merging all parent data into this model.
+    ///     This is useful for resolving inheritance in block models.
     /// </summary>
     public void Build()
     {
-        if (_isBuilt)
+        if (IsBuilt)
             return;
 
-        _isBuilt = true;
+        IsBuilt = true;
 
         if (Parent is not null)
         {
@@ -45,22 +38,18 @@ public class BlockModel
             Culling ??= Parent.Culling;
             OffsetType ??= Parent.OffsetType;
 
-            if (Elements.Length == 0)
-            {
-                Elements = ImportElements(Parent.Elements, Textures);
-            }
+            if (Elements.Length == 0) Elements = ImportElements(Parent.Elements, Textures);
         }
-
     }
 
-    static BlockModelCube[] ImportElements(BlockModelCube[] elements, Dictionary<string, string>? textures)
+    private static BlockModelCube[] ImportElements(BlockModelCube[] elements, Dictionary<string, string>? textures)
     {
         if (textures is null)
             return elements;
 
         var newElements = new BlockModelCube[elements.Length];
 
-        for (int i = 0; i < elements.Length; i++)
+        for (var i = 0; i < elements.Length; i++)
         {
             var newTextureFaces = elements[i].TextureFaces.SetTextureVariables(textures);
             var element = new BlockModelCube
@@ -76,7 +65,7 @@ public class BlockModel
         return newElements;
     }
 
-    BlockModel Clone()
+    private BlockModel Clone()
     {
         var copy = new BlockModel
         {
@@ -98,29 +87,17 @@ public class BlockModel
     {
         var result = $"BlockModel {Name}";
 
-        if (Parent is not null)
-        {
-            result += $" (Parent: {Parent.Name})";
-        }
+        if (Parent is not null) result += $" (Parent: {Parent.Name})";
 
-        if (Culling != ModelCulling.None)
-        {
-            result += $" (Culling: {Culling})";
-        }
+        if (Culling != ModelCulling.None) result += $" (Culling: {Culling})";
 
         if (Textures is not null && Textures.Count > 0)
-        {
             result += $" (Textures: {string.Join(", ", Textures.Select(t => $"{t.Key}={t.Value}"))})";
-        }
 
         if (Elements.Length > 0)
-        {
             result += $" (Elements: {Elements.Length})";
-        }
         else
-        {
             result += " (No elements)";
-        }
 
 
         return result;

@@ -9,43 +9,26 @@ public class JsonVector4Converter : JsonConverter<Vector4>
     public override Vector4 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartArray)
-        {
             throw new JsonException("Expected start of array for Vector4.");
-        }
 
         reader.Read();
-        if (reader.TokenType != JsonTokenType.Number)
-        {
-            throw new JsonException("Expected number for Vector4.X.");
-        }
-        float x = reader.GetSingle();
+        if (reader.TokenType != JsonTokenType.Number) throw new JsonException("Expected number for Vector4.X.");
+        var x = reader.GetSingle();
 
         reader.Read();
-        if (reader.TokenType != JsonTokenType.Number)
-        {
-            throw new JsonException("Expected number for Vector4.Y.");
-        }
-        float y = reader.GetSingle();
+        if (reader.TokenType != JsonTokenType.Number) throw new JsonException("Expected number for Vector4.Y.");
+        var y = reader.GetSingle();
 
         reader.Read();
-        if (reader.TokenType != JsonTokenType.Number)
-        {
-            throw new JsonException("Expected number for Vector4.Z.");
-        }
-        float z = reader.GetSingle();
+        if (reader.TokenType != JsonTokenType.Number) throw new JsonException("Expected number for Vector4.Z.");
+        var z = reader.GetSingle();
 
         reader.Read();
-        if (reader.TokenType != JsonTokenType.Number)
-        {
-            throw new JsonException("Expected number for Vector4.Z.");
-        }
-        float w = reader.GetSingle();
+        if (reader.TokenType != JsonTokenType.Number) throw new JsonException("Expected number for Vector4.Z.");
+        var w = reader.GetSingle();
 
         reader.Read();
-        if (reader.TokenType != JsonTokenType.EndArray)
-        {
-            throw new JsonException("Expected end of array for Vector4.");
-        }
+        if (reader.TokenType != JsonTokenType.EndArray) throw new JsonException("Expected end of array for Vector4.");
 
         return new Vector4(x, y, z, w);
     }

@@ -34,31 +34,27 @@ namespace Caligo.Client;
 
 public class Game : GameWindow
 {
-    public static Game Instance { get; protected set; } = null!;
-
-    public Camera Camera { get; set; }
-
-    public PlayerController Controller;
-
-    public readonly ModuleRepository ModuleRepository;
-    private readonly PaperRenderer uiRenderer;
-    private DebugUiRenderer debugUiRenderer;
+    private static readonly DebugProc DebugMessageDelegate = OnDebugMessage;
 
     private readonly RenderShader _shader;
 
-    private readonly RenderDoc? renderdoc;
+    public readonly ModuleRepository ModuleRepository;
 
-    public MainThread? MainThread { get; } = new();
-    public World world = null!;
+    private readonly RenderDoc? renderdoc;
+    private readonly PaperRenderer uiRenderer;
+    private bool _cursorLocked = true;
+    private bool _firstMouseMove = true;
+
+    private Vector2 _lastMousePosition;
     public WorldBuilder builder = null!;
+
+    public PlayerController Controller;
+    private DebugUiRenderer debugUiRenderer;
     public WorldRenderer renderer = null!;
 
 
     public double Time;
-
-    private Vector2 _lastMousePosition;
-    private bool _firstMouseMove = true;
-    private bool _cursorLocked = true;
+    public World world = null!;
 
     public Game() : base(new GameWindowSettings(),
         new NativeWindowSettings
@@ -90,6 +86,12 @@ public class Game : GameWindow
 
         Gizmo3D.Initialize(this);
     }
+
+    public static Game Instance { get; protected set; } = null!;
+
+    public Camera Camera { get; set; }
+
+    public MainThread? MainThread { get; } = new();
 
     protected override void OnLoad()
     {
@@ -136,12 +138,12 @@ public class Game : GameWindow
         for (var z = -RenderDistance; z < RenderDistance; z++)
         {
             var chunkPosition = ChunkPosition.FromWorldPosition(
-                (x * Chunk.Size) + (int)playerPosition.X,
-                (y * Chunk.Size) + (int)playerPosition.Y,
-                (z * Chunk.Size) + (int)playerPosition.Z
+                x * Chunk.Size + (int)playerPosition.X,
+                y * Chunk.Size + (int)playerPosition.Y,
+                z * Chunk.Size + (int)playerPosition.Z
             );
 
-            var chunkLoader = new ChunkLoader(chunkPosition, 1);
+            var chunkLoader = new ChunkLoader(chunkPosition);
             world.EnqueueChunk(chunkLoader);
         }
     }
@@ -226,7 +228,7 @@ public class Game : GameWindow
         SwapBuffers();
     }
 
-    void RenderUI(FrameEventArgs args)
+    private void RenderUI(FrameEventArgs args)
     {
         using var uiFrame = uiRenderer.Start(args.Time);
 
@@ -287,9 +289,6 @@ public class Game : GameWindow
         base.OnResize(e);
     }
 
-
-    private static readonly DebugProc DebugMessageDelegate = OnDebugMessage;
-
     private static void OnDebugMessage(
         DebugSource source,
         DebugType type,
@@ -312,8 +311,6 @@ public class Game : GameWindow
         // Potentially, you may want to throw from the function for certain severity
         // messages.
         if (type == DebugType.DebugTypeError || severity == DebugSeverity.DebugSeverityHigh)
-        {
             throw new Exception(message);
-        }
     }
 }

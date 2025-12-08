@@ -1,7 +1,6 @@
 using Caligo.Client.Graphics.UI.ImGuiComponents;
 using Caligo.Client.Graphics.UI.ImGuiComponents.Tables;
 using Caligo.Core.FileSystem;
-using Caligo.Core.ModuleSystem;
 using Caligo.ModuleSystem;
 using ImGuiNET;
 
@@ -9,12 +8,11 @@ namespace Caligo.Client.Graphics.UI.Windows;
 
 public class ModuleWindow : Window
 {
+    private Game _game = null!;
+
+    private Module? currentModule;
     public override bool Enabled { get; set; } = true;
     public override string Name => "Modules";
-
-    Module? currentModule = null;
-
-    Game _game = null!;
 
     public override void Initialize(Game game)
     {
@@ -42,7 +40,7 @@ public class ModuleWindow : Window
             table.Add(
                 "Directory",
                 new LinkComponent(currentModule.AbsoluteDirectory)
-                .OnClick(() => FileSystemUtils.OpenDirectory(currentModule.AbsoluteDirectory))
+                    .OnClick(() => FileSystemUtils.OpenDirectory(currentModule.AbsoluteDirectory))
             );
             table.Add("Resources", string.Join('\n', currentModule.Storages.Select(x => x.Key)));
             table.Add("Total resources", currentModule.Storages.Sum(s => s.Value.Count));
@@ -56,10 +54,7 @@ public class ModuleWindow : Window
                 if (identifier == Identifier.MainModule)
                     identifier += " (Built-in)";
 
-                if (ImGui.Selectable(identifier, currentModule == module))
-                {
-                    currentModule = module;
-                }
+                if (ImGui.Selectable(identifier, currentModule == module)) currentModule = module;
             }
         }
     }

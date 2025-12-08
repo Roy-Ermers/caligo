@@ -7,8 +7,8 @@ namespace Caligo.Core.Generators.Features;
 
 public abstract class Feature(Random random) : IBvhItem
 {
-    public BoundingBox BoundingBox { get; init; }
     protected Random Random = random;
+    public BoundingBox BoundingBox { get; init; }
 
     public abstract ushort GetBlock(WorldPosition position);
 }

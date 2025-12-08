@@ -24,11 +24,6 @@ public class LayerCollection : IList<ILayer>
         _layers.Add(item);
     }
 
-    private bool ValidateLayerType(ILayer item)
-    {
-        return !_layers.Exists(layer => layer.GetType() == item.GetType());
-    }
-
     public void Clear()
     {
         _layers.Clear();
@@ -37,17 +32,6 @@ public class LayerCollection : IList<ILayer>
     public bool Contains(ILayer item)
     {
         return _layers.Contains(item);
-    }
-
-    public T GetLayer<T>() where T : ILayer
-    {
-        var layer = _layers.FirstOrDefault(layer => layer is T);
-        if (layer is null)
-        {
-            throw new InvalidOperationException($"Layer of type {typeof(T).Name} not found in the collection.");
-        }
-
-        return (T)layer;
     }
 
     public void CopyTo(ILayer[] array, int arrayIndex)
@@ -87,5 +71,19 @@ public class LayerCollection : IList<ILayer>
                 throw new InvalidOperationException("Layer of this type already exists in the collection.");
             _layers[index] = value;
         }
+    }
+
+    private bool ValidateLayerType(ILayer item)
+    {
+        return !_layers.Exists(layer => layer.GetType() == item.GetType());
+    }
+
+    public T GetLayer<T>() where T : ILayer
+    {
+        var layer = _layers.FirstOrDefault(layer => layer is T);
+        if (layer is null)
+            throw new InvalidOperationException($"Layer of type {typeof(T).Name} not found in the collection.");
+
+        return (T)layer;
     }
 }

@@ -7,5 +7,5 @@ public enum ShaderType
     ComputeShader = 0x91B9,
     GeometryShader = 0x8DD9,
     TessControlShader = 0x8E88,
-    TessEvaluationShader = 0x8E87,
+    TessEvaluationShader = 0x8E87
 }

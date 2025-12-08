@@ -18,7 +18,7 @@ public static class BlockModelExtensions
         MaterialBuffer materialBuffer,
         (short x, short y, short z) offset,
         Atlas atlas
-        )
+    )
     {
         var face = cube.TextureFaces[direction];
 
@@ -31,18 +31,15 @@ public static class BlockModelExtensions
             textureKey = textures[textureKey[1..]];
 
         var textureId = atlas[textureKey];
-        
-        if(textureId == -1) 
-        {
-            throw new Exception($"Texture '{textureKey}' not found in atlas.");
-        }
+
+        if (textureId == -1) throw new Exception($"Texture '{textureKey}' not found in atlas.");
 
         var size = Vector3.Abs(cube.To - cube.From);
         var width = (ushort)size.X;
         var height = (ushort)size.Y;
         var depth = (ushort)size.Z;
 
-        var material = new Material()
+        var material = new Material
         {
             Width = width,
             Height = height,
@@ -50,7 +47,7 @@ public static class BlockModelExtensions
             UV0 = new Vector2(face.Value.UV.X, face.Value.UV.Y),
             UV1 = new Vector2(face.Value.UV.Z, face.Value.UV.W),
             Tint = face.Value.Tint,
-            Shade = face.Value.Shade,
+            Shade = face.Value.Shade
         };
 
 
@@ -91,9 +88,8 @@ public static class BlockModelExtensions
             x += (ushort)from.X;
             y += (ushort)from.Y;
             z += (ushort)from.Z;
-            
+
             material.Width = depth;
-            
         }
         else if (direction == Direction.East)
         {
@@ -102,9 +98,9 @@ public static class BlockModelExtensions
             z += (ushort)(from.Z + depth);
             material.Width = depth;
         }
-        
+
         var materialIndex = materialBuffer.Add(material);
-        
+
 
         var faceRenderData = new BlockFaceRenderData
         {

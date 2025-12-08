@@ -1,5 +1,10 @@
+using System.Drawing;
+using System.Numerics;
 using OpenTK.Graphics.OpenGL;
-using FileSystemWatcher = Caligo.Core.FileSystem.FileSystemWatcher;
+using OpenTK.Mathematics;
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
+using Vector4 = OpenTK.Mathematics.Vector4;
 
 namespace Caligo.Client.Graphics.Shaders;
 
@@ -87,24 +92,21 @@ public abstract class BaseShader
 
     protected abstract void InitializeShaders();
 
-    protected void LoadShader(ShaderType type, string path) => LoadShader(type, path, ProgramHandle);
+    protected void LoadShader(ShaderType type, string path)
+    {
+        LoadShader(type, path, ProgramHandle);
+    }
 
     protected void LoadShader(ShaderType type, string path, int? handle)
     {
         if (!File.Exists(path))
             throw new FileNotFoundException($"Shader file not found: {path}");
 
-        if (!handle.HasValue)
-        {
-            throw new Exception("Shader program not initialized, please call Initialize() first");
-        }
+        if (!handle.HasValue) throw new Exception("Shader program not initialized, please call Initialize() first");
 
         var content = File.ReadAllText(path);
 
-        if (!content.StartsWith("#version"))
-        {
-            content = $"#version {GlslVersion}\n#line 2\n{content}";
-        }
+        if (!content.StartsWith("#version")) content = $"#version {GlslVersion}\n#line 2\n{content}";
 
         var shader = GL.CreateShader((OpenTK.Graphics.OpenGL.ShaderType)type);
         var name = Path.GetFileName(path).Replace('.', ' ');
@@ -135,25 +137,19 @@ public abstract class BaseShader
     private void Link()
     {
         if (!ProgramHandle.HasValue)
-        {
             throw new Exception("Shader program not initialized, please call Initialize() first");
-        }
 
         GL.LinkProgram(ProgramHandle.Value);
         GL.GetProgram(ProgramHandle.Value, GetProgramParameterName.LinkStatus, out var code);
 
         if (code != (int)All.True)
-        {
             throw new Exception($"Error occurred whilst linking Shader: {GL.GetProgramInfoLog(ProgramHandle.Value)}");
-        }
     }
 
     private void UpdateUniforms()
     {
         if (!ProgramHandle.HasValue)
-        {
             throw new Exception("Shader program not initialized, please call Initialize() first");
-        }
 
         _uniforms.Clear();
 
@@ -185,10 +181,10 @@ public abstract class BaseShader
                     SetVector3(name, (OpenTK.Mathematics.Vector3)value);
                     break;
                 case ActiveUniformType.FloatVec4:
-                    SetVector4(name, (OpenTK.Mathematics.Vector4)value);
+                    SetVector4(name, (Vector4)value);
                     break;
                 case ActiveUniformType.FloatMat4:
-                    SetMatrix4(name, (OpenTK.Mathematics.Matrix4)value);
+                    SetMatrix4(name, (Matrix4)value);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -237,14 +233,26 @@ public abstract class BaseShader
         GL.Uniform1(_uniforms[name].Handle, value);
     }
 
-    public void SetInt(string name, int value) => SetUniform1(ActiveUniformType.Int, name, value);
+    public void SetInt(string name, int value)
+    {
+        SetUniform1(ActiveUniformType.Int, name, value);
+    }
 
-    public void SetFloat(string name, float value) => SetUniform1(ActiveUniformType.Float, name, value);
+    public void SetFloat(string name, float value)
+    {
+        SetUniform1(ActiveUniformType.Float, name, value);
+    }
 
 
-    public void SetVector2(string name, System.Numerics.Vector2 value) => SetVector2(name, value.X, value.Y);
+    public void SetVector2(string name, Vector2 value)
+    {
+        SetVector2(name, value.X, value.Y);
+    }
 
-    public void SetVector2(string name, OpenTK.Mathematics.Vector2 value) => SetVector2(name, value.X, value.Y);
+    public void SetVector2(string name, OpenTK.Mathematics.Vector2 value)
+    {
+        SetVector2(name, value.X, value.Y);
+    }
 
     public void SetVector2(string name, float x, float y)
     {
@@ -262,7 +270,7 @@ public abstract class BaseShader
         GL.Uniform2(uniform.Handle, x, y);
     }
 
-    public void SetVector3(string name, System.Numerics.Vector3 value)
+    public void SetVector3(string name, Vector3 value)
     {
         var openTkVector = new OpenTK.Mathematics.Vector3(value.X, value.Y, value.Z);
         SetVector3(name, openTkVector);
@@ -284,13 +292,13 @@ public abstract class BaseShader
         GL.Uniform3(uniform.Handle, value.X, value.Y, value.Z);
     }
 
-    public void SetColor(string name, System.Drawing.Color color)
+    public void SetColor(string name, Color color)
     {
-        var vec4 = new OpenTK.Mathematics.Vector4(
-          color.R / 255f,
-          color.G / 255f,
-          color.B / 255f,
-          color.A / 255f
+        var vec4 = new Vector4(
+            color.R / 255f,
+            color.G / 255f,
+            color.B / 255f,
+            color.A / 255f
         );
 
         SetVector4(name, vec4);
@@ -298,11 +306,11 @@ public abstract class BaseShader
 
     public void SetVector4(string name, float x, float y, float z, float w)
     {
-        var vec4 = new OpenTK.Mathematics.Vector4(x, y, z, w);
+        var vec4 = new Vector4(x, y, z, w);
         SetVector4(name, vec4);
     }
 
-    public void SetVector4(string name, OpenTK.Mathematics.Vector4 value)
+    public void SetVector4(string name, Vector4 value)
     {
         if (!_uniforms.TryGetValue(name, out var uniform))
             return;
@@ -318,9 +326,9 @@ public abstract class BaseShader
         GL.Uniform4(uniform.Handle, value);
     }
 
-    public void SetMatrix4(string name, System.Numerics.Matrix4x4 value)
+    public void SetMatrix4(string name, Matrix4x4 value)
     {
-        var openTkMatrix = new OpenTK.Mathematics.Matrix4(
+        var openTkMatrix = new Matrix4(
             value.M11, value.M12, value.M13, value.M14,
             value.M21, value.M22, value.M23, value.M24,
             value.M31, value.M32, value.M33, value.M34,
@@ -330,7 +338,7 @@ public abstract class BaseShader
         SetMatrix4(name, openTkMatrix);
     }
 
-    public void SetMatrix4(string name, OpenTK.Mathematics.Matrix4 value)
+    public void SetMatrix4(string name, Matrix4 value)
     {
         if (!_uniforms.TryGetValue(name, out var uniform))
             return;
@@ -352,8 +360,11 @@ public abstract class BaseShader
         GL.BindTexture(TextureTarget.Texture2D, textureHandle);
         SetUniform1(ActiveUniformType.Sampler2D, name, textureUnit);
     }
-    public void SetTextureArray(string name, Texture2DArray textureArray, int unit = 0) =>
+
+    public void SetTextureArray(string name, Texture2DArray textureArray, int unit = 0)
+    {
         SetTextureArray(name, textureArray.Handle, unit);
+    }
 
     public void SetTextureArray(string name, int handle, int unit = 0)
     {

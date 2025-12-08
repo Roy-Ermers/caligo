@@ -8,10 +8,7 @@ public static class FileSystemUtils
     {
         path = path.Replace('/', Path.DirectorySeparatorChar);
         // check if file exists
-        if (!File.Exists(path))
-        {
-            throw new System.Exception("File does not exist: " + path);
-        }
+        if (!File.Exists(path)) throw new Exception("File does not exist: " + path);
 
         new Process
         {
@@ -27,10 +24,7 @@ public static class FileSystemUtils
     {
         path = path.Replace('/', Path.DirectorySeparatorChar);
         // check if directory exists
-        if (!Directory.Exists(path))
-        {
-            throw new System.Exception("Directory does not exist: " + path);
-        }
+        if (!Directory.Exists(path)) throw new Exception("Directory does not exist: " + path);
 
         new Process
         {

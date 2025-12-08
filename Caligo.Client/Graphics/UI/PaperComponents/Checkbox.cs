@@ -7,7 +7,7 @@ namespace Caligo.Client.Graphics.UI.PaperComponents;
 
 public static partial class Components
 {
-    private static Dictionary<string, bool> CheckboxValues = [];
+    private static readonly Dictionary<string, bool> CheckboxValues = [];
 
     public static ElementBuilder Checkbox(
         ref bool value,
@@ -37,7 +37,7 @@ public static partial class Components
                 .Enter();
 
             element = renderCheckbox(id, value);
-            Components.Text(label);
+            Text(label);
             return element;
         }
 
@@ -61,11 +61,11 @@ public static partial class Components
             .BackgroundColor(Style.AccentColor)
             .BorderColor(Style.AccentColor)
             .End()
-            .OnClick((_) => { CheckboxValues[id] = !value; });
+            .OnClick(_ => { CheckboxValues[id] = !value; });
 
         var disposable = element.Enter();
         if (value)
-            Components.Icon(PaperIcon.Check, 18);
+            Icon(PaperIcon.Check, 18);
         disposable.Dispose();
 
         return element;

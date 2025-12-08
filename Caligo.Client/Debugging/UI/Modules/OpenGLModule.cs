@@ -6,27 +6,27 @@ namespace Caligo.Client.Debugging.UI.Modules;
 
 public class OpenGLDebugModule : IDebugModule
 {
-    public bool Enabled { get; set; }
-
-    public string Name => "OpenGL";
-
-    public char? Icon => PaperIcon.Sdk;
-
     private readonly string[] SupportedExtensions;
     private string search = "";
 
     public OpenGLDebugModule()
     {
         var supportedExtensions = new List<string>();
-        int count = GL.GetInteger(GetPName.NumExtensions);
-        for (int i = 0; i < count; i++)
+        var count = GL.GetInteger(GetPName.NumExtensions);
+        for (var i = 0; i < count; i++)
         {
-            string extension = GL.GetString(StringNameIndexed.Extensions, i);
+            var extension = GL.GetString(StringNameIndexed.Extensions, i);
             supportedExtensions.Add(extension);
         }
 
         SupportedExtensions = [.. supportedExtensions];
     }
+
+    public bool Enabled { get; set; }
+
+    public string Name => "OpenGL";
+
+    public char? Icon => PaperIcon.Sdk;
 
     public void Render()
     {
@@ -36,8 +36,10 @@ public class OpenGLDebugModule : IDebugModule
             GL.NV.GetInteger((All)0x9048, out long total);
             GL.NV.GetInteger((All)0x9049, out long current);
 
-            Components.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' + ByteSizeFormatter.FormatByteSize(total));
+            Components.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' +
+                            ByteSizeFormatter.FormatByteSize(total));
         }
+
         Components.Text("Version: " + GL.GetString(StringName.Version));
         Components.Text($"Vendor: {vendor}");
         Components.Text("Renderer: " + GL.GetString(StringName.Renderer));

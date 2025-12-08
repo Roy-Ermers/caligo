@@ -4,8 +4,6 @@ public class FileSystemWatcher
 {
     private readonly System.IO.FileSystemWatcher _watcher;
 
-    public event FileSystemEventHandler Changed = delegate { };
-
     public FileSystemWatcher(string path, NotifyFilters notifyfilter, string filter = "*")
     {
         _watcher = new System.IO.FileSystemWatcher(path)
@@ -21,4 +19,6 @@ public class FileSystemWatcher
         //
         // _watcher.EnableRaisingEvents = true;
     }
+
+    public event FileSystemEventHandler Changed = delegate { };
 }

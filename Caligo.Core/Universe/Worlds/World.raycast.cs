@@ -7,8 +7,8 @@ namespace Caligo.Core.Universe.Worlds;
 public partial class World
 {
     /// <summary>
-    /// Cast a ray into the world and returns the first block hit within the max distance.
-    /// uses DDA algorithm for raycasting.
+    ///     Cast a ray into the world and returns the first block hit within the max distance.
+    ///     uses DDA algorithm for raycasting.
     /// </summary>
     /// <param name="ray">The ray to cast</param>
     /// <param name="maxDistance">The max distance to travel until to give up.</param>
@@ -45,7 +45,7 @@ public partial class World
 
         if (TryGetBlock(position, out var blockId))
         {
-            hitInfo = new RaycastHit()
+            hitInfo = new RaycastHit
             {
                 HitPoint = position,
                 BlockId = blockId,
@@ -87,10 +87,7 @@ public partial class World
                 normalZ = -stepZ;
             }
 
-            if (currentT >= maxDistance)
-            {
-                break;
-            }
+            if (currentT >= maxDistance) break;
 
             position = new WorldPosition(
                 (int)MathF.Floor(positionX),
@@ -100,7 +97,7 @@ public partial class World
 
             if (!TryGetBlock(position, out var block)) continue;
 
-            hitInfo = new RaycastHit()
+            hitInfo = new RaycastHit
             {
                 BlockId = block,
                 Position = position,

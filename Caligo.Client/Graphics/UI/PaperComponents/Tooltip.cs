@@ -4,7 +4,7 @@ using Prowl.PaperUI.LayoutEngine;
 
 namespace Caligo.Client.Graphics.UI.PaperComponents;
 
-record struct CurrentTooltip(
+internal record struct CurrentTooltip(
     ulong Id,
     double X,
     double Y,
@@ -13,13 +13,13 @@ record struct CurrentTooltip(
 
 public static partial class Components
 {
-    private static CurrentTooltip? currentTooltip = null;
-    private static bool ShowTooltip = false;
+    private static CurrentTooltip? currentTooltip;
+    private static bool ShowTooltip;
 
     public static void Tooltip(ElementBuilder element, Action content)
     {
         element.OnHover(e => OnHover(e, content))
-        .OnFocusChange(e => OnFocus(e, content));
+            .OnFocusChange(e => OnFocus(e, content));
     }
 
     private static void OnHover(ElementEvent e, Action content)
@@ -42,19 +42,19 @@ public static partial class Components
     public static void RenderTooltip()
     {
         using var tooltip = Paper.Box("tooltip")
-        .Layer(Layer.Overlay)
-        .PositionType(PositionType.SelfDirected)
-        .Position(Math.Round(currentTooltip?.X ?? 0) + 16, Math.Round(currentTooltip?.Y ?? 0) - 8)
-        .Width(UnitValue.Auto)
-        .Height(UnitValue.Auto)
-        .Rounded(1)
-        .BackgroundColor(Style.FrameBackground)
-        .IsNotInteractable()
-        .IsNotFocusable()
-        .BorderWidth(16)
-        .BorderColor(Style.FrameBackground)
-        .Visible(ShowTooltip)
-        .Enter();
+            .Layer(Layer.Overlay)
+            .PositionType(PositionType.SelfDirected)
+            .Position(Math.Round(currentTooltip?.X ?? 0) + 16, Math.Round(currentTooltip?.Y ?? 0) - 8)
+            .Width(UnitValue.Auto)
+            .Height(UnitValue.Auto)
+            .Rounded(1)
+            .BackgroundColor(Style.FrameBackground)
+            .IsNotInteractable()
+            .IsNotFocusable()
+            .BorderWidth(16)
+            .BorderColor(Style.FrameBackground)
+            .Visible(ShowTooltip)
+            .Enter();
 
         currentTooltip?.Content();
 

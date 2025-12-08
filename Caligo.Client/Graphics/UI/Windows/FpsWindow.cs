@@ -7,14 +7,13 @@ namespace Caligo.Client.Graphics.UI.Windows;
 
 public class FpsWindow : Window
 {
+    private readonly Memory<float> _fps = new float[100];
+    private readonly PolygonMode[] _polygonModes = [PolygonMode.Fill, PolygonMode.Line, PolygonMode.Point];
+
+    private int _polygonModeIndex;
     public override string Name => "Stats";
     public override ImGuiWindowFlags Flags => ImGuiWindowFlags.NoResize;
     public override bool Enabled { get; set; } = true;
-
-    int _polygonModeIndex = 0;
-    private readonly PolygonMode[] _polygonModes = [PolygonMode.Fill, PolygonMode.Line, PolygonMode.Point];
-
-    private readonly Memory<float> _fps = new float[100];
 
     public override void Draw(double deltaTime)
     {
@@ -27,10 +26,7 @@ public class FpsWindow : Window
         {
             ImGui.PlotLines("##", ref _fps.Span[0], _fps.Length, 0, "##", 0, 3000, new Vector2(0, 100));
 
-            for (var i = 0; i < _fps.Length - 1; i++)
-            {
-                _fps.Span[i] = _fps.Span[i + 1];
-            }
+            for (var i = 0; i < _fps.Length - 1; i++) _fps.Span[i] = _fps.Span[i + 1];
 
             _fps.Span[^1] = (float)(1 / deltaTime);
         }
@@ -42,7 +38,8 @@ public class FpsWindow : Window
             GL.GetInteger((GetPName)0x9048, out var total);
             GL.GetInteger((GetPName)0x9049, out var current);
 
-            ImGui.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' + ByteSizeFormatter.FormatByteSize(total));
+            ImGui.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' +
+                       ByteSizeFormatter.FormatByteSize(total));
         }
 
         if (ImGui.CollapsingHeader("OpenGL Info"))
@@ -56,7 +53,8 @@ public class FpsWindow : Window
         if (ImGui.CollapsingHeader("Garbage Collection"))
         {
             ImGui.Text("Total Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetTotalMemory(false)));
-            ImGui.Text("Max Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
+            ImGui.Text(
+                "Max Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
             ImGui.Text("0: " + GC.CollectionCount(0));
             ImGui.Text("1: " + GC.CollectionCount(1));
             ImGui.Text("2: " + GC.CollectionCount(2));
@@ -64,9 +62,8 @@ public class FpsWindow : Window
 
         ImGui.Text("Polygon mode: " + _polygonModeIndex);
 
-        if (ImGui.Combo("Polygon mode", ref _polygonModeIndex, [.. _polygonModes.Select(m => m.ToString())], _polygonModes.Length))
-        {
-            GL.PolygonMode(TriangleFace.FrontAndBack, (2 - _polygonModeIndex) + PolygonMode.Point);
-        }
+        if (ImGui.Combo("Polygon mode", ref _polygonModeIndex, [.. _polygonModes.Select(m => m.ToString())],
+                _polygonModes.Length))
+            GL.PolygonMode(TriangleFace.FrontAndBack, 2 - _polygonModeIndex + PolygonMode.Point);
     }
 }

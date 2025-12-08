@@ -1,47 +1,48 @@
 using System.Drawing;
 using Caligo.Client.Graphics.Shaders;
 using Caligo.Core.FileSystem;
-using Caligo.Core.ModuleSystem;
 using Caligo.ModuleSystem;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using Prowl.PaperUI;
 using Prowl.PaperUI.Events;
 using Prowl.Quill;
 using Prowl.Scribe;
 using Prowl.Vector;
+using Vector4 = OpenTK.Mathematics.Vector4;
+
 namespace Caligo.Client.Graphics.UI;
 
-using Matrix4x4 = Prowl.Vector.Matrix4x4;
+using Matrix4x4 = Matrix4x4;
 
-internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
+internal class PaperRenderer : ICanvasRenderer
 {
-    public static PaperRenderer Current { private set; get; } = null!;
-
-    public Paper Paper { private set; get; }
-
-    public UiStyle Style;
+    private readonly Texture2D _defaultTexture;
+    private readonly int _elementBufferObject;
 
     private readonly RenderShader _shader;
-    public FontFile Font = null!;
-    public FontFile MonospaceFont = null!;
-    public FontFile IconFont = null!;
 
     // OpenGL objects
     private readonly int _vertexArrayObject;
     private readonly int _vertexBufferObject;
-    private readonly int _elementBufferObject;
-
-    private Matrix4 _projection;
-    private readonly Texture2D _defaultTexture;
 
     private readonly NativeWindow _window;
 
+    private bool _cursorSet;
+
+    private Matrix4 _projection;
+    public FontFile Font = null!;
+    public FontFile IconFont = null!;
+    public FontFile MonospaceFont = null!;
+
     public Action OnFrameEnd = () => { };
     public Action OnFrameStart = () => { };
+
+    public UiStyle Style;
 
     public PaperRenderer(NativeWindow window)
     {
@@ -77,7 +78,7 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
             _cursorSet = false;
         };
 
-        window.Resize += (e) => UpdateProjection(e.Width, e.Height);
+        window.Resize += e => UpdateProjection(e.Width, e.Height);
         window.MouseDown += OnMouseDown;
         window.MouseUp += OnMouseUp;
         window.MouseMove += OnMouseMove;
@@ -87,86 +88,9 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
         window.TextInput += OnTextInput;
     }
 
-    public void ReadConfig()
-    {
-        var config = ModuleRepository.Current.GetAll<string>("Config");
-        var font = ModuleRepository.Current.Get<Font>(config["ui.font"]);
-        var monospaceFont = ModuleRepository.Current.Get<Font>(config["ui.monospaceFont"]);
-        var iconFont = ModuleRepository.Current.Get<Font>(config["ui.iconFont"]);
+    public static PaperRenderer Current { private set; get; } = null!;
 
-        Font = new FontFile(font.FilePath);
-        MonospaceFont = new FontFile(monospaceFont.FilePath);
-        IconFont = new FontFile(iconFont.FilePath);
-
-        Paper.AddFallbackFont(IconFont);
-
-        Style = UiStyle.FromConfig(config);
-    }
-
-    public PaperUiFrame Start(double time)
-    {
-        return new PaperUiFrame(Paper, Font, time);
-    }
-
-    private void OnMouseDown(MouseButtonEventArgs e)
-    {
-        PaperMouseBtn button = TranslateMouseButton(e.Button);
-        Paper.SetPointerState(button, _window.MouseState.X, _window.MouseState.Y, true, false);
-    }
-
-    private void OnMouseUp(MouseButtonEventArgs e)
-    {
-        PaperMouseBtn button = TranslateMouseButton(e.Button);
-        Paper.SetPointerState(button, _window.MouseState.X, _window.MouseState.Y, false, false);
-    }
-    private void OnMouseMove(MouseMoveEventArgs _)
-    {
-        Paper.SetPointerState(PaperMouseBtn.Unknown, _window.MouseState.X, _window.MouseState.Y, false, true);
-    }
-
-    private void OnMouseWheel(MouseWheelEventArgs e)
-    {
-        Paper.SetPointerWheel(e.OffsetY);
-    }
-
-    private void OnKeyDown(KeyboardKeyEventArgs e)
-    {
-        Paper.SetKeyState(TranslateKey(e.Key), true);
-    }
-
-    private void OnKeyUp(KeyboardKeyEventArgs e)
-    {
-        Paper.SetKeyState(TranslateKey(e.Key), false);
-    }
-
-    private void OnTextInput(TextInputEventArgs e)
-    {
-        Paper.AddInputCharacter(e.AsString);
-    }
-
-    /// <summary>
-    /// Update the projection matrix when the window is resized
-    /// </summary>
-    public void UpdateProjection(int width, int height)
-    {
-        Paper.SetResolution(width, height);
-        _projection = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1);
-    }
-
-    private static Matrix4 ToTK(Matrix4x4 mat) => new(
-        (float)mat.M11, (float)mat.M12, (float)mat.M13, (float)mat.M14,
-        (float)mat.M21, (float)mat.M22, (float)mat.M23, (float)mat.M24,
-        (float)mat.M31, (float)mat.M32, (float)mat.M33, (float)mat.M34,
-        (float)mat.M41, (float)mat.M42, (float)mat.M43, (float)mat.M44
-    );
-
-    private static OpenTK.Mathematics.Vector4 ToTK(Prowl.Vector.Vector4 v) => new(
-        (float)v.x, (float)v.y, (float)v.z, (float)v.w
-    );
-
-    private static OpenTK.Mathematics.Vector4 ToTK(Color color) => new(
-        color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f
-    );
+    public Paper Paper { get; }
 
     public object CreateTexture(uint width, uint height)
     {
@@ -216,7 +140,8 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
 
         // Upload vertex data
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-        GL.BufferData(BufferTarget.ArrayBuffer, canvas.Vertices.Count * Vertex.SizeInBytes, canvas.Vertices.ToArray(), BufferUsageHint.StreamDraw);
+        GL.BufferData(BufferTarget.ArrayBuffer, canvas.Vertices.Count * Vertex.SizeInBytes, canvas.Vertices.ToArray(),
+            BufferUsageHint.StreamDraw);
 
         // Set up vertex attributes
         // Position attribute
@@ -233,14 +158,15 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
 
         // Upload index data
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-        GL.BufferData(BufferTarget.ElementArrayBuffer, canvas.Indices.Count * sizeof(uint), canvas.Indices.ToArray(), BufferUsageHint.StreamDraw);
+        GL.BufferData(BufferTarget.ElementArrayBuffer, canvas.Indices.Count * sizeof(uint), canvas.Indices.ToArray(),
+            BufferUsageHint.StreamDraw);
 
         // Active texture unit for sampling
         GL.ActiveTexture(TextureUnit.Texture0);
         _shader.SetTexture2D("texture0", 0, 0);
 
         // Draw all draw calls in the canvas
-        int indexOffset = 0;
+        var indexOffset = 0;
         foreach (var drawCall in drawCalls)
         {
             // Handle texture binding
@@ -258,10 +184,12 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
             _shader.SetInt("brushType", (int)drawCall.Brush.Type);
             _shader.SetColor("brushColor1", drawCall.Brush.Color1);
             _shader.SetColor("brushColor2", drawCall.Brush.Color2);
-            _shader.SetVector4("brushParams", (float)drawCall.Brush.Point1.x, (float)drawCall.Brush.Point1.y, (float)drawCall.Brush.Point2.x, (float)drawCall.Brush.Point2.y);
+            _shader.SetVector4("brushParams", (float)drawCall.Brush.Point1.x, (float)drawCall.Brush.Point1.y,
+                (float)drawCall.Brush.Point2.x, (float)drawCall.Brush.Point2.y);
             _shader.SetVector2("brushParams2", (float)drawCall.Brush.CornerRadii, (float)drawCall.Brush.Feather);
 
-            GL.DrawElements(PrimitiveType.Triangles, drawCall.ElementCount, DrawElementsType.UnsignedInt, indexOffset * sizeof(uint));
+            GL.DrawElements(PrimitiveType.Triangles, drawCall.ElementCount, DrawElementsType.UnsignedInt,
+                indexOffset * sizeof(uint));
             indexOffset += drawCall.ElementCount;
         }
 
@@ -282,7 +210,97 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
         _defaultTexture?.Dispose();
     }
 
-    bool _cursorSet = false;
+    public void ReadConfig()
+    {
+        var config = ModuleRepository.Current.GetAll<string>("Config");
+        var font = ModuleRepository.Current.Get<Font>(config["ui.font"]);
+        var monospaceFont = ModuleRepository.Current.Get<Font>(config["ui.monospaceFont"]);
+        var iconFont = ModuleRepository.Current.Get<Font>(config["ui.iconFont"]);
+
+        Font = new FontFile(font.FilePath);
+        MonospaceFont = new FontFile(monospaceFont.FilePath);
+        IconFont = new FontFile(iconFont.FilePath);
+
+        Paper.AddFallbackFont(IconFont);
+
+        Style = UiStyle.FromConfig(config);
+    }
+
+    public PaperUiFrame Start(double time)
+    {
+        return new PaperUiFrame(Paper, Font, time);
+    }
+
+    private void OnMouseDown(MouseButtonEventArgs e)
+    {
+        var button = TranslateMouseButton(e.Button);
+        Paper.SetPointerState(button, _window.MouseState.X, _window.MouseState.Y, true, false);
+    }
+
+    private void OnMouseUp(MouseButtonEventArgs e)
+    {
+        var button = TranslateMouseButton(e.Button);
+        Paper.SetPointerState(button, _window.MouseState.X, _window.MouseState.Y, false, false);
+    }
+
+    private void OnMouseMove(MouseMoveEventArgs _)
+    {
+        Paper.SetPointerState(PaperMouseBtn.Unknown, _window.MouseState.X, _window.MouseState.Y, false, true);
+    }
+
+    private void OnMouseWheel(MouseWheelEventArgs e)
+    {
+        Paper.SetPointerWheel(e.OffsetY);
+    }
+
+    private void OnKeyDown(KeyboardKeyEventArgs e)
+    {
+        Paper.SetKeyState(TranslateKey(e.Key), true);
+    }
+
+    private void OnKeyUp(KeyboardKeyEventArgs e)
+    {
+        Paper.SetKeyState(TranslateKey(e.Key), false);
+    }
+
+    private void OnTextInput(TextInputEventArgs e)
+    {
+        Paper.AddInputCharacter(e.AsString);
+    }
+
+    /// <summary>
+    ///     Update the projection matrix when the window is resized
+    /// </summary>
+    public void UpdateProjection(int width, int height)
+    {
+        Paper.SetResolution(width, height);
+        _projection = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1);
+    }
+
+    private static Matrix4 ToTK(Matrix4x4 mat)
+    {
+        return new Matrix4(
+            (float)mat.M11, (float)mat.M12, (float)mat.M13, (float)mat.M14,
+            (float)mat.M21, (float)mat.M22, (float)mat.M23, (float)mat.M24,
+            (float)mat.M31, (float)mat.M32, (float)mat.M33, (float)mat.M34,
+            (float)mat.M41, (float)mat.M42, (float)mat.M43, (float)mat.M44
+        );
+    }
+
+    private static Vector4 ToTK(Prowl.Vector.Vector4 v)
+    {
+        return new Vector4(
+            (float)v.x, (float)v.y, (float)v.z, (float)v.w
+        );
+    }
+
+    private static Vector4 ToTK(Color color)
+    {
+        return new Vector4(
+            color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f
+        );
+    }
+
     public void SetCursor(MouseCursor? cursor = null)
     {
         _cursorSet = cursor is not null;
@@ -290,137 +308,137 @@ internal class PaperRenderer : Prowl.Quill.ICanvasRenderer
         _window.Cursor = cursor ?? MouseCursor.Default;
     }
 
-    private PaperMouseBtn TranslateMouseButton(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton button)
+    private PaperMouseBtn TranslateMouseButton(MouseButton button)
     {
         return button switch
         {
-            OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Left => PaperMouseBtn.Left,
-            OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right => PaperMouseBtn.Right,
-            OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Middle => PaperMouseBtn.Middle,
+            MouseButton.Left => PaperMouseBtn.Left,
+            MouseButton.Right => PaperMouseBtn.Right,
+            MouseButton.Middle => PaperMouseBtn.Middle,
             _ => PaperMouseBtn.Unknown
         };
     }
 
-    public PaperKey TranslateKey(OpenTK.Windowing.GraphicsLibraryFramework.Keys tk)
+    public PaperKey TranslateKey(Keys tk)
     {
         return tk switch
         {
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Unknown => PaperKey.Unknown,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space => PaperKey.Space,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Apostrophe => PaperKey.Apostrophe,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Comma => PaperKey.Comma,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Minus => PaperKey.Minus,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Period => PaperKey.Period,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Slash => PaperKey.Slash,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D0 => PaperKey.Num0,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D1 => PaperKey.Num1,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D2 => PaperKey.Num2,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D3 => PaperKey.Num3,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D4 => PaperKey.Num4,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D5 => PaperKey.Num5,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D6 => PaperKey.Num6,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D7 => PaperKey.Num7,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D8 => PaperKey.Num8,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D9 => PaperKey.Num9,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Semicolon => PaperKey.Semicolon,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Equal => PaperKey.Equals,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.A => PaperKey.A,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.B => PaperKey.B,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.C => PaperKey.C,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.D => PaperKey.D,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.E => PaperKey.E,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F => PaperKey.F,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.G => PaperKey.G,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.H => PaperKey.H,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.I => PaperKey.I,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.J => PaperKey.J,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.K => PaperKey.K,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.L => PaperKey.L,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.M => PaperKey.M,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.N => PaperKey.N,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.O => PaperKey.O,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.P => PaperKey.P,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Q => PaperKey.Q,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.R => PaperKey.R,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.S => PaperKey.S,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.T => PaperKey.T,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.U => PaperKey.U,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.V => PaperKey.V,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.W => PaperKey.W,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.X => PaperKey.X,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Y => PaperKey.Y,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Z => PaperKey.Z,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftBracket => PaperKey.LeftBracket,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Backslash => PaperKey.Backslash,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightBracket => PaperKey.RightBracket,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.GraveAccent => PaperKey.Grave,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Escape => PaperKey.Escape,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Enter => PaperKey.Enter,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Tab => PaperKey.Tab,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Backspace => PaperKey.Backspace,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Insert => PaperKey.Insert,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete => PaperKey.Delete,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Right => PaperKey.Right,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Left => PaperKey.Left,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Down => PaperKey.Down,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Up => PaperKey.Up,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.PageUp => PaperKey.PageUp,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.PageDown => PaperKey.PageDown,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Home => PaperKey.Home,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.End => PaperKey.End,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.CapsLock => PaperKey.CapsLock,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.ScrollLock => PaperKey.ScrollLock,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.NumLock => PaperKey.NumLock,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.PrintScreen => PaperKey.PrintScreen,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Pause => PaperKey.Pause,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F1 => PaperKey.F1,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F2 => PaperKey.F2,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F3 => PaperKey.F3,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F4 => PaperKey.F4,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F5 => PaperKey.F5,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F6 => PaperKey.F6,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F7 => PaperKey.F7,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F8 => PaperKey.F8,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F9 => PaperKey.F9,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F10 => PaperKey.F10,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F11 => PaperKey.F11,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.F12 => PaperKey.F12,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad0 => PaperKey.Keypad0,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad1 => PaperKey.Keypad1,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad2 => PaperKey.Keypad2,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad3 => PaperKey.Keypad3,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad4 => PaperKey.Keypad4,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad5 => PaperKey.Keypad5,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad6 => PaperKey.Keypad6,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad7 => PaperKey.Keypad7,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad8 => PaperKey.Keypad8,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPad9 => PaperKey.Keypad9,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadDecimal => PaperKey.KeypadDecimal,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadDivide => PaperKey.KeypadDivide,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadMultiply => PaperKey.KeypadMultiply,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadSubtract => PaperKey.KeypadMinus,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadAdd => PaperKey.KeypadPlus,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadEnter => PaperKey.KeypadEnter,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.KeyPadEqual => PaperKey.KeypadEquals,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftShift => PaperKey.LeftShift,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftControl => PaperKey.LeftControl,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt => PaperKey.LeftAlt,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftSuper => PaperKey.LeftSuper,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightShift => PaperKey.RightShift,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightControl => PaperKey.RightControl,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt => PaperKey.RightAlt,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightSuper => PaperKey.RightSuper,
-            OpenTK.Windowing.GraphicsLibraryFramework.Keys.Menu => PaperKey.Menu,
+            Keys.Unknown => PaperKey.Unknown,
+            Keys.Space => PaperKey.Space,
+            Keys.Apostrophe => PaperKey.Apostrophe,
+            Keys.Comma => PaperKey.Comma,
+            Keys.Minus => PaperKey.Minus,
+            Keys.Period => PaperKey.Period,
+            Keys.Slash => PaperKey.Slash,
+            Keys.D0 => PaperKey.Num0,
+            Keys.D1 => PaperKey.Num1,
+            Keys.D2 => PaperKey.Num2,
+            Keys.D3 => PaperKey.Num3,
+            Keys.D4 => PaperKey.Num4,
+            Keys.D5 => PaperKey.Num5,
+            Keys.D6 => PaperKey.Num6,
+            Keys.D7 => PaperKey.Num7,
+            Keys.D8 => PaperKey.Num8,
+            Keys.D9 => PaperKey.Num9,
+            Keys.Semicolon => PaperKey.Semicolon,
+            Keys.Equal => PaperKey.Equals,
+            Keys.A => PaperKey.A,
+            Keys.B => PaperKey.B,
+            Keys.C => PaperKey.C,
+            Keys.D => PaperKey.D,
+            Keys.E => PaperKey.E,
+            Keys.F => PaperKey.F,
+            Keys.G => PaperKey.G,
+            Keys.H => PaperKey.H,
+            Keys.I => PaperKey.I,
+            Keys.J => PaperKey.J,
+            Keys.K => PaperKey.K,
+            Keys.L => PaperKey.L,
+            Keys.M => PaperKey.M,
+            Keys.N => PaperKey.N,
+            Keys.O => PaperKey.O,
+            Keys.P => PaperKey.P,
+            Keys.Q => PaperKey.Q,
+            Keys.R => PaperKey.R,
+            Keys.S => PaperKey.S,
+            Keys.T => PaperKey.T,
+            Keys.U => PaperKey.U,
+            Keys.V => PaperKey.V,
+            Keys.W => PaperKey.W,
+            Keys.X => PaperKey.X,
+            Keys.Y => PaperKey.Y,
+            Keys.Z => PaperKey.Z,
+            Keys.LeftBracket => PaperKey.LeftBracket,
+            Keys.Backslash => PaperKey.Backslash,
+            Keys.RightBracket => PaperKey.RightBracket,
+            Keys.GraveAccent => PaperKey.Grave,
+            Keys.Escape => PaperKey.Escape,
+            Keys.Enter => PaperKey.Enter,
+            Keys.Tab => PaperKey.Tab,
+            Keys.Backspace => PaperKey.Backspace,
+            Keys.Insert => PaperKey.Insert,
+            Keys.Delete => PaperKey.Delete,
+            Keys.Right => PaperKey.Right,
+            Keys.Left => PaperKey.Left,
+            Keys.Down => PaperKey.Down,
+            Keys.Up => PaperKey.Up,
+            Keys.PageUp => PaperKey.PageUp,
+            Keys.PageDown => PaperKey.PageDown,
+            Keys.Home => PaperKey.Home,
+            Keys.End => PaperKey.End,
+            Keys.CapsLock => PaperKey.CapsLock,
+            Keys.ScrollLock => PaperKey.ScrollLock,
+            Keys.NumLock => PaperKey.NumLock,
+            Keys.PrintScreen => PaperKey.PrintScreen,
+            Keys.Pause => PaperKey.Pause,
+            Keys.F1 => PaperKey.F1,
+            Keys.F2 => PaperKey.F2,
+            Keys.F3 => PaperKey.F3,
+            Keys.F4 => PaperKey.F4,
+            Keys.F5 => PaperKey.F5,
+            Keys.F6 => PaperKey.F6,
+            Keys.F7 => PaperKey.F7,
+            Keys.F8 => PaperKey.F8,
+            Keys.F9 => PaperKey.F9,
+            Keys.F10 => PaperKey.F10,
+            Keys.F11 => PaperKey.F11,
+            Keys.F12 => PaperKey.F12,
+            Keys.KeyPad0 => PaperKey.Keypad0,
+            Keys.KeyPad1 => PaperKey.Keypad1,
+            Keys.KeyPad2 => PaperKey.Keypad2,
+            Keys.KeyPad3 => PaperKey.Keypad3,
+            Keys.KeyPad4 => PaperKey.Keypad4,
+            Keys.KeyPad5 => PaperKey.Keypad5,
+            Keys.KeyPad6 => PaperKey.Keypad6,
+            Keys.KeyPad7 => PaperKey.Keypad7,
+            Keys.KeyPad8 => PaperKey.Keypad8,
+            Keys.KeyPad9 => PaperKey.Keypad9,
+            Keys.KeyPadDecimal => PaperKey.KeypadDecimal,
+            Keys.KeyPadDivide => PaperKey.KeypadDivide,
+            Keys.KeyPadMultiply => PaperKey.KeypadMultiply,
+            Keys.KeyPadSubtract => PaperKey.KeypadMinus,
+            Keys.KeyPadAdd => PaperKey.KeypadPlus,
+            Keys.KeyPadEnter => PaperKey.KeypadEnter,
+            Keys.KeyPadEqual => PaperKey.KeypadEquals,
+            Keys.LeftShift => PaperKey.LeftShift,
+            Keys.LeftControl => PaperKey.LeftControl,
+            Keys.LeftAlt => PaperKey.LeftAlt,
+            Keys.LeftSuper => PaperKey.LeftSuper,
+            Keys.RightShift => PaperKey.RightShift,
+            Keys.RightControl => PaperKey.RightControl,
+            Keys.RightAlt => PaperKey.RightAlt,
+            Keys.RightSuper => PaperKey.RightSuper,
+            Keys.Menu => PaperKey.Menu,
             _ => PaperKey.Unknown
         };
     }
 }
 
-
 public ref struct PaperUiFrame : IDisposable
 {
     public readonly Paper Paper;
     public readonly FontFile Font;
+
     public PaperUiFrame(Paper _paper, FontFile font, double time)
     {
         Paper = _paper;
@@ -431,15 +449,16 @@ public ref struct PaperUiFrame : IDisposable
 
     public readonly void Dispose()
     {
-
         var focusedId = Paper.FocusedElementId;
         if (Paper.IsKeyPressed(PaperKey.Space) && Paper.IsElementFocused(focusedId))
         {
             var element = Paper.FindElementByID(focusedId);
 
             if (element.IsValid)
-                element.Data.OnPress?.Invoke(new ClickEvent(element, element.Data.LayoutRect, Paper.PointerPos, PaperMouseBtn.Left));
+                element.Data.OnPress?.Invoke(new ClickEvent(element, element.Data.LayoutRect, Paper.PointerPos,
+                    PaperMouseBtn.Left));
         }
+
         PaperRenderer.Current.OnFrameEnd();
         Paper.EndFrame();
     }

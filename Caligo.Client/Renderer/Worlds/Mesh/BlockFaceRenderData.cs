@@ -6,58 +6,61 @@ namespace Caligo.Client.Renderer.Worlds.Mesh;
 public record struct BlockFaceRenderData
 {
     public const int Size = 2;
+
     /// <summary>
-    /// The normal direction of the face.
+    ///     The light value of the face.
     /// </summary>
     /// <remarks>
-    /// Excluded from encoding.
+    ///     The light value is a vector with 4 components:
+    ///     - X: Red light value (0-15)
+    ///     - Y: Green light value (0-15)
+    ///     - Z: Blue light value (0-15)
+    ///     - W: Alpha value (0-15)
+    ///     </summary>
+    public Vector4 Light;
+
+    /// <summary>
+    ///     The material ID of the face.
+    /// </summary>
+    /// <remarks>
+    ///     The material ID is an index into a material buffer, which contains the texture and properties of the face.
+    /// </remarks>
+    /// <remarks>
+    ///     Can contain values from 0 to 65535 (0xFFFF).
+    /// </remarks>
+    public int MaterialId;
+
+    /// <summary>
+    ///     The normal direction of the face.
+    /// </summary>
+    /// <remarks>
+    ///     Excluded from encoding.
     /// </remarks>
     public Direction Normal;
 
     /// <summary>
-    /// The face position in the chunk.
+    ///     The face position in the chunk.
     /// </summary>
     /// <remarks>
-    /// ranges from 0 to 255
+    ///     ranges from 0 to 255
     /// </remarks>
     public ushort X;
+
     /// <summary>
-    /// The face position in the chunk.
+    ///     The face position in the chunk.
     /// </summary>
     /// <remarks>
-    /// ranges from 0 to 255
+    ///     ranges from 0 to 255
     /// </remarks>
     public ushort Y;
+
     /// <summary>
-    /// The face position in the chunk.
+    ///     The face position in the chunk.
     /// </summary>
     /// <remarks>
-    /// ranges from 0 to 255
+    ///     ranges from 0 to 255
     /// </remarks>
     public ushort Z;
-
-    /// <summary>
-    /// The light value of the face.
-    /// </summary>
-    /// <remarks>
-    /// The light value is a vector with 4 components:
-    /// - X: Red light value (0-15)
-    /// - Y: Green light value (0-15)
-    /// - Z: Blue light value (0-15)
-    /// - W: Alpha value (0-15)
-    /// </summary>
-    public Vector4 Light;
-
-    /// <summary>
-    /// The material ID of the face.
-    /// </summary>
-    /// <remarks>
-    /// The material ID is an index into a material buffer, which contains the texture and properties of the face.
-    /// </remarks>
-    /// <remarks>
-    /// Can contain values from 0 to 65535 (0xFFFF).
-    /// </remarks>
-    public int MaterialId;
 
     public readonly int[] Encode()
     {

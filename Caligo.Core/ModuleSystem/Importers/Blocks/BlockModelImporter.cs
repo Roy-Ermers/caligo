@@ -19,13 +19,13 @@ public class BlockModelImporter : IImporter, IResourceProcessor
         var blockStorage = module.GetStorage<BlockModel>();
 
         foreach (var file in files)
-        {
             try
             {
                 // the relative path without extension is used as the identifier
                 var name = Path.ChangeExtension(Path.GetRelativePath(rootDirectory, file), null);
                 var blockModelName = Identifier.Create(module.Identifier, name);
-                var model = JsonSerializer.Deserialize<BlockModel>(File.ReadAllText(file), JsonOptions.SerializerOptions);
+                var model = JsonSerializer.Deserialize<BlockModel>(File.ReadAllText(file),
+                    JsonOptions.SerializerOptions);
 
                 if (model is null)
                     throw new InvalidOperationException($"Failed to deserialize block model from file: {file}");
@@ -41,7 +41,6 @@ public class BlockModelImporter : IImporter, IResourceProcessor
                 Console.WriteLine($"Error importing block model: {file}");
                 Console.WriteLine(e.Message);
             }
-        }
     }
 
     public void Process(ResourceStorage storage)
@@ -66,10 +65,7 @@ public class BlockModelImporter : IImporter, IResourceProcessor
         }
 
         // Collapse all block models to resolve inheritance
-        foreach (var (_, blockModel) in blockModelStorage)
-        {
-            blockModel.Build();
-        }
+        foreach (var (_, blockModel) in blockModelStorage) blockModel.Build();
 
         Console.WriteLine($"Processed {blockModelStorage.Count} block models.");
     }

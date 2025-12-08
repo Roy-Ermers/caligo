@@ -6,20 +6,20 @@ namespace Caligo.Client.Debugging.UI.Modules;
 
 public class StatsDebugModule : IDebugModule
 {
-    public bool Enabled { get; set; }
-
-    public string Name => "Stats";
-
-    public char? Icon => PaperIcon.AvgPace;
-
     private readonly Memory<float> _fps = new float[100];
     private readonly Game _game;
-    private double _lastTime = 0;
+    private double _lastTime;
 
     public StatsDebugModule(Game game)
     {
         _game = game;
     }
+
+    public bool Enabled { get; set; }
+
+    public string Name => "Stats";
+
+    public char? Icon => PaperIcon.AvgPace;
 
     public void Render()
     {
@@ -39,13 +39,15 @@ public class StatsDebugModule : IDebugModule
             GL.GetInteger((GetPName)0x9048, out var total);
             GL.GetInteger((GetPName)0x9049, out var current);
 
-            Components.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' + ByteSizeFormatter.FormatByteSize(total));
+            Components.Text("GPU Memory: " + ByteSizeFormatter.FormatByteSize(current) + '/' +
+                            ByteSizeFormatter.FormatByteSize(total));
         }
 
         if (Components.Accordion(PaperIcon.DeleteSweep + " Garbage collection"))
         {
             Components.Text("Total Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetTotalMemory(false)));
-            Components.Text("Max Memory: " + ByteSizeFormatter.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
+            Components.Text("Max Memory: " +
+                            ByteSizeFormatter.FormatByteSize(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes));
             Components.Text("0: " + GC.CollectionCount(0));
             Components.Text("1: " + GC.CollectionCount(1));
             Components.Text("2: " + GC.CollectionCount(2));

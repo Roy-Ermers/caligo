@@ -1,8 +1,10 @@
+using OpenTK.Mathematics;
+
 namespace Caligo.Client.Graphics.UI.PaperComponents.fields;
 
 public static partial class FieldComponents
 {
-    public static void Vector2(string name, ref OpenTK.Mathematics.Vector2 value)
+    public static void Vector2(string name, ref Vector2 value)
     {
         using var field = Components.Field(name);
 

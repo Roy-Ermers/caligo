@@ -1,89 +1,79 @@
 namespace Caligo.Core.Utils;
 
-
 public readonly struct ChangedIndex<T> where T : IEquatable<T>
 {
-	public int Index { get; init; }
-	public T Value { get; init; }
+    public int Index { get; init; }
+    public T Value { get; init; }
 }
+
 public class TrackedQueue<T> where T : IEquatable<T>
 {
-	private List<T> items = [];
+    private readonly HashSet<int> _changedIndices = [];
+    private readonly List<T> items = [];
+    private int _head;
 
-	private HashSet<int> _changedIndices = [];
-	private int _head = 0;
-	private bool _isDirty = true;
+    public bool IsDirty { get; set; } = true;
 
-	public void Enqueue(T item)
-	{
-		if (_head < items.Count && items[_head].Equals(item))
-		{
-			_head++;
-			return;
-		}
+    public void Enqueue(T item)
+    {
+        if (_head < items.Count && items[_head].Equals(item))
+        {
+            _head++;
+            return;
+        }
 
-		if (_head < items.Count)
-			items[_head] = item;
-		else
-			items.Add(item);
+        if (_head < items.Count)
+            items[_head] = item;
+        else
+            items.Add(item);
 
-		_changedIndices.Add(_head);
-		_head++;
-		_isDirty = true;
-	}
+        _changedIndices.Add(_head);
+        _head++;
+        IsDirty = true;
+    }
 
-	public void EnqueueRange(IEnumerable<T> newItems)
-	{
-		foreach (var item in newItems)
-		{
-			Enqueue(item);
-		}
-	}
+    public void EnqueueRange(IEnumerable<T> newItems)
+    {
+        foreach (var item in newItems) Enqueue(item);
+    }
 
-	public bool IsDirty
-	{
-		get => _isDirty;
-		set => _isDirty = value;
-	}
+    public void Reset()
+    {
+        _head = 0;
+        IsDirty = false;
+        _changedIndices.Clear();
+    }
 
-	public void Reset()
-	{
-		_head = 0;
-		_isDirty = false;
-		_changedIndices.Clear();
+    public bool TryUpdate(out IEnumerable<T> updatedItems)
+    {
+        if (IsDirty)
+        {
+            updatedItems = items;
+            _head = 0;
+            IsDirty = false;
+            return true;
+        }
 
-	}
+        updatedItems = [];
+        Reset();
+        return false;
+    }
 
-	public bool TryUpdate(out IEnumerable<T> updatedItems)
-	{
-		if (_isDirty)
-		{
-			updatedItems = items;
-			_head = 0;
-			_isDirty = false;
-			return true;
-		}
+    public bool TryGetChangedIndices(out IEnumerable<ChangedIndex<T>> changedIndices)
+    {
+        if (_changedIndices.Count > 0)
+        {
+            changedIndices = _changedIndices.Select<int, ChangedIndex<T>>(index => new ChangedIndex<T>
+            {
+                Value = items[index],
+                Index = index
+            });
 
-		updatedItems = [];
-		Reset();
-		return false;
-	}
+            _changedIndices.Clear();
+            return true;
+        }
 
-	public bool TryGetChangedIndices(out IEnumerable<ChangedIndex<T>> changedIndices)
-	{
-		if (_changedIndices.Count > 0)
-		{
-			changedIndices = _changedIndices.Select<int, ChangedIndex<T>>(index => new ChangedIndex<T>
-			{
-				Value = items[index],
-				Index = index
-			});
-
-			_changedIndices.Clear();
-			return true;
-		}
-
-		changedIndices = [];
-		return false;
-	}
+        changedIndices = [];
+        return false;
+    }
 }

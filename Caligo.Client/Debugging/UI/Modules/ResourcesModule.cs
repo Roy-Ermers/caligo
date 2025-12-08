@@ -10,13 +10,9 @@ namespace Caligo.Client.Debugging.UI.Modules;
 
 public class ResourcesDebugModule : IDebugModule
 {
-    public bool Enabled { get; set; }
-    public string Name => "Resources";
-    public char? Icon => PaperIcon.Folder;
-
     private readonly Game _game;
-    private string currentStorageKey;
     private (string key, Texture2D texture) _loadedTexture;
+    private string currentStorageKey;
 
     public ResourcesDebugModule(Game game)
     {
@@ -24,6 +20,10 @@ public class ResourcesDebugModule : IDebugModule
         currentStorageKey = game.ModuleRepository.Resources.Storages.Keys.FirstOrDefault() ?? "";
         _loadedTexture = ("", Texture2D.FromData(16, 16, []));
     }
+
+    public bool Enabled { get; set; }
+    public string Name => "Resources";
+    public char? Icon => PaperIcon.Folder;
 
     public void Render()
     {
@@ -41,12 +41,8 @@ public class ResourcesDebugModule : IDebugModule
         using (Components.Tabs("resources"))
         {
             foreach (var key in storages.Keys)
-            {
                 if (Components.Tab(key))
-                {
                     currentStorageKey = key;
-                }
-            }
         }
 
         if (string.IsNullOrEmpty(currentStorageKey) || !storages.ContainsKey(currentStorageKey))
@@ -78,14 +74,9 @@ public class ResourcesDebugModule : IDebugModule
         using var scrollContainer = Components.ScrollContainer().Enter();
 
         foreach (var (name, value) in storage)
-        {
             Components.Tooltip(
-            Components.ListItem(name, false),
-            () =>
-            {
-                Components.Text($"Type: {value.GetType().Name}");
-            });
-        }
+                Components.ListItem(name),
+                () => { Components.Text($"Type: {value.GetType().Name}"); });
     }
 
     private static void DrawConfigStorage(ResourceTypeStorage<string> configStorage)
@@ -110,7 +101,6 @@ public class ResourcesDebugModule : IDebugModule
         using var scrollContainer = Components.ScrollContainer().Enter();
 
         foreach (var (name, image) in imageStorage)
-        {
             Components.Tooltip(Components.ListItem(name, false, _ => FileSystemUtils.OpenFile(image.Path)), () =>
             {
                 Components.Text($"Path: {image.Path}");
@@ -123,13 +113,14 @@ public class ResourcesDebugModule : IDebugModule
 
                     _loadedTexture.texture.Dispose();
 
-                    _loadedTexture.texture = Texture2D.FromData(loadedImage.Width, loadedImage.Height, loadedImage.Data);
+                    _loadedTexture.texture =
+                        Texture2D.FromData(loadedImage.Width, loadedImage.Height, loadedImage.Data);
                 }
+
                 Components.Text($"Size: {loadedImage.Width}x{loadedImage.Height}");
 
                 Components.Texture(_loadedTexture.texture, UnitValue.Pixels(128));
             });
-        }
     }
 
     private void DrawBlockStorage(ResourceTypeStorage<Block> blockStorage)
@@ -137,7 +128,6 @@ public class ResourcesDebugModule : IDebugModule
         using var scrollContainer = Components.ScrollContainer().Enter();
 
         foreach (var (name, block) in blockStorage)
-        {
             if (Components.Accordion($"{block.Name} (ID: {block.NumericId})"))
             {
                 Components.Text($"Block ID: {block.NumericId}");
@@ -153,18 +143,11 @@ public class ResourcesDebugModule : IDebugModule
                         Components.Text($"Model: {variant.ModelName}");
 
                         if (variant.Textures.Count > 0)
-                        {
                             if (Components.Accordion("Textures"))
-                            {
                                 foreach (var texture in variant.Textures)
-                                {
                                     Components.Text($"{texture.Key}: {texture.Value}");
-                                }
-                            }
-                        }
                     }
                 }
             }
-        }
     }
 }

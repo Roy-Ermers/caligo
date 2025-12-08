@@ -4,10 +4,10 @@ public class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        ModuleRepository repository = new ModuleRepository();
+        var repository = new ModuleRepository();
 
-        ModuleImporter importer = new ModuleImporter(repository);
-        
+        var importer = new ModuleImporter(repository);
+
         importer.Load("modules");
         return 0;
     }

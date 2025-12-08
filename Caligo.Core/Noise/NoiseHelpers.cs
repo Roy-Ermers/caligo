@@ -9,7 +9,7 @@ public class NoiseHelpers
     {
         // bitshift on y to make sure NumericHelpers.Hash(x + 1, y) and NumericHelpers.Hash(x, y + 1)
         // are radically different, shifts below 6 produce visable artifacts.
-        int hash = x ^ (y << 6);
+        var hash = x ^ (y << 6);
         // bits passed into this hash function are in the upper part of the lower bits of an int,
         // we bit shift them slightly lower here to maximize the impact of the following multiply.
         // the lowest bit will effect all bits when multiplied, but higher bits don't effect anything

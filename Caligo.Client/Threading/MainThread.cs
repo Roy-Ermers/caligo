@@ -4,9 +4,9 @@ namespace Caligo.Client.Threading;
 
 public class MainThread
 {
+    private static MainThread? _instance;
     private readonly ConcurrentQueue<Action> _actions = [];
     private readonly EventWaitHandle _mainThreadLock = new(false, EventResetMode.AutoReset);
-    private static MainThread? _instance;
 
     public MainThread()
     {

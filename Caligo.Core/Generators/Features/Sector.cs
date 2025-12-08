@@ -36,8 +36,8 @@ public struct Sector
 
     public static int GetKey(WorldPosition position)
     {
-        int x = (int)MathF.Floor((float)position.X / SectorSize);
-        int z = (int)MathF.Floor((float)position.Z / SectorSize);
+        var x = (int)MathF.Floor((float)position.X / SectorSize);
+        var z = (int)MathF.Floor((float)position.Z / SectorSize);
         return HashCode.Combine(x, z);
     }
 
@@ -45,16 +45,13 @@ public struct Sector
     public readonly bool GetNodeAt(WorldPosition position, [NotNullWhen(true)] out Feature? matchingNode)
     {
         foreach (var node in Nodes)
-        {
             if (node.BoundingBox.Contains(position))
             {
                 matchingNode = node;
                 return true;
             }
-        }
 
         matchingNode = null;
         return false;
     }
-
 }

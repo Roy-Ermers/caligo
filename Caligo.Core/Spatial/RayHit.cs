@@ -8,9 +8,9 @@ namespace Caligo.Core.Spatial;
 public record struct RaycastHit
 {
     public ushort BlockId;
-    public Block Block => ModuleRepository.Current.GetAll<Block>()[BlockId];
-    public WorldPosition Position;
+    public float Distance;
     public Vector3 HitPoint;
     public Vector3 Normal;
-    public float Distance;
+    public WorldPosition Position;
+    public Block Block => ModuleRepository.Current.GetAll<Block>()[BlockId];
 }

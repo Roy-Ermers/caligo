@@ -6,14 +6,14 @@ namespace Caligo.Core.Spatial.PositionTypes;
 
 public readonly record struct ChunkLocalPosition
 {
+    public static readonly ChunkLocalPosition Zero = new(0, 0, 0);
+
     public ChunkLocalPosition(int X, int Y, int Z)
     {
         this.X = X;
         this.Y = Y;
         this.Z = Z;
     }
-
-    public static readonly ChunkLocalPosition Zero = new(0, 0, 0);
 
     public readonly int Id => HashCode.Combine(X, Y, Z);
 
@@ -38,8 +38,10 @@ public readonly record struct ChunkLocalPosition
         return $"(L;{X}, {Y}, {Z})";
     }
 
-    public static ChunkLocalPosition FromWorldPosition(WorldPosition position) =>
-        FromWorldPosition(position.X, position.Y, position.Z);
+    public static ChunkLocalPosition FromWorldPosition(WorldPosition position)
+    {
+        return FromWorldPosition(position.X, position.Y, position.Z);
+    }
 
     public static ChunkLocalPosition FromWorldPosition(int x, int y, int z)
     {
@@ -47,16 +49,24 @@ public readonly record struct ChunkLocalPosition
         {
             X = MathExtensions.Mod(x, Chunk.Size),
             Y = MathExtensions.Mod(y, Chunk.Size),
-            Z = MathExtensions.Mod(z, Chunk.Size),
+            Z = MathExtensions.Mod(z, Chunk.Size)
         };
     }
 
-    public static ChunkLocalPosition FromIndex(int index) => ZOrderCurve.GetPosition(index, Chunk.Size);
+    public static ChunkLocalPosition FromIndex(int index)
+    {
+        return ZOrderCurve.GetPosition(index, Chunk.Size);
+    }
 
-    public static implicit operator ChunkLocalPosition((int X, int Y, int Z) position) =>
-        new(position.X, position.Y, position.Z);
+    public static implicit operator ChunkLocalPosition((int X, int Y, int Z) position)
+    {
+        return new ChunkLocalPosition(position.X, position.Y, position.Z);
+    }
 
-    public static implicit operator Vector3(ChunkLocalPosition position) => new(position.X, position.Y, position.Z);
+    public static implicit operator Vector3(ChunkLocalPosition position)
+    {
+        return new Vector3(position.X, position.Y, position.Z);
+    }
 
     public static ChunkLocalPosition operator +(ChunkLocalPosition left, ChunkLocalPosition right)
     {

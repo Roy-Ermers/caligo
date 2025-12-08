@@ -1,4 +1,3 @@
-using Caligo.Core.ModuleSystem;
 using Caligo.Core.Resources.Block;
 using Caligo.Core.Universe;
 using Caligo.ModuleSystem;
@@ -12,10 +11,7 @@ public class VoidGenerator : IWorldGenerator
 
     public void GenerateChunk(ref Chunk chunk)
     {
-        if (chunk.Position.X != 0 || chunk.Position.Y != 0 || chunk.Position.Z != 0)
-        {
-            return;
-        }
+        if (chunk.Position.X != 0 || chunk.Position.Y != 0 || chunk.Position.Z != 0) return;
 
         chunk.Set(0, 0, 0, Spawn);
     }

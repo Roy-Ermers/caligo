@@ -1,9 +1,7 @@
 using Caligo.Core.Generators.World;
 using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial;
-using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
-using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 
 namespace Caligo.Client.Generators.World;
@@ -22,22 +20,16 @@ public class FlatWorldGenerator : IWorldGenerator
         //     return;
         // }
 
-        foreach (WorldPosition position in new CubeIterator(chunk))
-        {
+        foreach (var position in new CubeIterator(chunk))
             if (position.Y < GroundLevel)
-            {
                 chunk.Set(position.ChunkLocalPosition, GroundBlock);
-            }
-            else if (position.Y == GroundLevel)
-            {
-                chunk.Set(position.ChunkLocalPosition, SoilBlock);
-            }
-        }
+            else if (position.Y == GroundLevel) chunk.Set(position.ChunkLocalPosition, SoilBlock);
     }
 
     public void Initialize()
     {
-        GroundBlock = ModuleRepository.Current.Get<Block>("dirt"); ;
+        GroundBlock = ModuleRepository.Current.Get<Block>("dirt");
+        ;
         SoilBlock = ModuleRepository.Current.Get<Block>("grass_block");
     }
 }

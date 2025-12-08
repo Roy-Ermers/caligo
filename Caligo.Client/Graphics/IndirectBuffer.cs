@@ -4,39 +4,39 @@ using OpenTK.Graphics.OpenGL;
 namespace Caligo.Client.Graphics;
 
 /// <summary>
-/// Represents a single indirect draw command for OpenGL's MultiDrawArraysIndirect.
-/// Each property maps to a field in the OpenGL DrawArraysIndirectCommand struct.
+///     Represents a single indirect draw command for OpenGL's MultiDrawArraysIndirect.
+///     Each property maps to a field in the OpenGL DrawArraysIndirectCommand struct.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 [Serializable]
 public struct IndirectDrawCommand
 {
     /// <summary>
-    /// The number of vertices to draw per instance (i.e., per face or quad).
-    /// For a quad rendered as a triangle strip, this is typically 4.
+    ///     The number of vertices to draw per instance (i.e., per face or quad).
+    ///     For a quad rendered as a triangle strip, this is typically 4.
     /// </summary>
     public uint Count;
 
     /// <summary>
-    /// The number of instances to draw (e.g., number of faces or quads).
+    ///     The number of instances to draw (e.g., number of faces or quads).
     /// </summary>
     public uint InstanceCount;
 
     /// <summary>
-    /// The starting index in the vertex buffer (usually 0 for non-indexed drawing).
+    ///     The starting index in the vertex buffer (usually 0 for non-indexed drawing).
     /// </summary>
     public uint First;
 
     /// <summary>
-    /// The base instance for instanced rendering (used as gl_InstanceID base).
+    ///     The base instance for instanced rendering (used as gl_InstanceID base).
     /// </summary>
     public uint BaseInstance;
 }
 
-static class IndirectDrawCommandExtensions
+internal static class IndirectDrawCommandExtensions
 {
     /// <summary>
-    /// Checks if two IndirectDrawCommand instances are equal.
+    ///     Checks if two IndirectDrawCommand instances are equal.
     /// </summary>
     /// <param name="a">The first command.</param>
     /// <param name="b">The second command.</param>
@@ -51,16 +51,15 @@ static class IndirectDrawCommandExtensions
 }
 
 /// <summary>
-/// A buffer for storing and issuing indirect draw commands for instanced rendering.
-/// Use Append to add commands, and Draw to issue all commands in the buffer.
+///     A buffer for storing and issuing indirect draw commands for instanced rendering.
+///     Use Append to add commands, and Draw to issue all commands in the buffer.
 /// </summary>
 public class IndirectBuffer : IDisposable
 {
-    private int _handle;
     private int _capacity;
-    private int Size => Marshal.SizeOf<IndirectDrawCommand>() * _capacity;
-    private int _drawCount;
     private IndirectDrawCommand[] _commands;
+    private int _drawCount;
+    private int _handle;
 
     public IndirectBuffer(int capacity = 500)
     {
@@ -69,6 +68,13 @@ public class IndirectBuffer : IDisposable
         _handle = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
         GL.BufferData(BufferTarget.DrawIndirectBuffer, Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+    }
+
+    private int Size => Marshal.SizeOf<IndirectDrawCommand>() * _capacity;
+
+    public void Dispose()
+    {
+        GL.DeleteBuffer(_handle);
     }
 
     public void Append(IndirectDrawCommand command)
@@ -111,10 +117,5 @@ public class IndirectBuffer : IDisposable
     public void Clear()
     {
         _drawCount = 0;
-    }
-
-    public void Dispose()
-    {
-        GL.DeleteBuffer(_handle);
     }
 }

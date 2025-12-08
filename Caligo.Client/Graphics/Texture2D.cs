@@ -6,66 +6,21 @@ namespace Caligo.Client.Graphics;
 
 public class Texture2D
 {
-    public readonly int Handle;
-    public int Width;
-    public int Height;
-
     // Store format info for proper resizing
-    private PixelInternalFormat _internalFormat = PixelInternalFormat.Rgba;
-    private PixelFormat _pixelFormat = PixelFormat.Rgba;
-    private PixelType _pixelType = PixelType.UnsignedByte;
-
-    private TextureMinFilter _minFilter = TextureMinFilter.NearestMipmapLinear;
-
-    public TextureMinFilter MinFilter
-    {
-        get => _minFilter;
-        set
-        {
-            _minFilter = value;
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)value);
-        }
-    }
+    private readonly PixelInternalFormat _internalFormat = PixelInternalFormat.Rgba;
+    private readonly PixelFormat _pixelFormat = PixelFormat.Rgba;
+    private readonly PixelType _pixelType = PixelType.UnsignedByte;
+    public readonly int Handle;
 
     private TextureMagFilter _magFilter = TextureMagFilter.Nearest;
 
-    public TextureMagFilter MagFilter
-    {
-        get => _magFilter;
-        set
-        {
-            _magFilter = value;
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)value);
-        }
-    }
+    private TextureMinFilter _minFilter = TextureMinFilter.NearestMipmapLinear;
 
     private TextureWrapMode _wrapS = TextureWrapMode.Repeat;
 
-    public TextureWrapMode WrapS
-    {
-        get => _wrapS;
-        set
-        {
-            _wrapS = value;
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)value);
-        }
-    }
-
     private TextureWrapMode _wrapT = TextureWrapMode.Repeat;
-
-    public TextureWrapMode WrapT
-    {
-        get => _wrapT;
-        set
-        {
-            _wrapT = value;
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)value);
-        }
-    }
+    public int Height;
+    public int Width;
 
     private Texture2D(int handle, int width, int height, bool generateMipmaps = true)
     {
@@ -102,6 +57,50 @@ public class Texture2D
 
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)_wrapS);
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)_wrapT);
+    }
+
+    public TextureMinFilter MinFilter
+    {
+        get => _minFilter;
+        set
+        {
+            _minFilter = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)value);
+        }
+    }
+
+    public TextureMagFilter MagFilter
+    {
+        get => _magFilter;
+        set
+        {
+            _magFilter = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)value);
+        }
+    }
+
+    public TextureWrapMode WrapS
+    {
+        get => _wrapS;
+        set
+        {
+            _wrapS = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)value);
+        }
+    }
+
+    public TextureWrapMode WrapT
+    {
+        get => _wrapT;
+        set
+        {
+            _wrapT = value;
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)value);
+        }
     }
 
     public void SetFiltering(TextureMinFilter minFilter, TextureMagFilter magFilter)
@@ -182,8 +181,15 @@ public class Texture2D
             PixelFormat.Rgba, PixelType.UnsignedByte, data.ToArray());
     }
 
-    public void SetData(byte[] data) => SetData(data.AsSpan());
-    public void SetData(ReadOnlySpan<byte> data) => SetData(data, Width, Height);
+    public void SetData(byte[] data)
+    {
+        SetData(data.AsSpan());
+    }
+
+    public void SetData(ReadOnlySpan<byte> data)
+    {
+        SetData(data, Width, Height);
+    }
 
     public void SetData(ReadOnlySpan<byte> data, int width, int height)
     {
@@ -199,7 +205,7 @@ public class Texture2D
     }
 
     /// <summary>
-    /// Get a part of the texture defined by area
+    ///     Get a part of the texture defined by area
     /// </summary>
     /// <param name="area"></param>
     public ReadOnlySpan<byte> GetData(Rectangle area)
@@ -207,17 +213,15 @@ public class Texture2D
         var data = GetData();
         Span<byte> result = new byte[area.Width * area.Height * 4];
 
-        for (int y = 0; y < area.Height; y++)
+        for (var y = 0; y < area.Height; y++)
+        for (var x = 0; x < area.Width; x++)
         {
-            for (int x = 0; x < area.Width; x++)
-            {
-                var index = ((y + area.Y) * Width + x + area.X) * 4;
-                var dataIndex = (y * area.Width + x) * 4;
-                result[dataIndex] = data[index];
-                result[dataIndex + 1] = data[index + 1];
-                result[dataIndex + 2] = data[index + 2];
-                result[dataIndex + 3] = data[index + 3];
-            }
+            var index = ((y + area.Y) * Width + x + area.X) * 4;
+            var dataIndex = (y * area.Width + x) * 4;
+            result[dataIndex] = data[index];
+            result[dataIndex + 1] = data[index + 1];
+            result[dataIndex + 2] = data[index + 2];
+            result[dataIndex + 3] = data[index + 3];
         }
 
         return result;

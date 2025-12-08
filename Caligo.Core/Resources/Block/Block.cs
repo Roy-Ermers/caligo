@@ -1,5 +1,4 @@
 using Caligo.Core.Resources.Block.Models;
-using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 using Random = Caligo.Core.Utils.Random;
 
@@ -7,22 +6,26 @@ namespace Caligo.Core.Resources.Block;
 
 public record struct BlockVariant
 {
-    public string ModelName;
     public BlockModel Model;
-    public int Weight;
+    public string ModelName;
     public Dictionary<string, string> Textures;
+    public int Weight;
 }
 
 public record class Block
 {
     public static readonly Block Air = new()
     {
-        Name = Identifier.Resolve("air"),
+        Name = Identifier.Resolve("air")
     };
-    
-    public ushort NumericId = 0;
+
+    private int[] _cumulativeWeights = [];
+
+    private int _variantTotal;
     public bool IsSolid;
     public required string Name;
+
+    public ushort NumericId = 0;
 
     public BlockVariant[] Variants
     {
@@ -33,9 +36,6 @@ public record class Block
             RecalculateWeights();
         }
     } = [];
-
-    private int _variantTotal = 0;
-    private int[] _cumulativeWeights = [];
 
     public void RecalculateWeights()
     {
@@ -49,7 +49,6 @@ public record class Block
             cumulative += Variants[i].Weight;
             _cumulativeWeights[i] = cumulative;
         }
-
     }
 
     public BlockVariant? GetRandomVariant(Random? random)
@@ -66,9 +65,9 @@ public record class Block
 
         if (Variants.Length == 1)
             return Variants[0];
-        
+
         var target = seed % _variantTotal;
-        
+
         // Binary search through cumulative weights
         var low = 0;
         var high = Variants.Length - 1;

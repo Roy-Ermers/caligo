@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="TUnit" Version="1.2.11" />
+        <PackageReference Include="TUnit" Version="1.2.11"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Caligo.Core\Caligo.Core.csproj" />
+        <ProjectReference Include="..\Caligo.Core\Caligo.Core.csproj"/>
     </ItemGroup>
 
 </Project>

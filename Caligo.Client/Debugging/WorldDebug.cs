@@ -1,4 +1,3 @@
-using System.Drawing;
 using Caligo.Core.Universe.Worlds;
 
 namespace Caligo.Client.Debugging;

@@ -8,6 +8,7 @@ public struct TableRowComponent : IDrawableComponent, IComponentContainer
     private IDrawableComponent[] Columns;
     public int ColumnCount => Columns.Length;
     public Guid ID = Guid.NewGuid();
+
     public TableRowComponent(params string[] data)
     {
         Columns = [.. data.Select(value => new TextComponent(value))];
@@ -32,10 +33,8 @@ public struct TableRowComponent : IDrawableComponent, IComponentContainer
     {
         ImGui.PushID(ID.ToString());
         foreach (var column in Columns)
-        {
             if (ImGui.TableNextColumn())
                 column.Draw();
-        }
         ImGui.PopID();
     }
 

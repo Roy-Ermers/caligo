@@ -6,6 +6,15 @@ namespace Caligo.Core.Universe.Worlds;
 
 public partial class World : IEnumerable<Chunk>
 {
+    public IEnumerator<Chunk> GetEnumerator()
+    {
+        return _chunks.Values.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     public Chunk? GetChunk(ChunkPosition position)
     {
@@ -17,7 +26,10 @@ public partial class World : IEnumerable<Chunk>
         return _chunks.TryGetValue(position.Id, out chunk);
     }
 
-    public Chunk CreateChunk(Chunk chunk) => CreateChunk(chunk, false);
+    public Chunk CreateChunk(Chunk chunk)
+    {
+        return CreateChunk(chunk, false);
+    }
 
     public Chunk CreateChunk(Chunk chunk, bool overwrite)
     {
@@ -29,15 +41,16 @@ public partial class World : IEnumerable<Chunk>
         return chunk;
     }
 
-    public bool HasChunk(ChunkPosition position) => _chunks.ContainsKey(position.Id);
+    public bool HasChunk(ChunkPosition position)
+    {
+        return _chunks.ContainsKey(position.Id);
+    }
 
     public void SetBlock(WorldPosition position, ushort blockId)
     {
         var chunkPosition = position.ChunkPosition;
         if (!TryGetChunk(position.ChunkPosition, out var chunk))
-        {
             throw new KeyNotFoundException($"Chunk at {chunkPosition} not found.");
-        }
 
         chunk.Set(position.ChunkLocalPosition, blockId);
     }
@@ -49,7 +62,7 @@ public partial class World : IEnumerable<Chunk>
 
         return chunk.Get(position.ChunkLocalPosition);
     }
-    
+
     public bool TryGetBlock(WorldPosition position, out ushort blockId)
     {
         if (!TryGetChunk(position.ChunkPosition, out var chunk))
@@ -59,16 +72,5 @@ public partial class World : IEnumerable<Chunk>
         }
 
         return chunk.TryGet(position.ChunkLocalPosition, out blockId);
-    }
-
-
-    public IEnumerator<Chunk> GetEnumerator()
-    {
-        return _chunks.Values.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 }

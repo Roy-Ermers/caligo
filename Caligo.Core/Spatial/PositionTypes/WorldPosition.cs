@@ -1,5 +1,4 @@
 using System.Numerics;
-using Caligo.ModuleSystem.Runtime;
 using Caligo.ModuleSystem.Runtime.Attributes;
 
 namespace Caligo.Core.Spatial.PositionTypes;
@@ -7,14 +6,14 @@ namespace Caligo.Core.Spatial.PositionTypes;
 [JsModule]
 public readonly record struct WorldPosition
 {
+    public static readonly WorldPosition Zero = new(0, 0, 0);
+
     public WorldPosition(int X, int Y, int Z)
     {
         this.X = X;
         this.Y = Y;
         this.Z = Z;
     }
-
-    public static readonly WorldPosition Zero = new(0, 0, 0);
 
     public int X { get; init; }
     public int Y { get; init; }
@@ -26,24 +25,31 @@ public readonly record struct WorldPosition
 
     public ChunkLocalPosition ChunkLocalPosition => ChunkLocalPosition.FromWorldPosition(this);
 
-    override public readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         return Id;
     }
 
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
         return $"(W;{X}, {Y}, {Z})";
     }
 
-    public static implicit operator WorldPosition((int X, int Y, int Z) position) => new(position.X, position.Y, position.Z);
+    public static implicit operator WorldPosition((int X, int Y, int Z) position)
+    {
+        return new WorldPosition(position.X, position.Y, position.Z);
+    }
 
-    public static implicit operator Vector3(WorldPosition position) => new(position.X, position.Y, position.Z);
+    public static implicit operator Vector3(WorldPosition position)
+    {
+        return new Vector3(position.X, position.Y, position.Z);
+    }
 
     public static WorldPosition operator +(WorldPosition left, WorldPosition right)
     {
         return new WorldPosition(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
     }
+
     public static WorldPosition operator -(WorldPosition left, WorldPosition right)
     {
         return new WorldPosition(left.X - right.X, left.Y - right.Y, left.Z - right.Z);

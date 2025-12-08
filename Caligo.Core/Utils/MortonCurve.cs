@@ -114,17 +114,22 @@ public static class MortonCurve
         0x00924004, 0x00924020, 0x00924024, 0x00924100, 0x00924104, 0x00924120, 0x00924124, 0x00924800,
         0x00924804, 0x00924820, 0x00924824, 0x00924900, 0x00924904, 0x00924920, 0x00924924
     ];
-    
-    public static ulong Encode(int x, int y, int z) => Encode((uint)x, (uint)y, (uint)z);
+
+    public static ulong Encode(int x, int y, int z)
+    {
+        return Encode((uint)x, (uint)y, (uint)z);
+    }
+
     public static ulong Encode(uint x, uint y, uint z)
     {
         ulong answer = 0;
         answer = morton256_z[(z >> 16) & 0xFF] | morton256_y[(y >> 16) & 0xFF] | morton256_x[(x >> 16) & 0xFF];
-        answer = answer << 48 | morton256_z[(z >> 8) & 0xFF] | morton256_y[(y >> 8) & 0xFF] | morton256_x[(x >> 8) & 0xFF];
-        answer = answer << 24 | morton256_z[z & 0xFF] | morton256_y[y & 0xFF] | morton256_x[x & 0xFF];
+        answer = (answer << 48) | morton256_z[(z >> 8) & 0xFF] | morton256_y[(y >> 8) & 0xFF] |
+                 morton256_x[(x >> 8) & 0xFF];
+        answer = (answer << 24) | morton256_z[z & 0xFF] | morton256_y[y & 0xFF] | morton256_x[x & 0xFF];
         return answer;
     }
-    
+
     public static (uint x, uint y, uint z) Decode(ulong code)
     {
         uint x = 0, y = 0, z = 0;
@@ -134,6 +139,7 @@ public static class MortonCurve
             y |= (uint)((code >> (i + 1)) & 1) << (i / 3);
             z |= (uint)((code >> (i + 2)) & 1) << (i / 3);
         }
+
         return (x, y, z);
     }
 }

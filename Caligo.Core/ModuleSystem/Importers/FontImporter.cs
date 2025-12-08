@@ -17,7 +17,6 @@ public class FontImporter : IImporter
         var fontStorage = module.GetStorage<Font>();
 
         foreach (var file in files)
-        {
             try
             {
                 var name = Path.GetFileNameWithoutExtension(file);
@@ -30,7 +29,5 @@ public class FontImporter : IImporter
                 Console.WriteLine($"Error importing font: {file}");
                 Console.WriteLine(e.Message);
             }
-        }
     }
-
 }

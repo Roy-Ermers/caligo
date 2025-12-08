@@ -9,8 +9,8 @@ public struct FrameComponent(string Name)
     {
         var renderer = PaperRenderer.Current;
         var parent = renderer.Paper.Column(Name)
-        .BackgroundColor(renderer.Style.FrameBackground)
-        .Rounded(renderer.Style.FrameRounding).Margin(UnitValue.Auto).Enter();
+            .BackgroundColor(renderer.Style.FrameBackground)
+            .Rounded(renderer.Style.FrameRounding).Margin(UnitValue.Auto).Enter();
 
         renderer.Paper.Box("Header").Height(16).Text(Name, renderer.Font).Alignment(TextAlignment.MiddleCenter);
         return parent;

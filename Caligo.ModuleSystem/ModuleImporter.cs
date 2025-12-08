@@ -18,16 +18,17 @@ public class ModuleImporter
         _importers.Add(new T());
         return this;
     }
-    
+
     /// <summary>
-    /// Adds a new module to the container.
+    ///     Adds a new module to the container.
     /// </summary>
     /// <param name="directory">Where to find the module</param>
     /// <exception cref="DuplicateNameException">Thrown if a module with the same identifier already exists.</exception>
     private void LoadModule(string directory)
     {
         var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), directory);
-        var identifier = Path.GetFileName(directory.TrimEnd(Path.DirectorySeparatorChar)) ?? throw new ArgumentException("Directory name cannot be null or empty.", nameof(directory));
+        var identifier = Path.GetFileName(directory.TrimEnd(Path.DirectorySeparatorChar)) ??
+                         throw new ArgumentException("Directory name cannot be null or empty.", nameof(directory));
         Console.WriteLine($"Loading module {identifier} from {absolutePath}");
 
         Module module;
@@ -46,16 +47,13 @@ public class ModuleImporter
         if (!Directory.Exists(absolutePath))
             throw new DirectoryNotFoundException($"The directory {absolutePath} does not exist.");
 
-        foreach (var importerType in _importers)
-        {
-            importerType.Import(module);
-        }
+        foreach (var importerType in _importers) importerType.Import(module);
 
         module.Clean();
 
         return module;
     }
-    
+
     public void Load(string directory)
     {
         var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), directory);
@@ -63,19 +61,17 @@ public class ModuleImporter
             throw new DirectoryNotFoundException($"The directory {absolutePath} does not exist.");
 
         var directories = Directory.GetDirectories(absolutePath);
-        
+
         foreach (var dir in directories)
             LoadModule(dir);
-        
+
         Process();
     }
 
     private void Process()
     {
         foreach (var importer in _importers)
-        {
             if (importer is IResourceProcessor resourceProcessor)
                 resourceProcessor.Process(_repository.Resources);
-        }
     }
 }

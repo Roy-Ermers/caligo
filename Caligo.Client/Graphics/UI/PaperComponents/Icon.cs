@@ -4113,11 +4113,11 @@ public static partial class Components
     public static ElementBuilder Icon(char icon, int size = 24)
     {
         var parent = Paper.Box(icon.ToString())
-        .Text("" + icon, Font)
-        .Height(size)
-        .Width(size)
-        .Alignment(TextAlignment.Center)
-        .FontSize(size);
+            .Text("" + icon, Font)
+            .Height(size)
+            .Width(size)
+            .Alignment(TextAlignment.Center)
+            .FontSize(size);
         return parent;
     }
 }

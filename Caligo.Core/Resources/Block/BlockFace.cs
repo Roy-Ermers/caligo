@@ -12,15 +12,13 @@ public struct BlockFace
     [JsonIgnore]
     public readonly string? TextureVariable => Texture is not null && Texture.StartsWith('#') ? Texture[1..] : null;
 
-    [JsonPropertyName("uv")]
-    public Vector4 UV;
-    
+    [JsonPropertyName("uv")] public Vector4 UV;
+
     public bool Shade = true;
 
     [JsonConstructor]
     public BlockFace(string? texture)
     {
-
         Texture = texture;
         UV = new Vector4(0, 0, 16, 16);
     }

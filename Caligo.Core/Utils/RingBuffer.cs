@@ -7,12 +7,14 @@ namespace Caligo.Core.Utils;
  * Fixed-capacity ring buffer with efficient push/pop from both ends.
  * When full, new elements overwrite oldest. Use for chat history, frame buffers, etc.
  */
-public class RingBuffer<T> : IEnumerable<T> {
+public class RingBuffer<T> : IEnumerable<T>
+{
     private readonly T[] buf;
     private int head; // index of first element
     private int tail; // index after last element (next write position)
 
-    public RingBuffer(int capacity) {
+    public RingBuffer(int capacity)
+    {
         if (capacity < 1) throw new ArgumentException("Capacity must be positive", nameof(capacity));
         buf = new T[capacity];
         head = 0;
@@ -20,7 +22,8 @@ public class RingBuffer<T> : IEnumerable<T> {
         Count = 0;
     }
 
-    public int Capacity {
+    public int Capacity
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => buf.Length;
     }
@@ -32,12 +35,14 @@ public class RingBuffer<T> : IEnumerable<T> {
         private set;
     }
 
-    public bool IsFull {
+    public bool IsFull
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => Count == buf.Length;
     }
 
-    public bool IsEmpty {
+    public bool IsEmpty
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => Count == 0;
     }
@@ -45,21 +50,33 @@ public class RingBuffer<T> : IEnumerable<T> {
     /**
      * Logical indexer - [0] is oldest element, [Count-1] is newest.
      */
-    public ref T this[int idx] {
+    public ref T this[int idx]
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get {
+        get
+        {
             if ((uint)idx >= (uint)Count) ThrowIndexOutOfRange();
             return ref buf[WrapIndex(head + idx)];
         }
     }
-    
-    public bool Contains(T item) {
+
+    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+    {
+        for (var i = 0; i < Count; i++) yield return buf[WrapIndex(head + i)];
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable<T>)this).GetEnumerator();
+    }
+
+    public bool Contains(T item)
+    {
         var comparer = EqualityComparer<T>.Default;
-        for (var i = 0; i < Count; i++) {
-            if (comparer.Equals(this[i], item)) {
+        for (var i = 0; i < Count; i++)
+            if (comparer.Equals(this[i], item))
                 return true;
-            }
-        }
+
         return false;
     }
 
@@ -67,40 +84,39 @@ public class RingBuffer<T> : IEnumerable<T> {
      * Add to back (newest). Overwrites oldest if full.
      */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void PushBack(T item) {
+    public void PushBack(T item)
+    {
         buf[tail] = item;
         tail = WrapIndex(tail + 1);
-        if (Count == buf.Length) {
+        if (Count == buf.Length)
             head = tail; // overwrite oldest
-        }
-        else {
+        else
             Count++;
-        }
     }
 
     /**
      * Add to front (oldest). Overwrites newest if full.
      */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void PushFront(T item) {
+    public void PushFront(T item)
+    {
         head = WrapIndex(head - 1);
         buf[head] = item;
-        if (Count == buf.Length) {
+        if (Count == buf.Length)
             tail = head; // overwrite newest
-        }
-        else {
+        else
             Count++;
-        }
     }
 
     /**
      * Remove from back (newest). Throws if empty.
      */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T PopBack() {
+    public T PopBack()
+    {
         if (Count == 0) ThrowEmpty();
         tail = WrapIndex(tail - 1);
-        T item = buf[tail];
+        var item = buf[tail];
         buf[tail] = default!;
         Count--;
         return item;
@@ -110,9 +126,10 @@ public class RingBuffer<T> : IEnumerable<T> {
      * Remove from front (oldest). Throws if empty.
      */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T PopFront() {
+    public T PopFront()
+    {
         if (Count == 0) ThrowEmpty();
-        T item = buf[head];
+        var item = buf[head];
         buf[head] = default!;
         head = WrapIndex(head + 1);
         Count--;
@@ -123,7 +140,8 @@ public class RingBuffer<T> : IEnumerable<T> {
      * Peek oldest element without removing.
      */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Front() {
+    public ref T Front()
+    {
         if (Count == 0) ThrowEmpty();
         return ref buf[head];
     }
@@ -132,16 +150,16 @@ public class RingBuffer<T> : IEnumerable<T> {
      * Peek newest element without removing.
      */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Back() {
+    public ref T Back()
+    {
         if (Count == 0) ThrowEmpty();
         return ref buf[WrapIndex(tail - 1)];
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear() {
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>()) {
-            Array.Clear(buf, 0, buf.Length);
-        }
+    public void Clear()
+    {
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>()) Array.Clear(buf, 0, buf.Length);
         head = 0;
         tail = 0;
         Count = 0;
@@ -150,25 +168,30 @@ public class RingBuffer<T> : IEnumerable<T> {
     /**
      * Copy to array in logical order (oldest to newest).
      */
-    public T[] ToArray() {
+    public T[] ToArray()
+    {
         if (Count == 0) return [];
         var result = new T[Count];
-        if (head < tail) {
+        if (head < tail)
+        {
             // contiguous
             Array.Copy(buf, head, result, 0, Count);
         }
-        else {
+        else
+        {
             // wrapped
             var firstLen = buf.Length - head;
             Array.Copy(buf, head, result, 0, firstLen);
             Array.Copy(buf, 0, result, firstLen, tail);
         }
+
         return result;
     }
-    
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int WrapIndex(int idx) {
+    private int WrapIndex(int idx)
+    {
         var cap = buf.Length;
         if (idx >= cap) return idx - cap;
         if (idx < 0) return idx + cap;
@@ -176,12 +199,14 @@ public class RingBuffer<T> : IEnumerable<T> {
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowIndexOutOfRange() {
+    private static void ThrowIndexOutOfRange()
+    {
         throw new IndexOutOfRangeException();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowEmpty() {
+    private static void ThrowEmpty()
+    {
         throw new InvalidOperationException("Buffer is empty");
     }
 
@@ -189,35 +214,35 @@ public class RingBuffer<T> : IEnumerable<T> {
      * Struct enumerator - foreach with no allocations.
      * Iterates from oldest to newest.
      */
-    public Enumerator GetEnumerator() => new Enumerator(this);
-
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() {
-        for (int i = 0; i < Count; i++) {
-            yield return buf[WrapIndex(head + i)];
-        }
+    public Enumerator GetEnumerator()
+    {
+        return new Enumerator(this);
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
-
-    public struct Enumerator {
+    public struct Enumerator
+    {
         private readonly RingBuffer<T> ring;
         private int idx;
 
-        internal Enumerator(RingBuffer<T> ring) {
+        internal Enumerator(RingBuffer<T> ring)
+        {
             this.ring = ring;
             idx = -1;
         }
 
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             return ++idx < ring.Count;
         }
 
-        public ref T Current {
+        public ref T Current
+        {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref ring.buf[ring.WrapIndex(ring.head + idx)];
         }
 
-        public void Reset() {
+        public void Reset()
+        {
             idx = -1;
         }
     }

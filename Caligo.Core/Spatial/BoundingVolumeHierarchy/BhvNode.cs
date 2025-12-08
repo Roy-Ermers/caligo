@@ -1,21 +1,20 @@
 namespace Caligo.Core.Spatial.BoundingVolumeHierarchy;
 
-
 /// <summary>
-/// Internal node structure for the BVH tree. Optimized for cache efficiency.
+///     Internal node structure for the BVH tree. Optimized for cache efficiency.
 /// </summary>
 internal sealed class BvhNode<T>(BoundingBox boundingBox) where T : IBvhItem
 {
     public BoundingBox BoundingBox = boundingBox;
+    public int ItemCount;
+    public T[]? Items; // Leaf nodes store items directly
     public BvhNode<T>? Left;
     public BvhNode<T>? Right;
-    public T[]? Items; // Leaf nodes store items directly
-    public int ItemCount;
 
     public bool IsLeaf => Items != null;
 
     /// <summary>
-    /// Creates a leaf node with the given items
+    ///     Creates a leaf node with the given items
     /// </summary>
     public static BvhNode<T> CreateLeaf(Span<T> items)
     {
@@ -23,10 +22,7 @@ internal sealed class BvhNode<T>(BoundingBox boundingBox) where T : IBvhItem
             throw new ArgumentException("Leaf node must have at least one item");
 
         var boundingBox = items[0].BoundingBox;
-        for (int i = 1; i < items.Length; i++)
-        {
-            boundingBox = BoundingBox.Union(boundingBox, items[i].BoundingBox);
-        }
+        for (var i = 1; i < items.Length; i++) boundingBox = BoundingBox.Union(boundingBox, items[i].BoundingBox);
 
         var itemArray = new T[items.Length];
         items.CopyTo(itemArray);
@@ -39,7 +35,7 @@ internal sealed class BvhNode<T>(BoundingBox boundingBox) where T : IBvhItem
     }
 
     /// <summary>
-    /// Creates an internal node with left and right children
+    ///     Creates an internal node with left and right children
     /// </summary>
     public static BvhNode<T> CreateInternal(BvhNode<T> left, BvhNode<T> right)
     {

@@ -1,19 +1,17 @@
 using Caligo.Client.Generators.World;
 using Caligo.Core.Noise;
 using Caligo.Core.Resources.Block;
-using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
 using Caligo.ModuleSystem;
-using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Client.Generators.Layers;
 
 public class VegetationLayer : ILayer
 {
-    HeightLayer _heightLayer = null!;
-    private Block[] VegetationBlocks = [];
-    private long Seed = 0;
+    private HeightLayer _heightLayer = null!;
     private GradientNoise _noise = null!;
+    private long Seed;
+    private Block[] VegetationBlocks = [];
 
     public void Initialize(long seed, LayerWorldGenerator generator)
     {
@@ -25,7 +23,7 @@ public class VegetationLayer : ILayer
             ModuleRepository.Current.Get<Block>("flower"),
             ModuleRepository.Current.Get<Block>("short_grass"),
             ModuleRepository.Current.Get<Block>("tall_grass"),
-            ModuleRepository.Current.Get<Block>("sapling"),
+            ModuleRepository.Current.Get<Block>("sapling")
         ];
     }
 
@@ -43,15 +41,16 @@ public class VegetationLayer : ILayer
             worldPos = worldPos with { Y = (int)height };
 
             if (chunk.Get(worldPos.ChunkLocalPosition) != 0) continue;
-            
+
             var offset = _noise.Get2DVector(worldPos.X / 10f, worldPos.Z / 10f);
 
-            var blockChance = (int)((_noise.Get2D(worldPos.X / 20f + offset.X, worldPos.Z / 20f + offset.Y) * 0.5f + 0.5f) *
-                                    VegetationBlocks.Length + 1);
+            var blockChance =
+                (int)((_noise.Get2D(worldPos.X / 20f + offset.X, worldPos.Z / 20f + offset.Y) * 0.5f + 0.5f) *
+                    VegetationBlocks.Length + 1);
 
-            if(blockChance == 0)
+            if (blockChance == 0)
                 continue;
-            
+
             var vegetationBlock = VegetationBlocks[blockChance - 1];
             chunk.Set(worldPos.ChunkLocalPosition, vegetationBlock);
         }

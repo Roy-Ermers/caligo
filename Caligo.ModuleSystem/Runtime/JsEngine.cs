@@ -15,7 +15,7 @@ public static class JsEngine
     private static Dictionary<string, Type> FindGlobalModules()
     {
         _registeredModules ??= [];
-        
+
         var moduleTypes = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.GetCustomAttributes(typeof(JsModuleAttribute), false).Length > 0);
@@ -28,7 +28,7 @@ public static class JsEngine
 
         return _registeredModules;
     }
-    
+
     public static Engine CreateEngine(string identifier, string absoluteDirectory)
     {
         var runtime = new Engine(cfg =>
@@ -42,13 +42,12 @@ public static class JsEngine
         });
 
         var console = new NamespacedConsole(identifier);
-        
-        runtime.Global.FastSetProperty("console", new PropertyDescriptor(JsValue.FromObject(runtime, console), false, true, false));
 
-        foreach (var (name,module) in RegisteredModules)
-        {
+        runtime.Global.FastSetProperty("console",
+            new PropertyDescriptor(JsValue.FromObject(runtime, console), false, true, false));
+
+        foreach (var (name, module) in RegisteredModules)
             runtime.Modules.Add($"@{Identifier.MainModule}/{name}", builder => builder.ExportType("default", module));
-        }
 
         return runtime;
     }

@@ -13,13 +13,12 @@ namespace Caligo.Client.Graphics.UI.Windows;
 
 public class ResourcesWindow : Window
 {
+    private Game _game = null!;
+
+    private string currentStorageKey = "";
+    private Texture2D? imagePreview;
     public override bool Enabled { get; set; } = true;
     public override string Name => "Resources";
-
-    Game _game = null!;
-    Texture2D? imagePreview;
-
-    string currentStorageKey = "";
 
     public override void Initialize(Game game)
     {
@@ -40,14 +39,13 @@ public class ResourcesWindow : Window
             ImGui.TextColored(Vector4.UnitX + Vector4.UnitW, "No storages found in this module.");
             return;
         }
+
         ImGui.Text("ResourceType");
         if (ImGui.BeginCombo("##ResourceTypes", currentStorageKey))
         {
             foreach (var key in storages.Keys)
-            {
                 if (ImGui.Selectable(key, currentStorageKey == key))
                     currentStorageKey = key;
-            }
             ImGui.EndCombo();
         }
 
@@ -69,12 +67,14 @@ public class ResourcesWindow : Window
                 DrawUnknownStorage(storage.CastToObjectEnumerable());
                 break;
         }
+
         ImGui.TextDisabled($"Total: {storage.Count}");
     }
 
     private static void DrawUnknownStorage(IEnumerable<KeyValuePair<string, object>> storage)
     {
-        ImGui.BeginChild("UnknownStorage", new Vector2(0, 0), ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.FrameStyle);
+        ImGui.BeginChild("UnknownStorage", new Vector2(0, 0),
+            ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.FrameStyle);
 
         foreach (var (name, value) in storage)
         {
@@ -137,17 +137,15 @@ public class ResourcesWindow : Window
 
     private void DrawImageStorage(ResourceTypeStorage<Image> imageStorage)
     {
-        ImGui.BeginChild("images", new Vector2(0, 0), ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.FrameStyle);
+        ImGui.BeginChild("images", new Vector2(0, 0),
+            ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.FrameStyle);
 
         foreach (var (name, image) in imageStorage)
         {
             ImGui.OpenPopupOnItemClick(name, ImGuiPopupFlags.MouseButtonRight);
             if (ImGui.BeginPopupContextItem(name))
             {
-                if (ImGui.Selectable("Open File"))
-                {
-                    FileSystemUtils.OpenFile(image.Path);
-                }
+                if (ImGui.Selectable("Open File")) FileSystemUtils.OpenFile(image.Path);
                 ImGui.EndPopup();
             }
 
@@ -198,7 +196,6 @@ public class ResourcesWindow : Window
                 info.Dispose();
 
                 foreach (var variant in block.Variants)
-                {
                     if (ImGui.CollapsingHeader($"Variant {Array.IndexOf(block.Variants, variant) + 1}"))
                     {
                         ImGui.Text("Info:");
@@ -215,10 +212,10 @@ public class ResourcesWindow : Window
                             blockTexture.Set(variant.Textures);
                         }
                     }
-                }
 
                 ImGui.EndPopup();
             }
+
             if (ImGui.BeginItemTooltip())
             {
                 var info = new InfoTableComponent("blockTextures");
@@ -229,6 +226,7 @@ public class ResourcesWindow : Window
                 info.Dispose();
                 ImGui.EndTooltip();
             }
+
             ImGui.SameLine();
             ImGui.TextDisabled(block.NumericId.ToString());
         }

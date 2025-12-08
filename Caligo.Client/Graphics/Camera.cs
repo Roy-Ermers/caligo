@@ -6,11 +6,21 @@ namespace Caligo.Client.Graphics;
 
 public class Camera
 {
-    public Vector3 Position = new(0, 0, 0);
-    public float Pitch = 0f;
-    public float Yaw = -MathHelper.PiOver2;
+    private readonly GameWindow _game;
+    private float _farPlane = 1000f;
 
     private Vector3 _forward = -Vector3.UnitZ;
+
+    private float _nearPlane = 0.1f;
+    public float Pitch = 0f;
+    public Vector3 Position = new(0, 0, 0);
+    public float Yaw = -MathHelper.PiOver2;
+
+    public Camera(GameWindow game)
+    {
+        _game = game;
+        UpdateMatrices();
+    }
 
     public Vector3 Forward => _forward;
 
@@ -20,9 +30,6 @@ public class Camera
 
     public Matrix4 ViewMatrix { get; private set; }
     public Matrix4 ProjectionMatrix { get; private set; }
-
-    private float _nearPlane = 0.1f;
-    private float _farPlane = 1000f;
 
     public float NearPlane
     {
@@ -44,14 +51,6 @@ public class Camera
         }
     }
 
-    private readonly GameWindow _game;
-
-    public Camera(GameWindow game)
-    {
-        _game = game;
-        UpdateMatrices();
-    }
-
     public void UpdateMatrices()
     {
         ViewMatrix = Matrix4.LookAt(Position, Position + Forward, Vector3.UnitY);
@@ -71,11 +70,15 @@ public class Camera
         UpdateMatrices();
     }
 
-    public Vector2? WorldToScreen(System.Numerics.Vector3 worldPosition) => WorldToScreen((Vector3)worldPosition);
+    public Vector2? WorldToScreen(System.Numerics.Vector3 worldPosition)
+    {
+        return WorldToScreen((Vector3)worldPosition);
+    }
 
     /// <summary>
-    /// Projects a world-space position to screen-space coordinates.
-    /// Returns a Vector2 where (0,0) is top-left and (windowWidth, windowHeight) is bottom-right. Or null if the position is outside the camera.
+    ///     Projects a world-space position to screen-space coordinates.
+    ///     Returns a Vector2 where (0,0) is top-left and (windowWidth, windowHeight) is bottom-right. Or null if the position
+    ///     is outside the camera.
     /// </summary>
     public Vector2? WorldToScreen(Vector3 worldPosition)
     {

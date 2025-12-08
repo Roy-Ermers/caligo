@@ -6,32 +6,31 @@ using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
 using Caligo.Core.Universe.Worlds;
-using OpenTK.Mathematics;
 using Vector3 = System.Numerics.Vector3;
 
 namespace Caligo.Client.Debugging.UI.Modules;
 
 public class CameraDebugModule : IDebugModule
 {
-    public bool Enabled { get; set; }
-
-    public string Name => "Camera";
-
-    public char? Icon => PaperIcon.CameraAlt;
-
     private readonly Camera Camera;
     private readonly World world;
 
     private bool renderChunk;
-    private bool renderHit;
 
     private float renderDistance = 15;
+    private bool renderHit;
 
     public CameraDebugModule(Game game)
     {
         Camera = game.Camera;
         world = game.world;
     }
+
+    public bool Enabled { get; set; }
+
+    public string Name => "Camera";
+
+    public char? Icon => PaperIcon.CameraAlt;
 
     public void Render()
     {
@@ -57,7 +56,8 @@ public class CameraDebugModule : IDebugModule
             Components.Checkbox(ref renderChunk, "Render Chunk Bounding Box");
 
             if (renderChunk)
-                Gizmo3D.DrawBoundingBox(new(blockPosition.ChunkPosition.ToWorldPosition(), Chunk.Size), Color.Lime);
+                Gizmo3D.DrawBoundingBox(new BoundingBox(blockPosition.ChunkPosition.ToWorldPosition(), Chunk.Size),
+                    Color.Lime);
         }
 
         if (Components.Accordion("Current Block"))

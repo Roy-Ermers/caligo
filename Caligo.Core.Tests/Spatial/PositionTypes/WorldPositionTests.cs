@@ -107,14 +107,14 @@ public class WorldPositionTests
     {
         var pos = new WorldPosition(4, 5, 6);
         pos.Deconstruct(out var x, out var y, out var z);
-        
+
         await Assert.That(x).IsEqualTo(pos.X);
         await Assert.That(y).IsEqualTo(pos.Y);
         await Assert.That(z).IsEqualTo(pos.Z);
     }
-    
+
     [Test]
-    public async Task WorldPosition_Is_Correctly_Converted_To_LocalChunkPosition() 
+    public async Task WorldPosition_Is_Correctly_Converted_To_LocalChunkPosition()
     {
         var worldPos = new WorldPosition(18, 34, 50);
         var localChunkPos = worldPos.ChunkLocalPosition; // Should be (0,0,0)
@@ -122,10 +122,10 @@ public class WorldPositionTests
         await Assert.That(localChunkPos.X).IsEqualTo(2); // 18 % 16
         await Assert.That(localChunkPos.Y).IsEqualTo(2); // 34 % 16
         await Assert.That(localChunkPos.Z).IsEqualTo(2); // 50 % 16
-    }  
-    
+    }
+
     [Test]
-    public async Task Negative_WorldPosition_Is_Correctly_Converted_To_LocalChunkPosition() 
+    public async Task Negative_WorldPosition_Is_Correctly_Converted_To_LocalChunkPosition()
     {
         var worldPos = new WorldPosition(-18, -34, -50);
         var localChunkPos = worldPos.ChunkLocalPosition; // Should be (0,0,0)

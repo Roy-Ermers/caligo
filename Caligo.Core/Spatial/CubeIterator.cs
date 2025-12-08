@@ -12,7 +12,7 @@ public readonly struct CubeIterator : IEnumerable<WorldPosition>
 
     public CubeIterator(Chunk chunk) : this(
         chunk.Position.ToWorldPosition(),
-        chunk.Position.ToWorldPosition() + (Chunk.Size)
+        chunk.Position.ToWorldPosition() + Chunk.Size
     )
     {
     }

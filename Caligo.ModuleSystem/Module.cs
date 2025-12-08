@@ -4,11 +4,8 @@ namespace Caligo.ModuleSystem;
 
 public class Module : ResourceStorage
 {
-    public string Identifier { get; }
-    public string AbsoluteDirectory { get; }
-
     /// <summary>
-    /// Should be called by the ModulePipeline
+    ///     Should be called by the ModulePipeline
     /// </summary>
     /// <param name="identifier">Identifier prefix</param>
     /// <param name="absoluteDirectory">The root directory of this module</param>
@@ -17,4 +14,7 @@ public class Module : ResourceStorage
         Identifier = identifier;
         AbsoluteDirectory = absoluteDirectory;
     }
+
+    public string Identifier { get; }
+    public string AbsoluteDirectory { get; }
 }

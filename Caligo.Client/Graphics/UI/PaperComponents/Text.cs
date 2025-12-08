@@ -10,6 +10,7 @@ public enum FontFamily
     Monospace,
     Icon
 }
+
 public static partial class Components
 {
     public static int RootFontSize { get; set; } = 17;
@@ -24,15 +25,15 @@ public static partial class Components
             FontFamily.Icon => IconFont,
             _ => Font
         };
-
     }
+
     public static ElementBuilder Text(string text, float fontSize = 16f, FontFamily fontFamily = FontFamily.Regular)
     {
         var parent = Paper.Box(text)
-        .Text(text, fontFamily.GetFont())
-        .FontSize(fontSize * FontScale)
-        .Height(UnitValue.Auto)
-        .Width(UnitValue.Auto);
+            .Text(text, fontFamily.GetFont())
+            .FontSize(fontSize * FontScale)
+            .Height(UnitValue.Auto)
+            .Width(UnitValue.Auto);
         return parent;
     }
 }

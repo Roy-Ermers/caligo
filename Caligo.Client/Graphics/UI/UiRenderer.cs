@@ -1,3 +1,4 @@
+using System.Numerics;
 using Caligo.Client.Graphics.UI.Windows;
 using Caligo.Core.FileSystem;
 using ImGuiNET;
@@ -67,8 +68,8 @@ public class UiRenderer
             {
                 var location = window.Area.Value.Location;
                 var size = window.Area.Value.Size;
-                ImGui.SetNextWindowPos(new System.Numerics.Vector2(location.X, location.Y), ImGuiCond.FirstUseEver);
-                ImGui.SetNextWindowSize(new System.Numerics.Vector2(size.Width, size.Height),
+                ImGui.SetNextWindowPos(new Vector2(location.X, location.Y), ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowSize(new Vector2(size.Width, size.Height),
                     ImGuiCond.FirstUseEver);
             }
 
@@ -89,17 +90,18 @@ public class UiRenderer
 
 public readonly struct UIFrame(ImGuiRenderer imGuiRenderer) : IDisposable
 {
-    readonly ImGuiRenderer imGuiRenderer = imGuiRenderer;
+    private readonly ImGuiRenderer imGuiRenderer = imGuiRenderer;
 
     public readonly void Start(double deltaTime)
     {
         imGuiRenderer.Begin(deltaTime);
-        ImGui.SetNextWindowPos(new System.Numerics.Vector2(0, 0), ImGuiCond.Always);
-        ImGui.SetNextWindowSize(new System.Numerics.Vector2(ImGui.GetIO().DisplaySize.X, ImGui.GetIO().DisplaySize.Y),
+        ImGui.SetNextWindowPos(new Vector2(0, 0), ImGuiCond.Always);
+        ImGui.SetNextWindowSize(new Vector2(ImGui.GetIO().DisplaySize.X, ImGui.GetIO().DisplaySize.Y),
             ImGuiCond.Always);
         ImGui.Begin("fullscreen", ImGuiWindowFlags.NoDecoration |
-    ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings |
-    ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs);
+                                  ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings |
+                                  ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNavFocus |
+                                  ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs);
     }
 
     public void End()

@@ -1,22 +1,44 @@
 using System.Drawing;
+using OpenTK.Windowing.Common.Input;
 using Prowl.PaperUI;
 using Prowl.PaperUI.LayoutEngine;
 
 namespace Caligo.Client.Graphics.UI.PaperComponents;
 
-
-
-record struct Tab(
-string Id,
-bool Active
+internal record struct Tab(
+    string Id,
+    bool Active
 );
 
 public static partial class Components
 {
+    private static readonly Dictionary<string, string> ActiveTabs = [];
+    private static TabsData? TabData;
 
-    readonly struct TabsData(string Id, ElementBuilder header) : IDisposable
+    public static IDisposable Tabs(string name, bool stretch = false)
     {
+        var header = Paper.Row(name + "_header");
+        TabData = new TabsData(name, header)
+        {
+            Stretch = stretch
+        };
 
+        Divider();
+
+        return TabData;
+    }
+
+    public static bool Tab(string name)
+    {
+        if (TabData == null)
+            throw new InvalidOperationException("Tabs must be called within a Tabs context.");
+
+        var isActive = TabData.Value.AddTab(name);
+        return isActive;
+    }
+
+    private readonly struct TabsData(string Id, ElementBuilder header) : IDisposable
+    {
         public readonly string Id = Id;
         public readonly List<Tab> Tabs = [];
         private readonly ElementBuilder Header = header;
@@ -30,9 +52,7 @@ public static partial class Components
                 if (value is null)
                     ActiveTabs.Remove(Id);
                 else
-                {
                     ActiveTabs[Id] = value;
-                }
             }
         }
 
@@ -50,17 +70,17 @@ public static partial class Components
         {
             var self = this;
             using var _ = Header
-            .Height(UnitValue.Auto)
-            .MinWidth(UnitValue.StretchOne)
-            .Width(UnitValue.StretchOne)
-            .MaxWidth(UnitValue.Percentage(100))
-            .SetScroll(Scroll.ScrollX)
-            .Margin(0, 0, 8, 0)
-            .RowBetween(4)
-            .ChildLeft(8)
-            .ChildRight(8)
-            .OnHover(_ => SetCursor(OpenTK.Windowing.Common.Input.MouseCursor.PointingHand))
-            .Enter();
+                .Height(UnitValue.Auto)
+                .MinWidth(UnitValue.StretchOne)
+                .Width(UnitValue.StretchOne)
+                .MaxWidth(UnitValue.Percentage(100))
+                .SetScroll(Scroll.ScrollX)
+                .Margin(0, 0, 8, 0)
+                .RowBetween(4)
+                .ChildLeft(8)
+                .ChildRight(8)
+                .OnHover(_ => SetCursor(MouseCursor.PointingHand))
+                .Enter();
 
             foreach (var tab in Tabs)
             {
@@ -71,10 +91,7 @@ public static partial class Components
                     .Hovered.BackgroundColor(Style.FrameBackground).End()
                     .Focused.BackgroundColor(Style.FrameBackground).End()
                     .TabIndex(0)
-                    .OnPress(e =>
-                    {
-                        self.ActiveTab = tab.Id;
-                    })
+                    .OnPress(e => { self.ActiveTab = tab.Id; })
                     .Width(UnitValue.Auto)
                     .Height(UnitValue.Auto)
                     .ChildBottom(4)
@@ -84,51 +101,27 @@ public static partial class Components
                     .Enter();
 
                 Paper.Box("selectedIndicator")
-                .PositionType(PositionType.SelfDirected)
-                .Top(UnitValue.StretchOne)
-                .Bottom(0)
-                .Left(0)
-                .Height(2)
-                .Clip()
-                .RoundedTop(4)
-                .Width(UnitValue.StretchOne)
-                .BackgroundColor(Color.Transparent)
-                .Transition(GuiProp.BackgroundColor, 0.125)
-                .If(tab.Active).BackgroundColor(Style.AccentColor).End();
+                    .PositionType(PositionType.SelfDirected)
+                    .Top(UnitValue.StretchOne)
+                    .Bottom(0)
+                    .Left(0)
+                    .Height(2)
+                    .Clip()
+                    .RoundedTop(4)
+                    .Width(UnitValue.StretchOne)
+                    .BackgroundColor(Color.Transparent)
+                    .Transition(GuiProp.BackgroundColor, 0.125)
+                    .If(tab.Active).BackgroundColor(Style.AccentColor).End();
 
 
-                Components.Text(tab.Id + "text")
-                .Text(tab.Id, Font)
-                .Alignment(TextAlignment.Center)
-                .Height(UnitValue.Auto)
-                .MinWidth(UnitValue.Auto)
-                .Width(UnitValue.StretchOne)
-                .Margin(8);
+                Text(tab.Id + "text")
+                    .Text(tab.Id, Font)
+                    .Alignment(TextAlignment.Center)
+                    .Height(UnitValue.Auto)
+                    .MinWidth(UnitValue.Auto)
+                    .Width(UnitValue.StretchOne)
+                    .Margin(8);
             }
         }
-    }
-
-    private static Dictionary<string, string> ActiveTabs = [];
-    private static TabsData? TabData = null;
-    public static IDisposable Tabs(string name, bool stretch = false)
-    {
-        var header = Paper.Row(name + "_header");
-        TabData = new TabsData(name, header)
-        {
-            Stretch = stretch
-        };
-
-        Components.Divider();
-
-        return TabData;
-    }
-
-    public static bool Tab(string name)
-    {
-        if (TabData == null)
-            throw new InvalidOperationException("Tabs must be called within a Tabs context.");
-
-        var isActive = TabData.Value.AddTab(name);
-        return isActive;
     }
 }
