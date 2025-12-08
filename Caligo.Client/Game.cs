@@ -1,4 +1,4 @@
-using System.Text;
+using System.Runtime.InteropServices;
 using Caligo.Client.Debugging;
 using Caligo.Client.Debugging.RenderDoc;
 using Caligo.Client.Debugging.UI;
@@ -13,10 +13,7 @@ using Caligo.Client.ModuleSystem.Importers;
 using Caligo.Client.Player;
 using Caligo.Client.Renderer;
 using Caligo.Client.Renderer.Worlds;
-using Caligo.Client.Resources.Atlas;
 using Caligo.Client.Threading;
-using Caligo.Core.Generators.World;
-using Caligo.Core.ModuleSystem;
 using Caligo.Core.ModuleSystem.Importers;
 using Caligo.Core.ModuleSystem.Importers.Blocks;
 using Caligo.Core.Resources.Block;
@@ -27,7 +24,6 @@ using Caligo.ModuleSystem;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Prowl.PaperUI;
@@ -39,15 +35,15 @@ namespace Caligo.Client;
 public class Game : GameWindow
 {
     public static Game Instance { get; protected set; } = null!;
-    
+
     public Camera Camera { get; set; }
 
     public PlayerController Controller;
-    
+
     public readonly ModuleRepository ModuleRepository;
     private readonly PaperRenderer uiRenderer;
     private DebugUiRenderer debugUiRenderer;
-    
+
     private readonly RenderShader _shader;
 
     private readonly RenderDoc? renderdoc;
@@ -103,7 +99,7 @@ public class Game : GameWindow
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);
         GL.PolygonMode(TriangleFace.Front, PolygonMode.Fill);
-        
+
         var blockStorage = ModuleRepository.GetAll<Block>();
 
         world = new World();
@@ -125,7 +121,7 @@ public class Game : GameWindow
             new ModuleDebugModule(this),
             new ChunkDebugModule(this)
         ];
-        
+
         // Lock cursor for FPS controls
         CursorState = CursorState.Grabbed;
     }
@@ -160,7 +156,7 @@ public class Game : GameWindow
             world.Clear();
             renderer.Clear();
         }
-        
+
         // Toggle cursor lock with Escape
         if (KeyboardState.IsKeyPressed(Keys.Escape))
         {
@@ -177,16 +173,18 @@ public class Game : GameWindow
             _lastMousePosition = mousePos;
             _firstMouseMove = false;
         }
+
         if (_cursorLocked)
         {
             var delta = mousePos - _lastMousePosition;
             Controller.ProcessMouseLook(delta.X, delta.Y);
         }
+
         _lastMousePosition = mousePos;
-        
+
         // Update camera so Forward/Right vectors are current before processing movement
         Camera.Update();
-        
+
         // Movement keys (must be after Camera.Update so Forward/Right are up-to-date)
         var forward = KeyboardState.IsKeyDown(Keys.W);
         var backward = KeyboardState.IsKeyDown(Keys.S);
@@ -234,7 +232,7 @@ public class Game : GameWindow
 
 
         Components.Text("+").PositionType(PositionType.SelfDirected).Margin(UnitValue.StretchOne);
-        
+
         Gizmo3D.Render();
 
         var hitinfo = uiFrame.Paper.Column("hitinfo")
@@ -262,7 +260,8 @@ public class Game : GameWindow
 
                 var identifier = Identifier.Parse(hit.Block.Name);
 
-                using (uiFrame.Paper.Row("identifier").Height(UnitValue.Auto).Width(UnitValue.Auto).RowBetween(8).Enter())
+                using (uiFrame.Paper.Row("identifier").Height(UnitValue.Auto).Width(UnitValue.Auto).RowBetween(8)
+                           .Enter())
                 {
                     Components.Text(identifier.module, 20f)
                         .TextColor(Components.Style.AccentColor).Alignment(TextAlignment.MiddleLeft);
@@ -270,11 +269,10 @@ public class Game : GameWindow
                         .TextColor(Components.Style.TextColor).Alignment(TextAlignment.MiddleRight);
                 }
 
-                Components.Text($"Variant: {Array.IndexOf(hit.Block.Variants, hit.Block.GetVariant(hit.Position.Id)) + 1}/{hit.Block.Variants.Length}", 12f, FontFamily.Monospace)
-                        .TextColor(Components.Style.SecondaryTextColor);
-                    
-
-
+                Components.Text(
+                        $"Variant: {Array.IndexOf(hit.Block.Variants, hit.Block.GetVariant(hit.Position.Id)) + 1}/{hit.Block.Variants.Length}",
+                        12f, FontFamily.Monospace)
+                    .TextColor(Components.Style.SecondaryTextColor);
             }
         }
 
@@ -304,7 +302,7 @@ public class Game : GameWindow
         // In order to access the string pointed to by pMessage, you can use Marshal
         // class to copy its contents to a C# string without unsafe code. You can
         // also use the new function Marshal.PtrToStringUTF8 since .NET Core 1.1.
-        var message = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(pMessage, length);
+        var message = Marshal.PtrToStringAnsi(pMessage, length);
 
         // The rest of the function is up to you to implement, however a debug output
         // is always useful.
