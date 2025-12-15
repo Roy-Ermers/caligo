@@ -84,7 +84,7 @@ public static class Identifier
 
     public static string Create(string module, string name)
     {
-        return $"{module}:{name}";
+        return $"{module}:{name.Replace('\\', '/')}";
     }
 
     public static string Create(string name)

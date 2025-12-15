@@ -31,7 +31,10 @@ public abstract class BaseShader
 #if DEBUG
         Console.WriteLine($"[Shader {name}] Enabling watcher for {Path.GetFullPath(directory)}");
         // watch for shader changes
-        _watcher = new FileSystemWatcher(Path.GetFullPath(directory), NotifyFilters.LastWrite, $"{Name}.*");
+        _watcher = new FileSystemWatcher(Path.GetFullPath(directory), $"{Name}.*")
+        {
+            NotifyFilter = NotifyFilters.LastWrite
+        };
 
         _watcher.Changed += (_, _) => Reload();
 #endif
