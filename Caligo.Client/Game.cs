@@ -113,8 +113,8 @@ public class Game : GameWindow
             new VegetationLayer()
         ]));
         renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
+        // Controller = new FreeCameraController(this);
         Controller = new FreeCameraController(this);
-        // Controller = new PlayerController(Camera, world);
 
         debugUiRenderer =
         [
@@ -132,8 +132,8 @@ public class Game : GameWindow
 
     private void LoadChunksAroundPlayer()
     {
-        var EnumDirections = (Direction[])Enum.GetValues(typeof(Direction));
-        var renderDistance = renderer.RenderDistance / 2;
+        var enumDirections = Enum.GetValues<Direction>();
+        var renderDistance = renderer.RenderDistance;
         var playerChunk = ChunkPosition.FromWorldPosition(
             (int)Camera.Position.X,
             (int)Camera.Position.Y,
@@ -146,11 +146,11 @@ public class Game : GameWindow
         visited.Add(playerChunk);
         world.EnqueueChunk(new ChunkLoader(playerChunk));
 
-        while (queue.Count > 0)
+        while (queue.Count > 0 && visited.Count < MathF.Pow(renderDistance, 3))
         {
             var chunk = queue.Dequeue();
 
-            foreach (var direction in EnumDirections)
+            foreach (var direction in enumDirections)
             {
                 var neighborPos = chunk + direction;
 

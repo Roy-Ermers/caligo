@@ -4,6 +4,7 @@ using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
+using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 
 namespace Caligo.Client.Generators.Layers;
@@ -21,7 +22,8 @@ public class GroundLayer : ILayer
         groundBlocks =
         [
             ModuleRepository.Current.Get<Block>("grass_block"),
-            ModuleRepository.Current.Get<Block>("podzol")
+            ModuleRepository.Current.Get<Block>("stone"),
+            ModuleRepository.Current.Get<Block>("snow")
         ];
     }
 
@@ -34,7 +36,8 @@ public class GroundLayer : ILayer
             if (worldPosition.Y > height) continue;
 
             var noiseValue = _noise.Get2D(worldPosition.X / 50f, worldPosition.Z / 50f);
-            var groundBlock = noiseValue < 0f ? groundBlocks[0] : groundBlocks[1];
+            var groundBlock = groundBlocks[(int)MathF.Min(groundBlocks.Length - 1, Easings.EaseInExpo((height + noiseValue * 100f) /
+                (heightLayer.MaxHeight / 3f)))];
 
             var localPosition = ChunkLocalPosition.FromWorldPosition(worldPosition);
             chunk.Set(localPosition, groundBlock);

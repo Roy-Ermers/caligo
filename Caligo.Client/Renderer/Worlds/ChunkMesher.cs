@@ -130,7 +130,11 @@ public class ChunkMesher
             if (variant is null)
                 continue;
 
-            var offset = GetBlockOffset(worldPosition, variant.Value.Model.OffsetType, random);
+            var offset = GetBlockOffset(
+                worldPosition,
+                variant.Value.Model.OffsetType,
+                random
+            );
 
             for (var direction = (Direction)0; direction <= (Direction)5; direction++)
             {

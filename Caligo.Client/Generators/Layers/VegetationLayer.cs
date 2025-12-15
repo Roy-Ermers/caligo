@@ -37,6 +37,8 @@ public class VegetationLayer : ILayer
             // check if height is out of bounds of the current chunk
             if (height > worldPos.Y + Chunk.Size || height < worldPos.Y)
                 continue;
+            
+            if(height > _heightLayer.MaxHeight / 3f) continue;
 
             worldPos = worldPos with { Y = (int)height };
 

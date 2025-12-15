@@ -41,27 +41,36 @@ public class FeatureNetwork
         for (var i = 0; i < amount; i++)
         {
             var newNode = GenerateNode(sector, random);
+            if(newNode == null) continue;
             sector.Nodes.Add(newNode);
         }
 
         return sector;
     }
 
-    private Feature GenerateNode(Sector sector, Random random)
+    private Feature? GenerateNode(Sector sector, Random random)
     {
-        sector.Lock.EnterWriteLock();
-        var offsetX = random.Next(Sector.SectorSize);
-        var offsetZ = random.Next(Sector.SectorSize);
-        var nodeX = sector.Start.X + offsetX;
-        var nodeZ = sector.Start.Z + offsetZ;
+        var budget = 3;
+        while (budget > 0)
+        {
+            budget--;
+            sector.Lock.EnterWriteLock();
+            var offsetX = random.Next(Sector.SectorSize);
+            var offsetZ = random.Next(Sector.SectorSize);
+            var nodeX = sector.Start.X + offsetX;
+            var nodeZ = sector.Start.Z + offsetZ;
 
-        var nodeY = _heightmap.GetHeightAt(nodeX, nodeZ);
-        var position = new WorldPosition(nodeX, (int)nodeY, nodeZ);
+            var nodeY = _heightmap.GetHeightAt(nodeX, nodeZ);
+            
+            if(nodeY > 150f) continue;
+            var position = new WorldPosition(nodeX, (int)nodeY, nodeZ);
 
-        var node = new Tree(random, position);
-        _world.Features.Insert(node);
-        sector.Lock.ExitWriteLock();
+            var node = new Tree(random, position);
+            _world.Features.Insert(node);
+            sector.Lock.ExitWriteLock();
+            return node;
+        }
 
-        return node;
+        return null;
     }
 }

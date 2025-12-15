@@ -11,11 +11,13 @@ public class HeightLayer : ILayer
     private GradientNoise noise;
     public Heightmap HeightMap { get; private set; }
 
+    public readonly float MaxHeight = 1500;
+
     public void Initialize(long seed, LayerWorldGenerator _)
     {
         noise = new GradientNoise((int)seed);
-        const int octaves = 4;
-        const float frequency = 0.005f;
+        const int octaves = 8;
+        const float frequency = 0.0005f;
         HeightMap = new Heightmap((x, z) =>
         {
             var offset = noise.Get2DVector(x * frequency, z * frequency);
@@ -26,7 +28,7 @@ public class HeightLayer : ILayer
                 value += noise.Get2D(x * freq + offset.X, z * freq + offset.Y) / (1 << octave);
             }
 
-            return Easings.EaseInCubic(value * 0.5f + 0.5f) * 150f;
+            return Easings.EaseInCubic(value * 0.5f + 0.5f) * MaxHeight;
         });
     }
 
