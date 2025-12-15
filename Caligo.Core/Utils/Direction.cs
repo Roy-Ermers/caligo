@@ -32,12 +32,12 @@ public static class DirectionExtensions
     {
         return direction switch
         {
-            Direction.Down => new Vector3(0, -1, 0),
-            Direction.Up => new Vector3(0, 1, 0),
-            Direction.North => new Vector3(0, 0, -1),
-            Direction.South => new Vector3(0, 0, 1),
-            Direction.West => new Vector3(-1, 0, 0),
-            Direction.East => new Vector3(1, 0, 0),
+            Direction.Down => -Vector3.UnitY,
+            Direction.Up => Vector3.UnitY,
+            Direction.North => -Vector3.UnitZ,
+            Direction.South => Vector3.UnitZ,
+            Direction.West => -Vector3.UnitX,
+            Direction.East => Vector3.UnitX,
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
     }

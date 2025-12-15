@@ -68,6 +68,7 @@ public class IndirectBuffer : IDisposable
         _handle = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);
         GL.BufferData(BufferTarget.DrawIndirectBuffer, Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+        ShaderBuffer._totalAllocatedBytes += Size;
     }
 
     private int Size => Marshal.SizeOf<IndirectDrawCommand>() * _capacity;
@@ -75,6 +76,7 @@ public class IndirectBuffer : IDisposable
     public void Dispose()
     {
         GL.DeleteBuffer(_handle);
+        ShaderBuffer._totalAllocatedBytes -= Size;
     }
 
     public void Append(IndirectDrawCommand command)
@@ -102,8 +104,11 @@ public class IndirectBuffer : IDisposable
 
     public void Resize(int newCapacity)
     {
+        ShaderBuffer._totalAllocatedBytes -= Size;
         _drawCount = 0;
         _capacity = newCapacity;
+
+        ShaderBuffer._totalAllocatedBytes += Size;
         _commands = new IndirectDrawCommand[newCapacity];
 
         GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _handle);

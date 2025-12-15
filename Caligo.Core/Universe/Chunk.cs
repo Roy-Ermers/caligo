@@ -9,7 +9,7 @@ public class Chunk
 {
     public const int Size = 16;
 
-    private readonly ushort[] data = new ushort[Size * Size * Size];
+    private readonly ushort[] data;
 
     private ushort blockCount;
 
@@ -61,10 +61,15 @@ public class Chunk
         var index = MortonCurve.Encode(x, y, z);
         var currentBlock = data[index];
 
-        if (value > 0 && currentBlock == 0)
-            blockCount++;
-        else if (value == 0 && currentBlock > 0)
-            blockCount--;
+        switch (value)
+        {
+            case > 0 when currentBlock == 0:
+                blockCount++;
+                break;
+            case 0 when currentBlock > 0:
+                blockCount--;
+                break;
+        }
 
         data[index] = value;
     }

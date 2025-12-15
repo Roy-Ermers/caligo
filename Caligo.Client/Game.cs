@@ -20,6 +20,7 @@ using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
+using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -48,7 +49,7 @@ public class Game : GameWindow
     private Vector2 _lastMousePosition;
     public WorldBuilder builder = null!;
 
-    public PlayerController Controller;
+    public FreeCameraController Controller;
     private DebugUiRenderer debugUiRenderer;
     public WorldRenderer renderer = null!;
 
@@ -112,7 +113,8 @@ public class Game : GameWindow
             new VegetationLayer()
         ]));
         renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
-        Controller = new PlayerController(Camera, world);
+        Controller = new FreeCameraController(this);
+        // Controller = new PlayerController(Camera, world);
 
         debugUiRenderer =
         [
@@ -130,21 +132,43 @@ public class Game : GameWindow
 
     private void LoadChunksAroundPlayer()
     {
-        var RenderDistance = renderer.RenderDistance / 2;
+        var EnumDirections = (Direction[])Enum.GetValues(typeof(Direction));
+        var renderDistance = renderer.RenderDistance / 2;
+        var playerChunk = ChunkPosition.FromWorldPosition(
+            (int)Camera.Position.X,
+            (int)Camera.Position.Y,
+            (int)Camera.Position.Z);
 
-        var playerPosition = Camera.Position;
-        for (var x = -RenderDistance; x < RenderDistance; x++)
-        for (var y = -RenderDistance; y < RenderDistance; y++)
-        for (var z = -RenderDistance; z < RenderDistance; z++)
+        var visited = new HashSet<ChunkPosition>();
+        var queue = new Queue<ChunkPosition>();
+
+        queue.Enqueue(playerChunk);
+        visited.Add(playerChunk);
+        world.EnqueueChunk(new ChunkLoader(playerChunk));
+
+        while (queue.Count > 0)
         {
-            var chunkPosition = ChunkPosition.FromWorldPosition(
-                x * Chunk.Size + (int)playerPosition.X,
-                y * Chunk.Size + (int)playerPosition.Y,
-                z * Chunk.Size + (int)playerPosition.Z
-            );
+            var chunk = queue.Dequeue();
 
-            var chunkLoader = new ChunkLoader(chunkPosition);
-            world.EnqueueChunk(chunkLoader);
+            foreach (var direction in EnumDirections)
+            {
+                var neighborPos = chunk + direction;
+
+                if (visited.Contains(neighborPos))
+                    continue;
+
+                // Check if within render distance (Manhattan or Chebyshev distance)
+                var dx = Math.Abs(neighborPos.X - playerChunk.X);
+                var dy = Math.Abs(neighborPos.Y - playerChunk.Y);
+                var dz = Math.Abs(neighborPos.Z - playerChunk.Z);
+
+                if (dx > renderDistance || dy > renderDistance || dz > renderDistance)
+                    continue;
+
+                visited.Add(neighborPos);
+                queue.Enqueue(neighborPos);
+                world.EnqueueChunk(new ChunkLoader(neighborPos));
+            }
         }
     }
 
@@ -179,7 +203,7 @@ public class Game : GameWindow
         if (_cursorLocked)
         {
             var delta = mousePos - _lastMousePosition;
-            Controller.ProcessMouseLook(delta.X, delta.Y);
+            // Controller.ProcessMouseLook(delta.X, delta.Y);
         }
 
         _lastMousePosition = mousePos;
@@ -194,7 +218,7 @@ public class Game : GameWindow
         var right = KeyboardState.IsKeyDown(Keys.D);
         var jump = KeyboardState.IsKeyDown(Keys.Space);
         var sprint = KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift);
-        Controller.ProcessMovement(forward, backward, left, right, jump, sprint);
+        // Controller.ProcessMovement(forward, backward, left, right, jump, sprint);
         // --- END PLAYER INPUT HANDLING ---
 
         builder.Update();
