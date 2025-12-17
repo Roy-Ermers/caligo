@@ -15,6 +15,7 @@ public class PlayerController : IController
     // Player dimensions
     private const float PlayerHeight = 1.8f;
     private const float PlayerRadius = 0.3f;
+    private const float SkinWidth = 0.01f; // Small buffer to prevent getting stuck on edges
     private readonly Game _game;
     private bool _isGrounded;
     private float _pitch;
@@ -189,36 +190,56 @@ public class PlayerController : IController
         // Get physics position (without visual offset)
         var result = _game.Camera.Position - new Vector3(0, _stepYOffset, 0);
 
-        // X axis with auto-step
-        var testX = result;
-        testX.X = targetPosition.X;
-        if (!CheckCollision(testX))
+        // Try combined XZ movement first (helps with diagonal movement along edges)
+        var testXZ = result;
+        testXZ.X = targetPosition.X;
+        testXZ.Z = targetPosition.Z;
+        if (!CheckCollision(testXZ))
         {
             result.X = targetPosition.X;
-        }
-        else if (_isGrounded && TryStepUp(ref result, targetPosition.X, axis: 0))
-        {
-            // Successfully stepped up on X
-        }
-        else
-        {
-            _velocity.X = 0;
-        }
-
-        // Z axis with auto-step
-        var testZ = result;
-        testZ.Z = targetPosition.Z;
-        if (!CheckCollision(testZ))
-        {
             result.Z = targetPosition.Z;
         }
-        else if (_isGrounded && TryStepUp(ref result, targetPosition.Z, axis: 2))
-        {
-            // Successfully stepped up on Z
-        }
         else
         {
-            _velocity.Z = 0;
+            // Fall back to axis-by-axis resolution with auto-step
+
+            // X axis with auto-step
+            var testX = result;
+            testX.X = targetPosition.X;
+            if (!CheckCollision(testX))
+            {
+                result.X = targetPosition.X;
+            }
+            else if (_isGrounded && TryStepUp(ref result, targetPosition.X, axis: 0))
+            {
+                // Successfully stepped up on X
+            }
+            else
+            {
+                // Push slightly away from the collision to prevent sticking
+                var pushDir = Math.Sign(result.X - targetPosition.X);
+                result.X += pushDir * SkinWidth;
+                _velocity.X = 0;
+            }
+
+            // Z axis with auto-step
+            var testZ = result;
+            testZ.Z = targetPosition.Z;
+            if (!CheckCollision(testZ))
+            {
+                result.Z = targetPosition.Z;
+            }
+            else if (_isGrounded && TryStepUp(ref result, targetPosition.Z, axis: 2))
+            {
+                // Successfully stepped up on Z
+            }
+            else
+            {
+                // Push slightly away from the collision to prevent sticking
+                var pushDir = Math.Sign(result.Z - targetPosition.Z);
+                result.Z += pushDir * SkinWidth;
+                _velocity.Z = 0;
+            }
         }
 
         // Y axis
@@ -288,7 +309,7 @@ public class PlayerController : IController
     /// </summary>
     private bool CheckCollision(Vector3 position)
     {
-        const float eps = 0.0001f; // reduce face-sticking and precision issues
+        const float eps = 0.001f; // Increased epsilon to reduce edge-sticking
 
         var playerMinX = position.X - PlayerRadius + eps;
         var playerMaxX = position.X + PlayerRadius - eps;
@@ -349,9 +370,9 @@ public class PlayerController : IController
         // Check a small distance below the player's feet
         var feetY = position.Y - PlayerHeight - 0.05f;
 
-        // Check multiple points under the player (corners and center)
-        float[] offsetsX = [0, -PlayerRadius * 0.5f, PlayerRadius * 0.5f];
-        float[] offsetsZ = [0, -PlayerRadius * 0.5f, PlayerRadius * 0.5f];
+        // Check multiple points under the player - use full radius for better edge detection
+        float[] offsetsX = [0, -PlayerRadius * 0.9f, PlayerRadius * 0.9f];
+        float[] offsetsZ = [0, -PlayerRadius * 0.9f, PlayerRadius * 0.9f];
 
         foreach (var ox in offsetsX)
         foreach (var oz in offsetsZ)
@@ -378,7 +399,7 @@ public class PlayerController : IController
     {
         const float step = 0.05f;
         var result = position;
-        var remaining = maxDown;
+        var remaining = maxDown + SkinWidth; // Add skin width to ensure we land properly
 
         while (remaining > 0f)
         {
@@ -387,7 +408,11 @@ public class PlayerController : IController
             test.Y -= dist;
 
             if (CheckCollision(test))
+            {
+                // Move back up slightly to prevent sinking into the surface
+                result.Y += SkinWidth;
                 break;
+            }
 
             result = test;
             remaining -= dist;
