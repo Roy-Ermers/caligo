@@ -1,22 +1,21 @@
-using Caligo.Client.Graphics;
 using Caligo.Core.Resources.Block;
 using Caligo.Core.Spatial.PositionTypes;
-using Caligo.Core.Universe.Worlds;
 using Caligo.ModuleSystem;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Caligo.Client.Player;
 
 /// <summary>
 ///     First person character controller for player movement and camera control.
 /// </summary>
-public class PlayerController
+public class PlayerController : IController
 {
     // Player dimensions
     private const float PlayerHeight = 1.8f;
     private const float PlayerRadius = 0.3f;
-    private readonly Camera _camera;
-    private readonly World _world;
+    private readonly Game _game;
     private bool _isGrounded;
     private float _pitch;
 
@@ -25,16 +24,22 @@ public class PlayerController
 
     // Camera rotation
     private float _yaw;
+    private bool _cursorLocked;
+    private bool _firstMouseMove;
+    private Vector2 _lastMousePosition;
 
-    public PlayerController(Camera camera, World world)
+    // Smooth stepping visual offset
+    private float _stepYOffset;
+    private float StepSmoothSpeed { get; } = 16.0f; // How fast the camera catches up (units/sec)
+
+    public PlayerController(Game game)
     {
-        _world = world;
-        _camera = camera;
+        _game = game;
         _velocity = Vector3.Zero;
 
         // Initialize rotation from camera's current state
-        _yaw = camera.Yaw;
-        _pitch = camera.Pitch;
+        _yaw = game.Camera.Yaw;
+        _pitch = game.Camera.Pitch;
     }
 
     // Configuration
@@ -44,12 +49,15 @@ public class PlayerController
     private float Gravity { get; } = 20.0f;
     private float TerminalVelocity { get; } = 50.0f;
     private float MouseSensitivity { get; } = 0.002f;
+    private float StepHeight { get; } = 2.1f; // max auto-step height (in blocks)
 
     /// <summary>
     ///     Updates player movement and camera rotation.
     /// </summary>
     public void Update(double deltaTime)
     {
+        ProcessMovement();
+        ProcessMouseLook();
         var dt = (float)deltaTime;
 
         // Apply gravity
@@ -60,31 +68,53 @@ public class PlayerController
         }
 
         // Calculate movement from velocity
-        var newPosition = _camera.Position + _velocity * dt;
+        var newPosition = _game.Camera.Position + _velocity * dt;
 
         // Check collisions and update position
-        newPosition = ResolveCollisions(newPosition);
+        newPosition = ResolveCollisions(newPosition, dt);
 
-        _camera.Position = newPosition;
+        // Smooth the step offset toward zero
+        if (MathF.Abs(_stepYOffset) > 0.001f)
+        {
+            var smoothAmount = StepSmoothSpeed * dt;
+            if (_stepYOffset > 0)
+                _stepYOffset = MathF.Max(0, _stepYOffset - smoothAmount);
+            else
+                _stepYOffset = MathF.Min(0, _stepYOffset + smoothAmount);
+        }
+        else
+        {
+            _stepYOffset = 0;
+        }
 
-        // Check if grounded for next frame
-        _isGrounded = CheckGrounded();
+        // Apply physics position plus visual offset
+        _game.Camera.Position = newPosition + new Vector3(0, _stepYOffset, 0);
+
+        // Check if grounded for next frame (use physics position, not visual)
+        var physicsPos = _game.Camera.Position - new Vector3(0, _stepYOffset, 0);
+        _isGrounded = CheckGroundedAt(physicsPos);
     }
 
     /// <summary>
     ///     Handles keyboard input for player movement.
     /// </summary>
-    public void ProcessMovement(bool forward, bool backward, bool left, bool right, bool jump, bool sprint)
+    public void ProcessMovement()
     {
+        var forward = _game.KeyboardState.IsKeyDown(Keys.W);
+        var backward = _game.KeyboardState.IsKeyDown(Keys.S);
+        var left = _game.KeyboardState.IsKeyDown(Keys.A);
+        var right = _game.KeyboardState.IsKeyDown(Keys.D);
+        var jump = _game.KeyboardState.IsKeyDown(Keys.Space);
+        var sprint = _game.KeyboardState.IsKeyDown(Keys.LeftShift) || _game.KeyboardState.IsKeyDown(Keys.RightShift);
         var moveDirection = Vector3.Zero;
 
         // Get camera forward and right vectors (ignoring Y component for horizontal movement)
-        var cameraForward = _camera.Forward;
+        var cameraForward = _game.Camera.Forward;
         cameraForward.Y = 0;
         if (cameraForward.LengthSquared > 0.0001f)
             cameraForward = Vector3.Normalize(cameraForward);
 
-        var cameraRight = _camera.Right;
+        var cameraRight = _game.Camera.Right;
         cameraRight.Y = 0;
         if (cameraRight.LengthSquared > 0.0001f)
             cameraRight = Vector3.Normalize(cameraRight);
@@ -113,81 +143,144 @@ public class PlayerController
     /// <summary>
     ///     Handles mouse input for camera rotation.
     /// </summary>
-    public void ProcessMouseLook(float deltaX, float deltaY)
+    public void ProcessMouseLook()
     {
-        _yaw += deltaX * MouseSensitivity;
-        _pitch -= deltaY * MouseSensitivity;
+        // Toggle cursor lock with Escape
+        if (_game.KeyboardState.IsKeyPressed(Keys.Escape))
+        {
+            _cursorLocked = !_cursorLocked;
+            _game.CursorState = _cursorLocked ? CursorState.Grabbed : CursorState.Normal;
+            _firstMouseMove = true; // Reset to avoid camera jump when re-locking
+        }
+
+        // Mouse look (only when cursor is locked)
+        var mouse = _game.MouseState;
+        var mousePos = new Vector2(mouse.X, mouse.Y);
+        if (_firstMouseMove)
+        {
+            _lastMousePosition = mousePos;
+            _firstMouseMove = false;
+        }
+
+        var delta = mousePos - _lastMousePosition;
+        if (!_cursorLocked)
+        {
+            return;
+        }
+
+        _lastMousePosition = mousePos;
+
+        _yaw += delta.X * MouseSensitivity;
+        _pitch -= delta.Y * MouseSensitivity;
 
         // Clamp pitch to prevent flipping
         _pitch = Math.Clamp(_pitch, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
 
         // Update camera rotation
-        _camera.Yaw = _yaw;
-        _camera.Pitch = _pitch;
+        _game.Camera.Yaw = _yaw;
+        _game.Camera.Pitch = _pitch;
     }
 
     /// <summary>
     ///     Resolves collisions with blocks in the world.
     /// </summary>
-    private Vector3 ResolveCollisions(Vector3 targetPosition)
+    private Vector3 ResolveCollisions(Vector3 targetPosition, float dt)
     {
-        var currentPos = _camera.Position;
-        var result = targetPosition;
+        // Get physics position (without visual offset)
+        var result = _game.Camera.Position - new Vector3(0, _stepYOffset, 0);
 
-        // Resolve X axis
-        result.X = ResolveAxis(currentPos, result, 0);
+        // X axis with auto-step
+        var testX = result;
+        testX.X = targetPosition.X;
+        if (!CheckCollision(testX))
+        {
+            result.X = targetPosition.X;
+        }
+        else if (_isGrounded && TryStepUp(ref result, targetPosition.X, axis: 0))
+        {
+            // Successfully stepped up on X
+        }
+        else
+        {
+            _velocity.X = 0;
+        }
 
-        // Resolve Z axis
-        result.Z = ResolveAxis(currentPos, result, 2);
+        // Z axis with auto-step
+        var testZ = result;
+        testZ.Z = targetPosition.Z;
+        if (!CheckCollision(testZ))
+        {
+            result.Z = targetPosition.Z;
+        }
+        else if (_isGrounded && TryStepUp(ref result, targetPosition.Z, axis: 2))
+        {
+            // Successfully stepped up on Z
+        }
+        else
+        {
+            _velocity.Z = 0;
+        }
 
-        // Resolve Y axis
-        result.Y = ResolveAxis(currentPos, result, 1);
+        // Y axis
+        var testY = result;
+        testY.Y = targetPosition.Y;
+        if (!CheckCollision(testY))
+        {
+            result.Y = targetPosition.Y;
+        }
+        else
+        {
+            _velocity.Y = 0;
+        }
 
         return result;
     }
 
     /// <summary>
-    ///     Resolves collision along a single axis.
+    ///     Attempts to step up over an obstacle on the given axis.
     /// </summary>
-    private float ResolveAxis(Vector3 currentPos, Vector3 targetPos, int axis)
+    private bool TryStepUp(ref Vector3 position, float targetAxisValue, int axis)
     {
-        // Create test position with only this axis changed
-        var testPos = currentPos;
-        switch (axis)
-        {
-            case 0:
-                testPos.X = targetPos.X;
-                break;
-            case 1:
-                testPos.Y = targetPos.Y;
-                break;
-            default:
-                testPos.Z = targetPos.Z;
-                break;
-        }
+        if (StepHeight <= 0f) return false;
 
-        if (CheckCollision(testPos))
-            switch (axis)
+        var originalY = position.Y;
+
+        // Try stepping up in small increments to find the minimum step height needed
+        const float stepIncrement = 0.1f;
+
+        for (var stepUp = stepIncrement; stepUp <= StepHeight; stepUp += stepIncrement)
+        {
+            // Check if we have headroom at this height
+            var raised = position;
+            raised.Y += stepUp;
+            if (CheckCollision(raised))
+                continue; // Head would hit something, try higher or fail
+
+            // Check if we can move horizontally at this raised height
+            var raisedMove = raised;
+            if (axis == 0) raisedMove.X = targetAxisValue;
+            else raisedMove.Z = targetAxisValue;
+
+            if (CheckCollision(raisedMove))
+                continue; // Still blocked at this height, try higher
+
+            // Success! Snap down to land on the surface
+            var landed = SnapDown(raisedMove, stepUp);
+
+            // Calculate how much we actually stepped up
+            var actualStepHeight = landed.Y - originalY;
+
+            // Add to the visual offset (negative so camera appears lower, then smooths up)
+            if (actualStepHeight > 0.01f)
             {
-                // Collision detected, keep current position on this axis
-                case 0:
-                    _velocity.X = 0;
-                    return currentPos.X;
-                case 1:
-                    _velocity.Y = 0;
-                    return currentPos.Y;
-                default:
-                    _velocity.Z = 0;
-                    return currentPos.Z;
+                _stepYOffset -= actualStepHeight;
             }
 
-        return axis switch
-        {
-            // No collision, allow movement
-            0 => targetPos.X,
-            1 => targetPos.Y,
-            _ => targetPos.Z
-        };
+            position = landed;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -195,12 +288,14 @@ public class PlayerController
     /// </summary>
     private bool CheckCollision(Vector3 position)
     {
-        var playerMinX = position.X - PlayerRadius;
-        var playerMaxX = position.X + PlayerRadius;
-        var playerMinY = position.Y - PlayerHeight;
-        var playerMaxY = position.Y;
-        var playerMinZ = position.Z - PlayerRadius;
-        var playerMaxZ = position.Z + PlayerRadius;
+        const float eps = 0.0001f; // reduce face-sticking and precision issues
+
+        var playerMinX = position.X - PlayerRadius + eps;
+        var playerMaxX = position.X + PlayerRadius - eps;
+        var playerMinY = position.Y - PlayerHeight + eps;
+        var playerMaxY = position.Y - eps;
+        var playerMinZ = position.Z - PlayerRadius + eps;
+        var playerMaxZ = position.Z + PlayerRadius - eps;
 
         var minX = (int)Math.Floor(playerMinX);
         var maxX = (int)Math.Floor(playerMaxX);
@@ -214,7 +309,7 @@ public class PlayerController
         for (var z = minZ; z <= maxZ; z++)
         {
             var blockPosition = new WorldPosition(x, y, z);
-            if (!_world.TryGetBlock(blockPosition, out var blockId)) continue;
+            if (!_game.World.TryGetBlock(blockPosition, out var blockId)) continue;
 
             var block = ModuleRepository.Current.GetAll<Block>()[blockId];
             if (!block.IsSolid) continue;
@@ -242,8 +337,17 @@ public class PlayerController
     /// </summary>
     private bool CheckGrounded()
     {
+        var physicsPos = _game.Camera.Position - new Vector3(0, _stepYOffset, 0);
+        return CheckGroundedAt(physicsPos);
+    }
+
+    /// <summary>
+    ///     Checks if the player is standing on solid ground at a specific position.
+    /// </summary>
+    private bool CheckGroundedAt(Vector3 position)
+    {
         // Check a small distance below the player's feet
-        var feetY = _camera.Position.Y - PlayerHeight - 0.05f;
+        var feetY = position.Y - PlayerHeight - 0.05f;
 
         // Check multiple points under the player (corners and center)
         float[] offsetsX = [0, -PlayerRadius * 0.5f, PlayerRadius * 0.5f];
@@ -253,17 +357,42 @@ public class PlayerController
         foreach (var oz in offsetsZ)
         {
             var blockPosition = new WorldPosition(
-                (int)Math.Floor(_camera.Position.X + ox),
+                (int)Math.Floor(position.X + ox),
                 (int)Math.Floor(feetY),
-                (int)Math.Floor(_camera.Position.Z + oz)
+                (int)Math.Floor(position.Z + oz)
             );
 
-            if (!_world.TryGetBlock(blockPosition, out var blockId)) continue;
+            if (!_game.World.TryGetBlock(blockPosition, out var blockId)) continue;
 
             var block = ModuleRepository.Current.GetAll<Block>()[blockId];
             if (block.IsSolid) return true;
         }
 
         return false;
+    }
+
+    /// <summary>
+    ///     Moves down up to 'maxDown' while staying collision-free to rest on the surface.
+    /// </summary>
+    private Vector3 SnapDown(Vector3 position, float maxDown)
+    {
+        const float step = 0.05f;
+        var result = position;
+        var remaining = maxDown;
+
+        while (remaining > 0f)
+        {
+            var dist = MathF.Min(step, remaining);
+            var test = result;
+            test.Y -= dist;
+
+            if (CheckCollision(test))
+                break;
+
+            result = test;
+            remaining -= dist;
+        }
+
+        return result;
     }
 }

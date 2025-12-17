@@ -49,17 +49,17 @@ public class Game : GameWindow
     private Vector2 _lastMousePosition;
     public WorldBuilder builder = null!;
 
-    public FreeCameraController Controller;
+    public IController Controller;
     private DebugUiRenderer debugUiRenderer;
     public WorldRenderer renderer = null!;
 
 
     public double Time;
-    public World world = null!;
+    public World World = null!;
 
     public Game() : base(new GameWindowSettings(),
         new NativeWindowSettings
-            { ClientSize = new Vector2i(1280, 720), Title = "Voxels", WindowState = WindowState.Maximized })
+            { ClientSize = new Vector2i(1280, 720), Title = "Caligo", WindowState = WindowState.Maximized })
     {
         Instance = this;
         renderdoc = RenderDoc.Load();
@@ -79,8 +79,6 @@ public class Game : GameWindow
         _shader.Initialize();
 
         Camera = new Camera(this);
-        Camera.Position = Vector3.UnitY * 64f;
-
         MainThread = new MainThread();
 
         uiRenderer = new PaperRenderer(this);
@@ -105,16 +103,18 @@ public class Game : GameWindow
 
         var blockStorage = ModuleRepository.GetAll<Block>();
 
-        world = new World();
-        builder = new WorldBuilder(world, new LayerWorldGenerator(0, world, [
-            new HeightLayer(),
+        World = new World();
+        var heightLayer = new HeightLayer();
+        builder = new WorldBuilder(World, new LayerWorldGenerator(0, World, [
+            heightLayer,
             new SurfaceLayer(),
             new FeatureLayer(),
             new VegetationLayer()
         ]));
-        renderer = new WorldRenderer(world, ModuleRepository, blockStorage);
-        // Controller = new FreeCameraController(this);
-        Controller = new FreeCameraController(this);
+
+        Camera.Position = Camera.Position with { Y = heightLayer.HeightMap.GetHeightAt(0, 0) + 16f };
+        renderer = new WorldRenderer(World, ModuleRepository, blockStorage);
+        Controller = new PlayerController(this);
 
         debugUiRenderer =
         [
@@ -125,9 +125,6 @@ public class Game : GameWindow
             new ModuleDebugModule(this),
             new ChunkDebugModule(this)
         ];
-
-        // Lock cursor for FPS controls
-        CursorState = CursorState.Grabbed;
     }
 
     private void LoadChunksAroundPlayer()
@@ -144,7 +141,7 @@ public class Game : GameWindow
 
         queue.Enqueue(playerChunk);
         visited.Add(playerChunk);
-        world.EnqueueChunk(new ChunkLoader(playerChunk));
+        World.EnqueueChunk(new ChunkLoader(playerChunk));
 
         while (queue.Count > 0 && visited.Count < MathF.Pow(renderDistance, 3))
         {
@@ -167,7 +164,7 @@ public class Game : GameWindow
 
                 visited.Add(neighborPos);
                 queue.Enqueue(neighborPos);
-                world.EnqueueChunk(new ChunkLoader(neighborPos));
+                World.EnqueueChunk(new ChunkLoader(neighborPos));
             }
         }
     }
@@ -179,51 +176,15 @@ public class Game : GameWindow
 
         if (KeyboardState.IsKeyPressed(Keys.R))
         {
-            world.Clear();
+            World.Clear();
             renderer.Clear();
         }
 
-        // Toggle cursor lock with Escape
-        if (KeyboardState.IsKeyPressed(Keys.Escape))
-        {
-            _cursorLocked = !_cursorLocked;
-            CursorState = _cursorLocked ? CursorState.Grabbed : CursorState.Normal;
-            _firstMouseMove = true; // Reset to avoid camera jump when re-locking
-        }
-
-        // Mouse look (only when cursor is locked)
-        var mouse = MouseState;
-        var mousePos = new Vector2(mouse.X, mouse.Y);
-        if (_firstMouseMove)
-        {
-            _lastMousePosition = mousePos;
-            _firstMouseMove = false;
-        }
-
-        if (_cursorLocked)
-        {
-            var delta = mousePos - _lastMousePosition;
-            // Controller.ProcessMouseLook(delta.X, delta.Y);
-        }
-
-        _lastMousePosition = mousePos;
-
-        // Update camera so Forward/Right vectors are current before processing movement
         Camera.Update();
-
-        // Movement keys (must be after Camera.Update so Forward/Right are up-to-date)
-        var forward = KeyboardState.IsKeyDown(Keys.W);
-        var backward = KeyboardState.IsKeyDown(Keys.S);
-        var left = KeyboardState.IsKeyDown(Keys.A);
-        var right = KeyboardState.IsKeyDown(Keys.D);
-        var jump = KeyboardState.IsKeyDown(Keys.Space);
-        var sprint = KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift);
-        // Controller.ProcessMovement(forward, backward, left, right, jump, sprint);
-        // --- END PLAYER INPUT HANDLING ---
 
         builder.Update();
         renderer.Update();
-        world.Update();
+        World.Update();
 
         Controller.Update(args.Time);
         // Update the main thread actions
@@ -237,7 +198,7 @@ public class Game : GameWindow
         Time += args.Time;
         FpsMeter.FpsGauge.Record(1.0 / args.Time);
 
-        world.DebugRender();
+        World.DebugRender();
 
         using var shader = _shader.Use();
         _shader.SetMatrix4("camera.projection", Camera.ProjectionMatrix);
@@ -255,7 +216,6 @@ public class Game : GameWindow
     private void RenderUI(FrameEventArgs args)
     {
         using var uiFrame = uiRenderer.Start(args.Time);
-
 
         Components.Text("+").PositionType(PositionType.SelfDirected).Margin(UnitValue.StretchOne);
 
@@ -279,7 +239,7 @@ public class Game : GameWindow
             .Rounded(8);
         using (hitinfo.Enter())
         {
-            if (world.Raycast(Camera.Ray, 5f, out var hit))
+            if (World.Raycast(Camera.Ray, 5f, out var hit))
             {
                 hitinfo.Visible(true);
                 Gizmo3D.DrawBoundingBox(new BoundingBox(hit.Position, 1, 1, 1));

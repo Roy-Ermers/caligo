@@ -102,7 +102,7 @@ public class ChunkMesher
     {
         Random random = new(chunk.Id);
 
-        var world = Game.Instance.world;
+        var world = Game.Instance.World;
         if (chunk.BlockCount == 0)
             return ChunkMesh.Empty with
             {
