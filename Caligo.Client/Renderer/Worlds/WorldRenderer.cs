@@ -4,7 +4,9 @@ using Caligo.Client.Graphics.Shaders;
 using Caligo.Client.Renderer.Worlds.Materials;
 using Caligo.Client.Resources.Atlas;
 using Caligo.Core.Resources.Block;
+using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Universe;
+using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
 using Caligo.ModuleSystem.Storage;
 using OpenTK.Graphics.OpenGL;
@@ -65,8 +67,30 @@ public class WorldRenderer
                 continue;
 
             if ((chunk.State & (ChunkState.Generated | ChunkState.Meshing | ChunkState.Meshed)) == ChunkState.Generated)
-                ChunkMesher.EnqueueChunk(chunk);
+            {
+                // Check if all 6 direct neighbors are generated before meshing
+                if (IsFullySurrounded(position))
+                    ChunkMesher.EnqueueChunk(chunk);
+            }
         }
+    }
+
+    /// <summary>
+    /// Checks if all 6 direct neighboring chunks exist and are generated.
+    /// </summary>
+    private bool IsFullySurrounded(ChunkPosition position)
+    {
+        foreach (var direction in Enum.GetValues<Direction>())
+        {
+            var neighborPos = position + direction;
+            if (!_world.TryGetChunk(neighborPos, out var neighbor))
+                return false;
+
+            if ((neighbor.State & ChunkState.Generated) == 0)
+                return false;
+        }
+
+        return true;
     }
 
     private void CreateQuadVertexArrayObject()
