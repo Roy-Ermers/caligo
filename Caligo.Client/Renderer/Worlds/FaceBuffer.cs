@@ -21,7 +21,7 @@ public class FaceBuffer : IDisposable
 
     private RingBuffer<ChunkMesh> Meshes;
 
-    private int renderDistance = 12;
+    private int renderDistance = 10;
 
     public FaceBuffer(MaterialBuffer materialBuffer)
     {
