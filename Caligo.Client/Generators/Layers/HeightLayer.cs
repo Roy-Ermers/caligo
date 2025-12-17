@@ -11,7 +11,7 @@ public class HeightLayer : ILayer
     private GradientNoise noise;
     public Heightmap HeightMap { get; private set; }
 
-    public readonly float MaxHeight = 1500;
+    public const float MaxHeight = 1500f;
 
     public void Initialize(long seed, LayerWorldGenerator _)
     {

@@ -1,6 +1,7 @@
 using Caligo.Core.Noise;
 using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
+using Caligo.Core.Utils;
 using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Core.Generators.Features;
@@ -41,7 +42,7 @@ public class FeatureNetwork
         for (var i = 0; i < amount; i++)
         {
             var newNode = GenerateNode(sector, random);
-            if(newNode == null) continue;
+            if (newNode == null) continue;
             sector.Nodes.Add(newNode);
         }
 
@@ -54,21 +55,32 @@ public class FeatureNetwork
         while (budget > 0)
         {
             budget--;
-            sector.Lock.EnterWriteLock();
             var offsetX = random.Next(Sector.SectorSize);
             var offsetZ = random.Next(Sector.SectorSize);
             var nodeX = sector.Start.X + offsetX;
             var nodeZ = sector.Start.Z + offsetZ;
 
             var nodeY = _heightmap.GetHeightAt(nodeX, nodeZ);
-            
-            if(nodeY > 150f) continue;
+            var slope = _heightmap.GetSlope(nodeX, nodeZ);
+
+            if (slope > 0.35f) continue;
+            var chance = Easings.EaseOutExpo(nodeY / 750f);
+
+            if (chance > random.NextDouble()) continue;
+
             var position = new WorldPosition(nodeX, (int)nodeY, nodeZ);
 
-            var node = new Tree(random, position);
-            _world.Features.Insert(node);
-            sector.Lock.ExitWriteLock();
-            return node;
+            sector.Lock.EnterWriteLock();
+            try
+            {
+                var node = new Tree(random, position);
+                _world.Features.Insert(node);
+                return node;
+            }
+            finally
+            {
+                sector.Lock.ExitWriteLock();
+            }
         }
 
         return null;

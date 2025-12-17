@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Caligo.Core.Spatial;
 
 public delegate float HeightmapDelegate(float x, float z);
@@ -6,6 +8,26 @@ public class Heightmap
 {
     private readonly HeightmapDelegate _heightMap;
 
+    /// <summary>
+    /// Calculate the slope vector at a given world position based on height differences.
+    /// </summary>
+    /// <param name="worldPosition">The position to query</param>
+    /// <returns>A value between 0-1, 0 being completely flat, and 1 being a slope going straight up.</returns>
+    public float GetSlope(int x, int z, int sampleDistance = 4)
+    {
+        var hL = GetHeightAt(x - sampleDistance, z);
+        var hR = GetHeightAt(x + sampleDistance, z);
+        var hD = GetHeightAt(x, z - sampleDistance);
+        var hU = GetHeightAt(x, z + sampleDistance);
+
+        var dX = (hR - hL) / (2 * sampleDistance);
+        var dZ = (hU - hD) / (2 * sampleDistance);
+
+        var slopeVector = new Vector3(-dX, 1f, -dZ);
+        slopeVector = Vector3.Normalize(slopeVector);
+
+        return 1f - slopeVector.Y;
+    }
 
     public Heightmap(HeightmapDelegate sample, int lowestLOD = 1)
     {

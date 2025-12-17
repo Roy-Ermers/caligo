@@ -108,7 +108,7 @@ public class Game : GameWindow
         world = new World();
         builder = new WorldBuilder(world, new LayerWorldGenerator(0, world, [
             new HeightLayer(),
-            new GroundLayer(),
+            new SurfaceLayer(),
             new FeatureLayer(),
             new VegetationLayer()
         ]));
