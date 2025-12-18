@@ -1,19 +1,21 @@
-using Jint;
-
 namespace Caligo.ModuleSystem.Runtime;
 
+/// <summary>
+/// A module that executes JavaScript code and can define blocks programmatically.
+/// </summary>
 public class JsModule : Module
 {
-    private readonly Engine _moduleEngine;
+    public static JsModule CurrentModule { private set; get; }
 
     internal JsModule(string identifier, string absoluteDirectory) : base(identifier, absoluteDirectory)
     {
-        _moduleEngine = JsEngine.CreateEngine(identifier, absoluteDirectory);
+        CurrentModule = this;
+        var moduleEngine = JsEngine.CreateEngine(identifier, absoluteDirectory);
 
         var moduleEntry = Path.Combine(absoluteDirectory, "module.js");
 
-        _moduleEngine.Modules.Add(identifier, File.ReadAllText(moduleEntry));
+        moduleEngine.Modules.Add(identifier, File.ReadAllText(moduleEntry));
 
-        var result = _moduleEngine.Modules.Import(identifier);
+        moduleEngine.Modules.Import(identifier);
     }
 }

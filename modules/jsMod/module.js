@@ -1,2 +1,21 @@
-console.log("Hello from JS");
-export const version = "1.0.0";
+import {
+    defineBlock,
+    defineCubeModel
+} from '@core/blocks';
+
+
+// Block with custom textures object
+defineBlock("block", () => {
+    defineCubeModel({
+        weight: 5,
+        textures: {
+            north: "grass_block_top",
+            south: "grass_block_top",
+            east: "dirt",
+            west: "dirt",
+            up: "podzol_top",
+            down: "podzol_top"
+        }
+    });
+});
+

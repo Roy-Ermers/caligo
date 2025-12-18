@@ -11,5 +11,4 @@
     <ItemGroup>
         <PackageReference Include="Jint" Version="4.4.2"/>
     </ItemGroup>
-
 </Project>
