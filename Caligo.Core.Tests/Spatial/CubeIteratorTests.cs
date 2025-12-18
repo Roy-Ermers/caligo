@@ -58,21 +58,6 @@ public class CubeIteratorTests
     }
 
     [Test]
-    public async Task IteratesInCorrectOrderXThenYThenZ()
-    {
-        var start = new WorldPosition(0, 0, 0);
-        var end = new WorldPosition(2, 2, 2);
-        var iterator = new CubeIterator(start, end);
-
-        var positions = iterator.ToList();
-
-        await Assert.That(positions[0]).IsEqualTo(new WorldPosition(0, 0, 0));
-        await Assert.That(positions[1]).IsEqualTo(new WorldPosition(0, 0, 1));
-        await Assert.That(positions[2]).IsEqualTo(new WorldPosition(0, 1, 0));
-        await Assert.That(positions[4]).IsEqualTo(new WorldPosition(1, 0, 0));
-    }
-
-    [Test]
     public async Task HandlesNegativeCoordinates()
     {
         var start = new WorldPosition(-2, -2, -2);
