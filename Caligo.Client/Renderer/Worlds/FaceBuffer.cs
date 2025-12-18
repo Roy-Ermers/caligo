@@ -48,12 +48,10 @@ public class FaceBuffer : IDisposable
         ChunkInfoShaderBuffer.Name = "ChunkInfoBuffer";
 
         IndirectBuffer = new IndirectBuffer(maxChunks);
-
-
         Meshes = new RingBuffer<ChunkMesh>(maxChunks);
     }
 
-    private int maxChunks => (int)Math.Pow(renderDistance, 3);
+    private int maxChunks => (int)MathF.Pow(renderDistance, 3);
 
     public int RenderDistance
     {

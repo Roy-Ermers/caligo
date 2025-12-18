@@ -102,7 +102,7 @@ public class ChunkMesher
     {
         Random random = new(chunk.Id);
 
-        var world = Game.Instance.world;
+        var world = Game.Instance.World;
         if (chunk.BlockCount == 0)
             return ChunkMesh.Empty with
             {
@@ -130,7 +130,11 @@ public class ChunkMesher
             if (variant is null)
                 continue;
 
-            var offset = GetBlockOffset(worldPosition, variant.Value.Model.OffsetType, random);
+            var offset = GetBlockOffset(
+                worldPosition,
+                variant.Value.Model.OffsetType,
+                random
+            );
 
             for (var direction = (Direction)0; direction <= (Direction)5; direction++)
             {

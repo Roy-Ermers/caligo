@@ -5,7 +5,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Caligo.Client.Player;
 
-public class FreeCameraController
+public class FreeCameraController : IController
 {
     private readonly Game _game;
 

@@ -1,3 +1,4 @@
+using Caligo.Client.Graphics;
 using Caligo.Client.Graphics.UI.PaperComponents;
 using Caligo.Core.FileSystem;
 using OpenTK.Graphics.OpenGL4;
@@ -8,6 +9,9 @@ public class OpenGLDebugModule : IDebugModule
 {
     private readonly string[] SupportedExtensions;
     private string search = "";
+
+    public readonly int MaxTextureSize = GL.GetInteger(GetPName.MaxTextureSize);
+    public readonly int MaxArrayTextureLayers = GL.GetInteger(GetPName.MaxArrayTextureLayers);
 
     public OpenGLDebugModule()
     {
@@ -44,6 +48,11 @@ public class OpenGLDebugModule : IDebugModule
         Components.Text($"Vendor: {vendor}");
         Components.Text("Renderer: " + GL.GetString(StringName.Renderer));
         Components.Text("GLSL Version: " + GL.GetString(StringName.ShadingLanguageVersion));
+
+        Components.Text(
+            "Allocated Buffer Memory: " + ByteSizeFormatter.FormatByteSize(ShaderBuffer.TotalAllocatedBytes));
+        Components.Text("Max Texture Size: " + MaxTextureSize);
+        Components.Text("Max Array Texture Layers: " + MaxArrayTextureLayers);
 
         if (Components.Accordion("Extensions"))
         {

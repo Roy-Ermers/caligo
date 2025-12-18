@@ -3,6 +3,12 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Caligo.Client.Graphics;
 
+public class ShaderBuffer
+{
+    internal static int _totalAllocatedBytes;
+    public static int TotalAllocatedBytes => _totalAllocatedBytes;
+}
+
 public class ShaderBuffer<T> where T : struct
 {
     private readonly BufferTarget _target;
@@ -18,6 +24,8 @@ public class ShaderBuffer<T> where T : struct
         _usageHint = usageHint;
         Bind();
         GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint);
+
+        Interlocked.Add(ref ShaderBuffer._totalAllocatedBytes, Size);
     }
 
     public ShaderBuffer(BufferTarget target, BufferUsageHint usageHint, Span<T> data) : this(target, usageHint,
@@ -67,6 +75,7 @@ public class ShaderBuffer<T> where T : struct
             {
                 // Resize and upload new data
                 GL.NamedBufferData(Handle, Size, pointer, _usageHint);
+                Interlocked.Add(ref ShaderBuffer._totalAllocatedBytes, Size - oldSize);
             }
             else if (orphan)
             {
@@ -99,9 +108,11 @@ public class ShaderBuffer<T> where T : struct
         if (newSize * Stride <= Size)
             return;
 
+        var oldSize = Size;
         Size = newSize * Stride;
         Bind();
         GL.NamedBufferData(Handle, Size, IntPtr.Zero, _usageHint);
+        Interlocked.Add(ref ShaderBuffer._totalAllocatedBytes, Size - oldSize);
     }
 
     public void Update(T[] data)
@@ -129,6 +140,7 @@ public class ShaderBuffer<T> where T : struct
 
     public void Dispose()
     {
+        Interlocked.Add(ref ShaderBuffer._totalAllocatedBytes, -Size);
         GL.DeleteBuffer(Handle);
     }
 }

@@ -1,5 +1,6 @@
 using System.Numerics;
 using Caligo.Core.Universe;
+using Caligo.Core.Utils;
 
 namespace Caligo.Core.Spatial.PositionTypes;
 
@@ -78,6 +79,12 @@ public readonly record struct ChunkPosition
     public static ChunkPosition operator -(ChunkPosition left, Vector3 right)
     {
         return new ChunkPosition(left.X - (int)right.X, left.Y - (int)right.Y, left.Z - (int)right.Z);
+    }
+
+    public static ChunkPosition operator +(ChunkPosition left, Direction direction)
+    {
+        var offset = direction.ToVector3();
+        return left + offset;
     }
 
     public void Deconstruct(out int X, out int Y, out int Z)

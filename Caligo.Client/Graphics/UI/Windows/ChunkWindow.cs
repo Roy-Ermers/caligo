@@ -17,7 +17,7 @@ public class ChunkWindow : Window
         base.Initialize(game);
 
         _game = game;
-        _world = game.world;
+        _world = game.World;
     }
 
     public override void Draw(double deltaTime)

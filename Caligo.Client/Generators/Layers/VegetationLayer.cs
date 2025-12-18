@@ -2,13 +2,16 @@ using Caligo.Client.Generators.World;
 using Caligo.Core.Noise;
 using Caligo.Core.Resources.Block;
 using Caligo.Core.Universe;
+using Caligo.Core.Utils;
 using Caligo.ModuleSystem;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Client.Generators.Layers;
 
 public class VegetationLayer : ILayer
 {
     private HeightLayer _heightLayer = null!;
+    private Block _grassBlock = null!;
     private GradientNoise _noise = null!;
     private long Seed;
     private Block[] VegetationBlocks = [];
@@ -16,6 +19,7 @@ public class VegetationLayer : ILayer
     public void Initialize(long seed, LayerWorldGenerator generator)
     {
         _heightLayer = generator.Layers.GetLayer<HeightLayer>();
+        _grassBlock = ModuleRepository.Current.Get<Block>("grass_block");
         Seed = seed;
         _noise = new GradientNoise((int)seed);
         VegetationBlocks =
@@ -29,6 +33,7 @@ public class VegetationLayer : ILayer
 
     public void GenerateChunk(Chunk chunk)
     {
+        var random = new Random(chunk.Id);
         for (var x = 0; x < Chunk.Size; x++)
         for (var z = 0; z < Chunk.Size; z++)
         {
@@ -38,9 +43,14 @@ public class VegetationLayer : ILayer
             if (height > worldPos.Y + Chunk.Size || height < worldPos.Y)
                 continue;
 
+            if (height > HeightLayer.MaxHeight * 0.3f) continue;
+
             worldPos = worldPos with { Y = (int)height };
 
             if (chunk.Get(worldPos.ChunkLocalPosition) != 0) continue;
+
+            var chance = Easings.EaseOutExpo(height / 500f);
+            if (chance > random.NextDouble()) continue;
 
             var offset = _noise.Get2DVector(worldPos.X / 10f, worldPos.Z / 10f);
 

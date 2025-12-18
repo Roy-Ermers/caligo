@@ -23,7 +23,7 @@ public class CameraDebugModule : IDebugModule
     public CameraDebugModule(Game game)
     {
         Camera = game.Camera;
-        world = game.world;
+        world = game.World;
     }
 
     public bool Enabled { get; set; }

@@ -1,0 +1,9 @@
+{
+  "isSolid": true,
+  "model": {
+    "name": "block/block_all",
+    "textures": {
+      "all": "snow"
+    }
+  }
+}
