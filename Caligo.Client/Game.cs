@@ -29,6 +29,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Prowl.PaperUI;
 using Prowl.PaperUI.LayoutEngine;
+using Random = System.Random;
 using World = Caligo.Core.Universe.Worlds.World;
 
 namespace Caligo.Client;
@@ -105,7 +106,7 @@ public class Game : GameWindow
 
         World = new World();
         var heightLayer = new HeightLayer();
-        builder = new WorldBuilder(World, new LayerWorldGenerator(0, World, [
+        builder = new WorldBuilder(World, new LayerWorldGenerator(new Random().Next(), World, [
             heightLayer,
             new SurfaceLayer(),
             new FeatureLayer(),
@@ -114,7 +115,7 @@ public class Game : GameWindow
 
         Camera.Position = Camera.Position with { Y = heightLayer.HeightMap.GetHeightAt(0, 0) + 16f };
         renderer = new WorldRenderer(World, ModuleRepository, blockStorage);
-        Controller = new PlayerController(this);
+        Controller = new FreeCameraController(this);
 
         debugUiRenderer =
         [

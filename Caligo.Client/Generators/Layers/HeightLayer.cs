@@ -17,7 +17,7 @@ public class HeightLayer : ILayer
     {
         noise = new GradientNoise((int)seed);
         const int octaves = 8;
-        const float frequency = 0.0005f;
+        const float frequency = 0.00075f;
         HeightMap = new Heightmap((x, z) =>
         {
             var offset = noise.Get2DVector(x * frequency, z * frequency);
