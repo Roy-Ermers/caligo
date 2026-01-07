@@ -27,6 +27,7 @@ public class DefineBlock
         );
     }
 
+
     public void defineCubeModel(BlockModelDef modelDefinition)
     {
         if (_currentBlock == null) return;
@@ -34,7 +35,7 @@ public class DefineBlock
         var variant = new BlockVariant
         {
             ModelName = "block/block",
-            Textures = modelDefinition.Textures ?? [],
+            Textures = modelDefinition.ParsedTextures ?? [],
             Weight = modelDefinition.Weight ?? 0
         };
         _currentBlock.Variants = _currentBlock.Variants.Append(variant).ToArray();

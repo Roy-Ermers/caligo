@@ -101,6 +101,7 @@ public class FaceBuffer : IDisposable
         foreach (var mesh in Meshes)
         {
             var index = allFaces.Count;
+            // mesh.RenderData.
             allFaces.AddRange(mesh.RenderData);
             var position = mesh.Position.ToWorldPosition();
 

@@ -7,27 +7,7 @@
         "textures": {
           "up": "oak_log_top",
           "down": "oak_log_top",
-          "side": "oak_log"
-        }
-      }
-    },
-    {
-      "model": {
-        "name": "block/block_column",
-        "textures": {
-          "up": "oak_log_top",
-          "down": "oak_log_top",
-          "side": "oak_log1"
-        }
-      }
-    },    
-    {
-      "model": {
-        "name": "block/block_column",
-        "textures": {
-          "up": "oak_log_top",
-          "down": "oak_log_top",
-          "side": "oak_log2"
+          "side": ["oak_log", "oak_log1", "oak_log2" ]
         }
       }
     }

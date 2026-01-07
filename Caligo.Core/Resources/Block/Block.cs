@@ -8,8 +8,20 @@ public record struct BlockVariant
 {
     public BlockModel Model;
     public string ModelName;
-    public Dictionary<string, string> Textures;
+    public Dictionary<string, string[]> Textures;
     public int Weight;
+
+    public string PickTexture(string key, Random random)
+    {
+        if (!Textures.TryGetValue(key, out var options) || options.Length == 0)
+            throw new Exception($"Texture array '{key}' is missing or empty in block variant '{ModelName}'.");
+
+        if (options.Length == 1)
+            return options[0];
+
+        var index = random.Next(0, options.Length - 1);
+        return options[index];
+    }
 }
 
 public record class Block

@@ -208,8 +208,6 @@ public class ResourcesWindow : Window
                         if (variant.Textures.Count > 0)
                         {
                             ImGui.Text("Textures:");
-                            using var blockTexture = new InfoTableComponent("blockTextures");
-                            blockTexture.Set(variant.Textures);
                         }
                     }
 

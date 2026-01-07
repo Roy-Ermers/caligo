@@ -197,7 +197,7 @@ public class Game : GameWindow
         base.OnRenderFrame(args);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         Time += args.Time;
-        FpsMeter.FpsGauge.Record(1.0 / args.Time);
+        Statistics.FpsGauge.Record(1.0 / args.Time);
 
         World.DebugRender();
 

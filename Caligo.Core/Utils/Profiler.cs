@@ -16,6 +16,6 @@ public readonly record struct Profiler : IDisposable
     public readonly void Dispose()
     {
         _stopwatch.Stop();
-        Debug.WriteLine($"[Profiler] {Name} took {_stopwatch.ElapsedMilliseconds} ms");
+        Debug.WriteLine($"[Profiler] {Name} took {_stopwatch.ElapsedMilliseconds}ms");
     }
 }

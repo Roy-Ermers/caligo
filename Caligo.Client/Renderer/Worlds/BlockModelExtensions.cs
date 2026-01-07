@@ -5,6 +5,7 @@ using Caligo.Client.Resources.Atlas;
 using Caligo.Core.Resources.Block.Models;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Utils;
+using Random = Caligo.Core.Utils.Random;
 
 namespace Caligo.Client.Renderer.Worlds;
 
@@ -14,10 +15,11 @@ public static class BlockModelExtensions
         this BlockModelCube cube,
         Direction direction,
         ChunkLocalPosition chunkPosition,
-        Dictionary<string, string> textures,
+        Dictionary<string, string[]> textures,
         MaterialBuffer materialBuffer,
         (short x, short y, short z) offset,
-        Atlas atlas
+        Atlas atlas,
+        Random random
     )
     {
         var face = cube.TextureFaces[direction];
@@ -28,7 +30,12 @@ public static class BlockModelExtensions
         var textureKey = face.Value.Texture;
 
         if (textureKey.StartsWith('#'))
-            textureKey = textures[textureKey[1..]];
+        {
+            var array = textures[textureKey[1..]];
+            if (array.Length == 0)
+                throw new Exception($"Texture array '{textureKey}' is empty.");
+            textureKey = array[random.Next(0, array.Length - 1)];
+        }
 
         var textureId = atlas[textureKey];
 
@@ -113,5 +120,75 @@ public static class BlockModelExtensions
         };
 
         return faceRenderData;
+    }
+
+    public static (ushort x, ushort y, ushort z, ushort width, ushort height) CalculateFacePosition(
+        this BlockModelCube cube,
+        Direction direction,
+        ChunkLocalPosition chunkPosition,
+        string offsetType,
+        Random random
+    )
+    {
+        var offsetX = (short)((offsetType?.Contains('x') ?? false) ? random.Next(-7, 7) : 0);
+        var offsetY = (short)((offsetType?.Contains('y') ?? false) ? random.Next(-7, 7) : 0);
+        var offsetZ = (short)((offsetType?.Contains('z') ?? false) ? random.Next(-7, 7) : 0);
+
+
+        var from = cube.From;
+        var size = cube.Size;
+
+        var x = Math.Clamp(chunkPosition.X * 16 + offsetX, 0, 511);
+        var y = Math.Clamp(chunkPosition.Y * 16 + offsetY, 0, 511);
+        var z = Math.Clamp(chunkPosition.Z * 16 + offsetZ, 0, 511);
+
+        var (finalX, finalY, finalZ, finalWidth, finalHeight) = direction switch
+        {
+            Direction.Up => (
+                x + from.X + size.X,
+                y + from.Y + size.Y,
+                z + from.Z,
+                size.Z,
+                size.X
+            ),
+            Direction.Down => (
+                x + from.X,
+                y + from.Y,
+                z + from.Z,
+                size.X,
+                size.Z
+            ),
+            Direction.North => (
+                x + from.X + size.X,
+                y + from.Y,
+                z + from.Z,
+                size.X,
+                size.Y
+            ),
+            Direction.South => (
+                x + from.X,
+                y + from.Y,
+                z + from.Z + size.Z,
+                size.X,
+                size.Y
+            ),
+            Direction.West => (
+                x + from.X,
+                y + from.Y,
+                z + from.Z,
+                size.Z,
+                size.Y
+            ),
+            Direction.East => (
+                x + from.X + size.X,
+                y + from.Y,
+                z + from.Z + size.Z,
+                size.Z,
+                size.Y
+            ),
+            _ => (x, y, z, size.X, size.Y)
+        };
+
+        return ((ushort)finalX, (ushort)finalY, (ushort)finalZ, (ushort)finalWidth, (ushort)finalHeight);
     }
 }

@@ -5,11 +5,11 @@ import {
 
 
 // Block with custom textures object
-defineBlock("block", () => {
+defineBlock("grass_block", () => {
     defineCubeModel({
         weight: 5,
         textures: {
-            north: "grass_block_top",
+            north: Array.from({length: 6}, (_, index) => `grass_top_${index + 1}`),
             south: "grass_block_top",
             east: "dirt",
             west: "dirt",
