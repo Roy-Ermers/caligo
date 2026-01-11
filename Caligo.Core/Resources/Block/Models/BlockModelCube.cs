@@ -8,6 +8,8 @@ public struct BlockModelCube
     public Vector3 From;
     public Vector3 To;
 
+    public Vector3 Size => Vector3.Abs(To - From);
+
     [JsonPropertyName("faces")] public TextureFaces TextureFaces;
 
     [JsonIgnore]

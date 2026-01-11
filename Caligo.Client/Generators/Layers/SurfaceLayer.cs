@@ -52,7 +52,7 @@ public class SurfaceLayer : ILayer
             else if (height + noiseValue * 15f < HeightLayer.MaxHeight * 0.8f)
             {
                 groundBlock = groundBlocks[2]; // snow
-                if (slope > 0.25f)
+                if (slope > 0.4f)
                 {
                     groundBlock = groundBlocks[1]; // stone
                 }

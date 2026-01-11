@@ -1,82 +1,23 @@
 {
-    "isSolid": true,
-	"variants": [
-		{
-			"weight": 35,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_block_top",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		},
-		{
-			"weight": 14,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_top1",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		},
-		{
-			"weight": 15,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_top2",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		},
-		{
-			"weight": 15,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_top3",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		},
-		{
-			"weight": 25,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_top4",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		},
-		{
-			"weight": 1,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_top5",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		},
-		{
-			"weight": 1,
-			"model": {
-				"name": "grass_block",
-				"textures": {
-					"grass": "grass_top6",
-					"side_overlay": "grass_block_side_overlay",
-					"underground": "dirt"
-				}
-			}
-		}
-	]
+  "isSolid": true,
+  "variants": [
+    {
+      "weight": 0,
+      "model": {
+        "name": "grass_block",
+        "textures": {
+          "grass": [
+            "grass_block_top",
+            "grass_top1",
+            "grass_top2",
+            "grass_top3",
+            "grass_top4",
+            "grass_top5",
+            "grass_top6"
+          ],
+          "underground": "dirt"
+        }
+      }
+    }
+  ]
 }

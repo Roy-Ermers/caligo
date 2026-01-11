@@ -65,7 +65,6 @@ public class BlockImporter : IImporter, IResourceProcessor
     {
         var blockStorage = storage.GetStorage<Block>();
 
-        var Air = Identifier.Resolve("air");
         ushort index = 0;
 
         if (blockStorage.Count == 1)
@@ -105,11 +104,31 @@ public class BlockImporter : IImporter, IResourceProcessor
                 ModelName = variant.Model.BlockModelName ?? "",
                 Model = null!,
                 Weight = variant.Weight ?? 1,
-                Textures = variant.Model.Textures ?? []
+                Textures = ConvertTextures(variant.Model.Textures) ?? []
             };
             blockVariants.Add(blockVariant);
         }
 
         return [.. blockVariants];
+    }
+
+    private static Dictionary<string, string[]> ConvertTextures(Dictionary<string, object> textures)
+    {
+        var converted = new Dictionary<string, string[]>();
+        foreach (var (key, value) in textures)
+        {
+            converted[key] = value switch
+            {
+                string str => [str],
+                object[] arr => [..arr.Select(o => o.ToString() ?? "")],
+                JsonElement { ValueKind: JsonValueKind.String } je => [je.GetString() ?? ""],
+                JsonElement { ValueKind: JsonValueKind.Array } je =>
+                    [..je.EnumerateArray().Select(e => e.GetString() ?? "")],
+                _ => []
+            };
+            ;
+        }
+
+        return converted;
     }
 }
