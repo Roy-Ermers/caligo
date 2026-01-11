@@ -155,12 +155,20 @@ public class Game : GameWindow
                 if (visited.Contains(neighborPos))
                     continue;
 
-                // Check if within render distance (Manhattan or Chebyshev distance)
+                // Check if within render distance
                 var dx = Math.Abs(neighborPos.X - playerChunk.X);
                 var dy = Math.Abs(neighborPos.Y - playerChunk.Y);
                 var dz = Math.Abs(neighborPos.Z - playerChunk.Z);
 
-                if (dx > renderDistance || dy > renderDistance || dz > renderDistance)
+                if (dx * dy * dz > renderDistance * renderDistance * renderDistance)
+                    continue;
+
+                if (!Camera.Frustum.Intersects(new BoundingBox(
+                        neighborPos.ToWorldPosition(),
+                        Chunk.Size,
+                        Chunk.Size,
+                        Chunk.Size
+                    )))
                     continue;
 
                 visited.Add(neighborPos);

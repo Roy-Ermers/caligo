@@ -137,7 +137,10 @@ public class ChunkMesher
         return new ChunkMesh(
             faces,
             chunk.Position
-        );
+        )
+        {
+            BoundingBox = chunk.BoundingBox
+        };
     }
 
     private IEnumerable<BlockFaceRenderData> ProcessBlock(short index, Chunk chunk, World world, Random random)

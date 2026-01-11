@@ -1,9 +1,10 @@
+using Caligo.Core.Spatial;
 using Caligo.Core.Spatial.PositionTypes;
 using Caligo.Core.Utils;
 
 namespace Caligo.Client.Renderer.Worlds.Mesh;
 
-public record struct ChunkMesh
+public readonly record struct ChunkMesh
 {
     public static readonly ChunkMesh Empty = new();
     private readonly SortedList<Direction, int> _directionOffsets = [];
@@ -27,6 +28,7 @@ public record struct ChunkMesh
 
     public IReadOnlyList<int> RenderData => _renderData;
     public ChunkPosition Position { get; init; }
+    public BoundingBox BoundingBox { get; init; }
 
     public Span<int> GetFacesForDirection(Direction direction)
     {

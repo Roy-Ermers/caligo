@@ -97,6 +97,7 @@ public class FaceBuffer : IDisposable
 
         IndirectBuffer.Clear();
         isDirty = false;
+        var Camera = Game.Instance.Camera;
 
         foreach (var mesh in Meshes)
         {
