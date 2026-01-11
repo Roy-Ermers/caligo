@@ -30,6 +30,7 @@ public class Camera
 
     public Matrix4 ViewMatrix { get; private set; }
     public Matrix4 ProjectionMatrix { get; private set; }
+    public Frustum Frustum { get; private set; } = new Frustum();
 
     public float NearPlane
     {
@@ -57,6 +58,10 @@ public class Camera
 
         ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, _game.Size.X / (float)_game.Size.Y,
             NearPlane, FarPlane);
+
+        // Update frustum planes from view-projection matrix
+        var viewProjection = ViewMatrix * ProjectionMatrix;
+        Frustum.Update(viewProjection);
     }
 
     public void Update()
